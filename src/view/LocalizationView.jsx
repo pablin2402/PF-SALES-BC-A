@@ -189,7 +189,7 @@ export default function LocalizationView() {
 
 
       <div className="w-3/6 bg-white overflow-y-auto">
-      <LoadScript googleMapsApiKey="AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8">
+      <LoadScript >
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={center}
