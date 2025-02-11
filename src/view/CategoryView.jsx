@@ -1,0 +1,169 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { API_URL } from "../config";
+
+const CategoryView = () => {
+  const [salesData, setSalesData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [showImport, setShowImport] = useState(false);
+  const [isFileUploaded, setIsFileUploaded] = useState(false);
+  const navigate = useNavigate();
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
+      setCategories(jsonData);
+      setIsFileUploaded(true); 
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleImport = async () => {
+    if (categories.length === 0) {
+      alert("No hay categorías para importar.");
+      return;
+    }
+    try {
+      await axios.post(API_URL+"/whatsapp/category/import", { categories });
+      alert("Categorías importadas correctamente.");
+      setShowImport(false);
+      setIsFileUploaded(false); 
+      fetchCategories(); 
+    } catch (error) {
+      console.error("Error al importar:", error);
+      alert("Hubo un problema al importar las categorías.");
+    }
+  };
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(API_URL+"/whatsapp/category/id", { userId: "CL-01" });
+      setSalesData(response.data);
+      setFilteredData(response.data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredData(salesData);
+    } else {
+      setFilteredData(salesData.filter((item) =>
+        item.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+    }
+  }, [searchTerm, salesData]);
+
+  if (loading) return <p className="text-center">Cargando datos...</p>;
+  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+
+  return (
+    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
+      <div className="ml-10 mr-10 relative overflow-x-auto">
+        <div className="flex items-center justify-between w-full">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+              <svg className="w-5 h-5 text-red-500" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"></path>
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar por categoría"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-[#D3423E] font-bold rounded-lg hover:bg-[#D3423E] hover:text-white transition duration-200"
+            >
+              Importar
+            </button>
+            <button
+              onClick={() => navigate("/client/creation")}
+              className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-white font-bold rounded-lg hover:bg-[#FF7F7A] transition duration-200"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path>
+              </svg>
+              Crear Categoría
+            </button>
+          </div>
+        </div>
+
+        {showImport && (
+          <div className="flex mt-4 justify-end space-x-2">
+            <input
+              type="file"
+              accept=".xlsx, .xls"
+              onChange={handleFileUpload}
+              className="block w-2/4 text-m text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+            />
+            <button
+              onClick={handleImport}
+              disabled={!isFileUploaded} 
+              className={`flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition duration-200 
+                ${isFileUploaded ? "bg-[#D3423E] text-white hover:bg-[#FF7F7A]" : "bg-[#FF9C99] text-white cursor-not-allowed"}`}
+            >
+              Importar Excel
+            </button>
+          </div>
+        )}
+
+        <div className="mt-5 border border-gray-400 rounded-xl">
+          <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-300">
+              <tr>
+                <th className="px-6 py-3">Categoría del producto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.length > 0 ? (
+                filteredData.map((item) => (
+                  <tr key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                    <td className="px-6 py-4 font-medium text-gray-900">{item.categoryName}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                    No se encontraron categorías.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CategoryView;
