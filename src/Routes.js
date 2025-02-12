@@ -8,12 +8,14 @@ import CategoryView from './view/CategoryView';
 import InventaryView from './view/InventaryView';
 import LocalizacionView from './view/LocalizationView';
 
-import ClientCreationComponent from './ClientComponent/ClientCreationComponent';
+import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
+import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
+import ClientInformationOrdenComponent from "./ClientComponent/ClientInformationOrdenComponent";
+
 import ProductCreationComponent from './ProductComponent/ProductCreationComponent';
 import CategoryCreationComponent from './CategoryComponent/CategoryCreation';
 import InventaryListComponent from "./InventaryComponent/InventaryListComponent";
 import InventaryCreateComponent from "./InventaryComponent/InventaryCreateComponent";
-import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
 import DashboardLayout from "./layouts/DashboardLayouts";
 import InventaryLayout from "./layouts/InventaryLayout";
 
@@ -38,8 +40,10 @@ export default function AppRoutes() {
 
             </Route>
             <Route path="/client" element={<ClientView />} />
-            <Route path="/client/info" element={<ClientInformationComponent />} />
+            <Route path="/client/:id" element={<ClientInformationComponent />} />
+            <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
             <Route path="/client/creation" element={<ClientCreationComponent />} />
+            
             <Route path="/localization" element={<LocalizacionView />} />
 
 

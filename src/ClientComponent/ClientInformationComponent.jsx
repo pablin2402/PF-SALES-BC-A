@@ -1,66 +1,149 @@
-import React, { useEffect, useState } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
+import { FaBuilding, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
-const ClientInformationComponent = () => {
-  const [salesData, setSalesData] = useState([]); // Datos originales de la API
-  const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
+export default function ClientInformationComponent() {
+  const { state } = useLocation();
+  const { id } = useParams();
+  const [client, setClient] = useState(state?.client || null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1); // Página actual
-  const [totalPages, setTotalPages] = useState(1); // Total de páginas
-  const [searchTerm, setSearchTerm] = useState(""); // Estado del buscador
-  const navigate = useNavigate();
 
-  const fetchProducts = async (pageNumber) => {
+  const [salesData, setSalesData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [idClient, setClientId] = useState("");
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const fetchClientData = async () => {
+    console.log(id);
+    try {
+      const response = await axios.post(API_URL + "/whatsapp/client/info/id", {
+        _id: id,
+      });
+      setClientId(response.data[0].id_user);
+      console.log(response.data[0].id_user)
+      setClient(response.data);
+    } catch (error) {
+      console.error("Error al obtener los datos del cliente", error);
+    }
+  };
+  useEffect(() => {
+    fetchClientData();
+  }, [id]);
+
+  const fetchProducts = async () => {
     setLoading(true);
     setError(null);
-  
+    console.log(idClient)
     try {
-      const response = await axios.post(API_URL+"/whatsapp/client/list/id", 
-        { id_owner: "CL-01" },
-        { params: { page: pageNumber, limit: 10 } } 
-      );
-  
-      setSalesData(response.data.clients); 
-      setFilteredData(response.data.clients); 
-      setTotalPages(response.data.totalPages);
+      const response = await axios.post(API_URL + "/whatsapp/order/id/user", {
+        id_owner: "CL-01",
+        userId: idClient
+      });
+      console.log(response.data)
+      setSalesData(response.data || []);
+      setFilteredData(response.data || []);
     } catch (error) {
+      console.error("❌ Error al cargar los productos:", error);
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
-    fetchProducts(page);
-  }, [page]);
+    fetchProducts();
+  }, [idClient]);
 
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredData(salesData); 
-    } else {
-      const filtered = salesData.filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      || item.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-      || String(item.number).includes(searchTerm.toLowerCase())
+  const filterData = () => {
+    let filtered = salesData;
+
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter((item) =>
+        item.receiveNumber?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredData(filtered);
     }
-  }, [searchTerm, salesData]);
 
-  if (loading) return <p className="text-center">Cargando datos...</p>;
-  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+    if (startDate && endDate) {
+      filtered = filtered.filter((item) => {
+        const itemDate = new Date(item.creationDate);
+        return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
+      });
+    }
+
+    setFilteredData(filtered);
+  };
+
+  useEffect(() => {
+    filterData();
+  }, [searchTerm, startDate, endDate, salesData]);
+
+  const navigate = useNavigate();
+
+  const handleRowClick = (item) => {
+    console.log(item.products)
+    navigate(`/client/order/${item._id}`, { state: { products: item.products, files: item } });
+  };
+
+  if (!client) {
+    return <p className="text-center mt-10 text-xl">Cargando datos...</p>;
+  }
 
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
-      <div className="ml-10 mr-10 relative overflow-x-auto">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-6">
+      <div className="flex w-full max-w-5xl gap-6">
+        <div className="w-4/6 p-6 bg-white border border-black rounded-lg shadow-lg">
+          <div className="flex space-x-4">
+            <div className="justify-center items-center"></div>
+          </div>
+        </div>
 
-        <div className="flex items-center justify-between w-full">
+        <div className="w-2/6 relative bg-white shadow-lg rounded-lg p-6 flex border-2 border-gray-300 flex-col items-center">
+          <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
+            <img
+              src={client[0].profilePicture || "https://via.placeholder.com/150"}
+              alt={client.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          <div className="mt-20 text-center">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {client[0].name} {client[0].lastName}
+            </h2>
+            <div className="flex items-center gap-2 text-gray-900">
+              <FaBuilding color="#D3423E" />
+              <p>{client[0]?.company || "No disponible"}</p>
+            </div>
+
+            <div className="flex items-center gap-2 text-gray-900">
+              <FaMapMarkerAlt color="#D3423E" />
+              <p>{client[0]?.client_location?.direction || "No disponible"}</p>
+            </div>
+
+            <div className="flex items-center gap-2 text-gray-900">
+              <FaEnvelope color="#D3423E" />
+              <p>{client[0]?.email || "No disponible"}</p>
+            </div>
+
+            <div className="flex items-center gap-2 text-gray-900">
+              <FaPhone color="#D3423E" />
+              <p>{client[0]?.number || "No disponible"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 w-full max-w-5xl">
+        <div className="flex items-center justify-between w-full mb-4">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <svg
                 className="w-5 h-5 text-red-500"
                 aria-hidden="true"
@@ -77,96 +160,70 @@ const ClientInformationComponent = () => {
             </div>
             <input
               type="text"
-              placeholder="Buscar por Nombre, apellido, teléfono..."
+              placeholder="Buscar venta..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             />
           </div>
-
-          <button
-            onClick={() => navigate("/client/creation")}
-             className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-white font-medium rounded-lg hover:bg-[#FF7F7A] transition duration-200"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-            Crear Cliente
-          </button>
+          <div className="flex gap-2">
+            
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="p-2 border text-sm border-gray-900 rounded-lg text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
+            />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="p-2 border text-sm border-gray-900 rounded-lg text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
+            />
+          </div>
         </div>
 
-        <div className="mt-5 border border-gray-400 rounded-xl">
+        <div className="mt-5 border border-black rounded-xl">
           <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-300">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-900">
               <tr>
-                <th className="px-6 py-3">Nombre</th>
-                <th className="px-6 py-3">Correo Electronico</th>
-                <th className="px-6 py-3">Telefono Celular</th>
+                <th className="px-6 py-3">Número de recibo</th>
+                <th className="px-6 py-3">Fecha de creación</th>
+                <th className="px-6 py-3">Fecha de envío</th>
+                <th className="px-6 py-3">Fecha de pago</th>
+                <th className="px-6 py-3">Estado</th>
+                <th className="px-6 py-3">Total</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((item) => (
-                  <tr key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">{item.name +" "+ item.lastName}</td>
-                    <td className="px-6 py-4 text-gray-900">{item.email}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No se encontraron clientes.
+              {filteredData.map((item) => (
+                <tr key={item._id} onClick={() => handleRowClick(item)}
+                className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900">{item.receiveNumber || "Sin nombre"}</td>
+                  <td className="px-6 py-4">{item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : "Fecha no disponible"}</td>
+                  <td className="px-6 py-4"></td>
+                  <td className="px-6 py-4">{item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : "Fecha no disponible"}</td>
+                  <td className="px-6 py-4 flex items-center">
+
+                    <span
+                      className={`text-xs font-medium px-2.5 py-0.5 rounded-full 
+                      ${item.accountStatus === "DEUDA"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                        }`}
+                    >
+                      {item.accountStatus}
+                    </span>
                   </td>
+                  <td className="px-6 py-4">{item.totalAmount}</td>
+
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-        {totalPages > 1 && searchTerm === "" && (
-          <nav className="flex items-center justify-center pt-4 space-x-2">
-            <button
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className={`px-3 py-1 border rounded-lg ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
-                }`}
-            >
-              ◀
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <button
-                key={num}
-                onClick={() => setPage(num)}
-                className={`px-3 py-1 border border-gray-400 rounded-lg ${page === num ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
-                  }`}
-              >
-                {num}
-              </button>
-            ))}
-
-            <button
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className={`px-3 py-1 border rounded-lg ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
-                }`}
-            >
-              ▶
-            </button>
-          </nav>
-        )}
       </div>
     </div>
-  );
-};
 
-export default ClientInformationComponent;
+  );
+}

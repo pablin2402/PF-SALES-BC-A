@@ -3,8 +3,11 @@ import axios from "axios";
 import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api";
 import { API_URL } from "../config";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function LocalizationView() {
+  const navigate = useNavigate();
+
   const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
   const [searchTerm, setSearchTerm] = useState(""); // Estado del buscador
   const [page] = useState(1); // Página actual
@@ -97,7 +100,9 @@ export default function LocalizationView() {
     }
   };
   
-
+  const goToClientDetails = (client) => {
+    navigate(`/client/${client._id}`, { state: { client } });
+  };
   return (
     <div className="h-screen w-full flex">
       <div className="w-1/6  overflow-y-auto border-r-2 border-gray-200">
@@ -172,11 +177,11 @@ export default function LocalizationView() {
             <a key={client._id}  onClick={() => findLocation(client)} href="#" className="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow-lg md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
               <img
                 className="w-32 h-32 object-cover rounded-full md:w-48 md:h-48 md:rounded-none"
-                src={"https://flowbite.com/docs/images/blog/image-4.jpg"}
+                src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
                 alt={client.name}
               />
               <div className="flex flex-col justify-between p-4 leading-normal">
-                <h5 className="mb-2 text-l font-bold tracking-tight text-gray-900 dark:text-white">
+                <h5 onClick={() => goToClientDetails(client)} className="mb-2 text-l font-bold tracking-tight text-gray-900 dark:text-white">
                   {client.name} {client.lastName}
                 </h5>
 
