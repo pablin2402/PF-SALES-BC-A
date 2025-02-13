@@ -109,6 +109,7 @@ const OrderView = () => {
                 <th className="px-6 py-3">Nombre</th>
                 <th className="px-6 py-3">Total</th>
                 <th className="px-6 py-3">Estado</th>
+                <th className="px-6 py-3">Vendedor</th>
                 <th className="px-6 py-3">Fecha de Pago</th>
               </tr>
             </thead>
@@ -117,7 +118,8 @@ const OrderView = () => {
                 filteredData.map((item) => (
                   <tr key={item._id} className="bg-white border-b hover:bg-gray-50">
                     <td className="px-6 py-4">{item.receiveNumber}</td>
-                    <td className="px-6 py-4">{item.creationDate || "N/A"}</td>
+                    <td className="px-6 py-4">{item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : ''}</td>
+
                     <td className="px-6 py-4">{item.razonSocial}</td>
                     <td className="px-6 py-4">{item.totalAmount}</td>
                     <td className="px-6 py-4">
@@ -137,6 +139,7 @@ const OrderView = () => {
                         </span>
                       )}
                     </td>
+                    <td className="px-6 py-4">{item.salesId.fullName+" "+item.salesId.lastName}</td>
                     <td className="px-6 py-4">{item.dueDate}</td>
                   </tr>
                 ))

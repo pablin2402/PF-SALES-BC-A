@@ -1,6 +1,8 @@
 // src/Routes.js
 import { Routes, Route } from "react-router-dom";
-import SalesView from './view/SalesView';
+
+import HomeView from "./view/HomeView";
+import SalesView from "./view/SalesView";
 import ProductView from './view/ProductView';
 import ClientView from './view/ClientView';
 import OrderView from './view/OrderView';
@@ -22,7 +24,7 @@ import InventaryLayout from "./layouts/InventaryLayout";
 export default function AppRoutes() {
   return (
         <Routes>
-            <Route path="/" element={<SalesView />} />
+            <Route path="/" element={<HomeView />} />
             <Route element={<DashboardLayout />}>
               <Route path="/sales" element={<SalesView />} />
               <Route path="/product" element={<ProductView />} />
