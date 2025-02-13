@@ -2,7 +2,6 @@ import React, { useState, useCallback } from "react";
 import { GoogleMap, useJsApiLoader, LoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8";
 
 const containerStyle = {
   width: "100%",
