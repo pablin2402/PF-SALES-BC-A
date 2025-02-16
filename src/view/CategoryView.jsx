@@ -17,42 +17,6 @@ const CategoryView = () => {
   const [showModal, setShowModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
-  const navigate = useNavigate();
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(sheet);
-      setCategories(jsonData);
-      setIsFileUploaded(true);
-    };
-
-    reader.readAsArrayBuffer(file);
-  };
-
-  const handleImport = async () => {
-    if (categories.length === 0) {
-      alert("No hay categorías para importar.");
-      return;
-    }
-    try {
-      await axios.post(API_URL + "/whatsapp/category/import", { categories });
-      alert("Categorías importadas correctamente.");
-      setShowImport(false);
-      setIsFileUploaded(false);
-      fetchCategories();
-    } catch (error) {
-      console.error("Error al importar:", error);
-      alert("Hubo un problema al importar las categorías.");
-    }
-  };
-
   const fetchCategories = async () => {
     setLoading(true);
     setError(null);

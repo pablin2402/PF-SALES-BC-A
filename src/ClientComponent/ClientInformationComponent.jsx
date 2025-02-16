@@ -7,7 +7,8 @@ import { FaBuilding, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa"
 export default function ClientInformationComponent() {
   const { state } = useLocation();
   const { id } = useParams();
-  const [client, setClient] = useState(state?.client || null);
+  
+  const [client, setClient] = useState();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,9 +35,14 @@ export default function ClientInformationComponent() {
     }
   };
   useEffect(() => {
+    if (id) {
+      console.log("Ejecutando fetchClientData con id:", id);
+      fetchClientData();
+    }
+  }, [id]);
+  useEffect(() => {
     fetchClientData();
   }, [id]);
-
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
@@ -56,11 +62,9 @@ export default function ClientInformationComponent() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchProducts();
   }, [idClient]);
-
   const filterData = () => {
     let filtered = salesData;
 
@@ -79,18 +83,14 @@ export default function ClientInformationComponent() {
 
     setFilteredData(filtered);
   };
-
   useEffect(() => {
     filterData();
   }, [searchTerm, startDate, endDate, salesData]);
-
   const navigate = useNavigate();
-
   const handleRowClick = (item) => {
     console.log(item.products)
     navigate(`/client/order/${item._id}`, { state: { products: item.products, files: item } });
   };
-
   if (!client) {
     return <p className="text-center mt-10 text-xl">Cargando datos...</p>;
   }
@@ -108,7 +108,7 @@ export default function ClientInformationComponent() {
           <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
             <img
               src={client[0].profilePicture || "https://via.placeholder.com/150"}
-              alt={client.name}
+              alt={client[0].name}
               className="w-full h-full object-cover"
             />
           </div>

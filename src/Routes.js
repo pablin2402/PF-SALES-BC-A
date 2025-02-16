@@ -3,6 +3,8 @@ import { Routes, Route } from "react-router-dom";
 
 import HomeView from "./view/HomeView";
 import SalesView from "./view/SalesView";
+import SalesManView from "./view/SalesManView";
+
 import ProductView from './view/ProductView';
 import ClientView from './view/ClientView';
 import OrderView from './view/OrderView';
@@ -18,8 +20,10 @@ import ProductCreationComponent from './ProductComponent/ProductCreationComponen
 import CategoryCreationComponent from './CategoryComponent/CategoryCreation';
 import InventaryListComponent from "./InventaryComponent/InventaryListComponent";
 import InventaryCreateComponent from "./InventaryComponent/InventaryCreateComponent";
+
 import DashboardLayout from "./layouts/DashboardLayouts";
 import InventaryLayout from "./layouts/InventaryLayout";
+import ClientsLayout from "./layouts/ClientsLayout";
 
 export default function AppRoutes() {
   return (
@@ -41,11 +45,14 @@ export default function AppRoutes() {
               <Route path="/inventary/create" element={<InventaryCreateComponent />} />
 
             </Route>
+            <Route element={<ClientsLayout />}>
+
             <Route path="/client" element={<ClientView />} />
+            <Route path="/sales/client" element={<SalesManView />} />
             <Route path="/client/:id" element={<ClientInformationComponent />} />
             <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
             <Route path="/client/creation" element={<ClientCreationComponent />} />
-            
+            </Route>
             <Route path="/localization" element={<LocalizacionView />} />
 
 
