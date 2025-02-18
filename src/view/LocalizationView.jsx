@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api";
-import { API_URL } from "../config";
+import { API_URL, GOOGLE_API_KEY } from "../config";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -197,7 +197,7 @@ export default function LocalizationView() {
 
 
       <div className="w-3/6 bg-white overflow-y-auto">
-      <LoadScript googleMapsApiKey="AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8">
+      <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={center}

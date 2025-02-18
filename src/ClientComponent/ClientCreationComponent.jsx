@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
-import { API_URL } from "../config";
+import { API_URL, GOOGLE_API_KEY } from "../config";
 
 
-//const GOOGLE_MAPS_API_KEY = "AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8";
 const containerStyle = {
   width: "100%",
   height: "300px",
@@ -166,7 +165,7 @@ const ClientCreationComponent = () => {
 
               <div className="flex flex-col sm:col-span-2">
                 <h2 className="mt-2 mb-6 text-l text-left font-bold text-gray-900">Ubicación del Punto</h2>
-                <LoadScript googleMapsApiKey="AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8">
+                <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
                   <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={location}
