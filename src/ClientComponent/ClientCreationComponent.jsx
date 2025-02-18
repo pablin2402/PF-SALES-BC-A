@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { GoogleMap, useJsApiLoader, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
 import { API_URL } from "../config";
 
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8";
+//const GOOGLE_MAPS_API_KEY = "AIzaSyBXVleyFRjK4-iRECoUkxGJgXdpzPbOgO8";
 const containerStyle = {
   width: "100%",
   height: "300px",
@@ -22,9 +22,7 @@ const ClientCreationComponent = () => {
     return `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
   const [clientId] = useState(generateUniqueId());
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-  });
+
   const fetchAddress = async (lat, lng) => {
     try {
       const response = await axios.get(
@@ -89,7 +87,6 @@ const ClientCreationComponent = () => {
           iconType: "",
           longitud: location.lng,
           latitud: location.lat,
-          iconType: "",
           logoColor: "",
           active: true,
           client_id: clientId,

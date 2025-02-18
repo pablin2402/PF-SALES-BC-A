@@ -6,6 +6,8 @@ import { FaFileExport } from "react-icons/fa6";
 import { IoPersonAdd } from "react-icons/io5";
 import { FaFilter } from "react-icons/fa";
 
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 const ClientView = () => {
   const [salesData, setSalesData] = useState([]); // Datos originales de la API
   const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
@@ -41,7 +43,6 @@ const ClientView = () => {
     }
   };
 
-
   useEffect(() => {
     fetchProducts(page);
   }, [page]);
@@ -61,7 +62,25 @@ const ClientView = () => {
       setFilteredData(filtered);
     }
   }, [searchTerm, salesData]);
-
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      filteredData.map((item) => ({
+        Nombre: item.name + " " + item.lastName,
+        "Categoría": item.category || "",
+        "Dirección": item.client_location.direction || "",
+        "Teléfono Celular": item.number,
+        "Deuda a la fecha": item.debt || "",
+        "Vendedor": item.sales_id?.fullName+" "+item.sales_id?.lastName || "",
+      }))
+    );
+  
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+  
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "Clientes.xlsx");
+  };
   return (
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
       {loading ? (
@@ -120,6 +139,7 @@ const ClientView = () => {
 
             <div className="flex justify-end items-center space-x-4">
               <button
+                onClick={exportToExcel}
                 className="px-4 py-2 bg-white font-bold text-lg text-gray-700 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
               >
                 <FaFileExport color="##726E6E" />
@@ -156,10 +176,10 @@ const ClientView = () => {
                     <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">{item.name + " " + item.lastName}</td>
                       <td className="px-6 py-4 text-gray-900"></td>
-                      <td className="px-6 py-4 text-gray-900"></td>
+                      <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                       <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
                       <td className="px-6 py-4 text-gray-900"></td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName+ " "+item.sales_id?.lastName}</td>
 
                     </tr>
                   ))

@@ -20,6 +20,7 @@ import ProductCreationComponent from './ProductComponent/ProductCreationComponen
 import CategoryCreationComponent from './CategoryComponent/CategoryCreation';
 import InventaryListComponent from "./InventaryComponent/InventaryListComponent";
 import InventaryCreateComponent from "./InventaryComponent/InventaryCreateComponent";
+import OrderCreateComponent from "./OrderComponent/OrderCreateComponent";
 
 import DashboardLayout from "./layouts/DashboardLayouts";
 import InventaryLayout from "./layouts/InventaryLayout";
@@ -37,6 +38,7 @@ export default function AppRoutes() {
 
               <Route path="/product/creation" element={<ProductCreationComponent />} />
               <Route path="/category/creation" element={<CategoryCreationComponent />} />
+              <Route path="/order/creation" element={<OrderCreateComponent />} />
 
             </Route>
             <Route element={<InventaryLayout />}>
