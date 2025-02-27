@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
 import { API_URL, GOOGLE_API_KEY } from "../config";
+import { useNavigate } from "react-router-dom";
 
 
 const containerStyle = {
@@ -16,6 +17,7 @@ const ClientCreationComponent = () => {
 
   const [vendedores, setVendedores] = useState([]);
   const [showToast, setShowToast] = useState(false);
+  const navigate = useNavigate();
 
   const generateUniqueId = () => {
     return `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -76,14 +78,18 @@ const ClientCreationComponent = () => {
 
     fetchVendedores();
   }, []);
-
+  const resetForm = () => {
+    setFormData({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "" });
+    setAddress({ road: "", state: "", house_number: "" });
+    setLocation({ lat: -17.3835, lng: -66.1568 });
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const addressPromise = axios.post(API_URL + "/whatsapp/maps/id",
         {
           sucursalName: formData.punto,
-          iconType: "",
+          iconType:"https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
           longitud: location.lng,
           latitud: location.lat,
           logoColor: "",
@@ -119,6 +125,8 @@ const ClientCreationComponent = () => {
           }
         );
         setShowToast(true);
+        resetForm();
+        navigate("/client")
         setTimeout(() => setShowToast(false), 3000);
       } else {
         setShowToast(true);

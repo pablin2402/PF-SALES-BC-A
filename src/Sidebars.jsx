@@ -25,7 +25,7 @@ export default function Sidebars() {
             </Link>
           </li>
           <li >
-            <Link to="" className="flex mt-6 mb-4 items-center justify-center text-lg dark:text-white dark:hover:bg-gray-700 font-bold text-white hover:text-red-700 hover:shadow-lg  hover:mx-4 hover:my-4 hover:bg-white rounded-md px-0 py-0">
+            <Link to="/order/pay" className="flex mt-6 mb-4 items-center justify-center text-lg dark:text-white dark:hover:bg-gray-700 font-bold text-white hover:text-red-700 hover:shadow-lg  hover:mx-4 hover:my-4 hover:bg-white rounded-md px-0 py-0">
               <HiCurrencyDollar className="hover:text-white ml-10" />
               <span className="flex-1 whitespace-nowrap px-3">
                 Finanzas

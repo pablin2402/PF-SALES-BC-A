@@ -1,7 +1,8 @@
-import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
+
 import { FaBuilding, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
 export default function ClientInformationComponent() {
@@ -15,76 +16,83 @@ export default function ClientInformationComponent() {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [idClient, setClientId] = useState("");
-
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  const fetchClientData = async () => {
-    console.log(id);
+  const fetchClientData = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/info/id", {
         _id: id,
       });
-      setClientId(response.data[0].id_user);
-      console.log(response.data[0].id_user)
+      setClientId(response.data[0]._id);
       setClient(response.data);
     } catch (error) {
       console.error("Error al obtener los datos del cliente", error);
     }
-  };
+  }, [id]);
+
   useEffect(() => {
-    if (id) {
-      console.log("Ejecutando fetchClientData con id:", id);
       fetchClientData();
-    }
-  }, [id]);
-  useEffect(() => {
-    fetchClientData();
-  }, [id]);
-  const fetchProducts = async () => {
+  }, [fetchClientData]);
+
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
-    console.log(idClient)
     try {
       const response = await axios.post(API_URL + "/whatsapp/order/id/user", {
         id_owner: "CL-01",
-        userId: idClient
+        id_client: idClient,
       });
-      console.log(response.data)
       setSalesData(response.data || []);
       setFilteredData(response.data || []);
     } catch (error) {
-      console.error("Error al cargar los productos:", error);
+      console.error("Error al obtener los productos", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [idClient]); 
+  
   useEffect(() => {
     fetchProducts();
-  }, [idClient]);
-  const filterData = () => {
-    let filtered = salesData;
+  }, [fetchProducts]);
 
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((item) =>
-        item.receiveNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+ const filterData = useCallback(() => {
+  let filtered = salesData;
 
-    if (startDate && endDate) {
-      filtered = filtered.filter((item) => {
-        const itemDate = new Date(item.creationDate);
-        return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
-      });
-    }
+  if (searchTerm.trim() !== "") {
+    filtered = filtered.filter((item) =>
+      item.receiveNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-    setFilteredData(filtered);
+  if (startDate && endDate) {
+    filtered = filtered.filter((item) => {
+      const itemDate = new Date(item.creationDate);
+      return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
+    });
+  }
+
+  setFilteredData(filtered);
+}, [searchTerm, startDate, endDate, salesData]); 
+
+useEffect(() => {
+  filterData();
+}, [filterData]);
+  const calculateDaysRemaining = (dueDate) => {
+    if (!dueDate) return '0';
+
+    const due = new Date(dueDate);
+    const today = new Date();
+
+    const diffTime = today - due;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return `${diffDays}`;
+
   };
-  useEffect(() => {
-    filterData();
-  }, [searchTerm, startDate, endDate, salesData]);
+
   const navigate = useNavigate();
+
   const handleRowClick = (item) => {
-    console.log(item.products)
+    console.log(item.products);
     navigate(`/client/order/${item._id}`, { state: { products: item.products, files: item } });
   };
   if (!client) {
@@ -111,7 +119,6 @@ export default function ClientInformationComponent() {
             <div className="justify-center items-center"></div>
           </div>
         </div>
-
         <div className="w-2/6 relative bg-white shadow-lg rounded-lg p-6 flex border-2 border-gray-300 flex-col items-center">
           <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
             <img
@@ -193,39 +200,59 @@ export default function ClientInformationComponent() {
 
         <div className="mt-5 border border-black rounded-xl">
           <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-900">
-              <tr>
-                <th className="px-6 py-3">Número de recibo</th>
-                <th className="px-6 py-3">Fecha de creación</th>
-                <th className="px-6 py-3">Fecha de envío</th>
-                <th className="px-6 py-3">Fecha de pago</th>
-                <th className="px-6 py-3">Estado</th>
-                <th className="px-6 py-3">Total</th>
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+          <tr>
+                    <th className="px-6 py-3">Referencia</th>
+                    <th className="px-6 py-3">Fecha confirmación</th>
+                    <th className="px-6 py-3">Total</th>
+                    <th className="px-6 py-3">Tipo de Pago</th>
+                    <th className="px-6 py-3">Vendedor</th>
+                    <th className="px-6 py-3">Estado</th>
+                    <th className="px-6 py-3">Fecha de Pago</th>
+                    <th className="px-6 py-3">Días de mora</th>
               </tr>
             </thead>
             <tbody>
               {filteredData.map((item) => (
-                <tr key={item._id} onClick={() => handleRowClick(item)}
-                className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{item.receiveNumber || "Sin nombre"}</td>
-                  <td className="px-6 py-4">{item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : "Fecha no disponible"}</td>
-                  <td className="px-6 py-4"></td>
-                  <td className="px-6 py-4">{item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : "Fecha no disponible"}</td>
-                  <td className="px-6 py-4 flex items-center">
-
-                    <span
-                      className={`text-xs font-medium px-2.5 py-0.5 rounded-full 
-                      ${item.accountStatus === "DEUDA"
-                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                        }`}
-                    >
-                      {item.accountStatus}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{item.totalAmount}</td>
-
-                </tr>
+              <tr key={item._id} onClick={() => handleRowClick(item)} className="bg-white border-b hover:bg-gray-50">
+              <td className="px-6 py-4 text-gray-900">{item.receiveNumber}</td>
+              <td className="px-6 py-4 text-gray-900">{item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : ''}</td>
+              <td className="px-6 py-4 text-gray-900">{item.totalAmount}</td>
+              <td className="px-6 py-4 text-gray-900 font-bold">
+                {item.accountStatus === "credito" && (
+                  <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                    CRÉDITO
+                  </span>
+                )}
+                {item.accountStatus === "pending" && (
+                  <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                    CONTADO
+                  </span>
+                )}
+              </td>
+              <td className="px-6 py-4 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
+              <td className="px-6 py-4 text-m text-gray-900 font-bold">
+                {item.orderStatus === "deliver" && (
+                  <span className="bg-orange-400 text-m text-white px-3.5 py-0.5 rounded-full">
+                    ENTREGAR
+                  </span>
+                )}
+                {item.accountStatus === "delivered" && (
+                  <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                    ENTREGADO
+                  </span>
+                )}
+                {item.accountStatus === "delivering" && (
+                  <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                    EN CAMINO
+                  </span>
+                )}
+              </td>
+              <td className="px-6 py-4 text-gray-900">{item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES")}</td>
+              <td className="px-6 py-4 text-gray-900">
+                {calculateDaysRemaining(item.dueDate, item.creationDate)}
+              </td>
+            </tr>
               ))}
             </tbody>
           </table>

@@ -8,9 +8,8 @@ import { useNavigate } from "react-router-dom";
 export default function LocalizationView() {
   const navigate = useNavigate();
 
-  const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
-  const [searchTerm, setSearchTerm] = useState(""); // Estado del buscador
-  const [page] = useState(1); // Página actual
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   const [salesManData, setSalesManData] = useState([]);
   const [canalesData, setCanalesData] = useState([]);
@@ -54,6 +53,7 @@ export default function LocalizationView() {
       const response = await axios.post(API_URL + "/whatsapp/maps/list/id", {
         id_owner: "CL-01",
       });
+      console.log(response.data)
         setMarkers(response.data);
     } catch (error) {
       console.error("Error al cargar los marcadores: ", error);
@@ -79,16 +79,13 @@ export default function LocalizationView() {
     width: "100%",
     height: "100%", 
   };
-
-
-
   const findLocation = (location) => {
     console.log(location.client_location.latitud)
 
     if (location && location.client_location) {
       const lat = parseFloat(location.client_location.latitud);
       const lng = parseFloat(location.client_location.longitud);
-      setMapZoom(16); 
+      setMapZoom(18); 
 
       if (!isNaN(lat) && !isNaN(lng)) {
         setCenter({ lat, lng });
@@ -99,7 +96,6 @@ export default function LocalizationView() {
       console.error("Error: Cliente sin ubicación", location);
     }
   };
-  
   const goToClientDetails = (client) => {
     navigate(`/client/${client._id}`, { state: { client } });
   };

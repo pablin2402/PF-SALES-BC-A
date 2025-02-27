@@ -44,7 +44,6 @@ const OrderCreateComponent = () => {
   const [clientes, setClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
 
-  const [date, setDates] = useState("");
 
   const fetchClients = async () => {
     try {
@@ -219,32 +218,6 @@ const OrderCreateComponent = () => {
       return;
     }
     try {
-      const orderData = {
-        creationDate: new Date(),
-        receiveNumber: "",
-        noteAditional: formData.note,
-        id_owner: "CL-01",
-        products: cart.map(item => ({
-          id: item.id,
-          nombre: item.productName,
-          cantidad: item.quantity,
-          precio: item.price,
-          descuento: item.disscount
-        })),
-        disscount:calcularDescuentos(),
-        tax: 0,
-        totalAmount: calcularTotal(),
-        nit: 0,
-        razonSocial: "",
-        cellPhone: formData.telefono || "No disponible",
-        direction: formData.direccion || "No disponible",
-        accountStatus: formData.tipoPago,
-        dueDate: date,
-        id_client: selectedCliente?.value || "No seleccionado",
-        salesId: formData.vendedor,
-      };
-    
-      console.log("Datos enviados al backend:", orderData);
       await axios.post(API_URL + "/whatsapp/order", {
         creationDate: new Date(),
         receiveNumber: generateReceiveNumber(),
@@ -301,7 +274,6 @@ const OrderCreateComponent = () => {
                   onClick={() => setViewMode("form")}
                   className="px-3 py-3 bg-white font-bold text-3xl text-[#D3423E] rounded-full hover:bg-[#D3423E] hover:text-white flex items-center gap-2"
                 >
-
                   <MdNavigateNext />
                 </button>
 
@@ -485,7 +457,7 @@ const OrderCreateComponent = () => {
                         >
                           <option value="">Seleccione un tipo de pago</option>
                           <option value="credito">Crédito</option>
-                          <option value="contado">Contado</option>
+                          <option value="pending">Contado</option>
                           <option value="cheque">Cheque</option>
                         </select>
                       </div>

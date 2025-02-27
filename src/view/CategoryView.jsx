@@ -6,7 +6,6 @@ const CategoryView = () => {
   const [salesData, setSalesData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [showModal, setShowModal] = useState(false);
@@ -14,13 +13,11 @@ const CategoryView = () => {
 
   const fetchCategories = async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await axios.post(API_URL + "/whatsapp/category/id", { userId: "CL-01" });
       setSalesData(response.data);
       setFilteredData(response.data);
     } catch (error) {
-      setError(error.message);
     } finally {
       setLoading(false);
     }

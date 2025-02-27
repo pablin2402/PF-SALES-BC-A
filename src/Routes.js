@@ -11,6 +11,8 @@ import OrderView from './view/OrderView';
 import CategoryView from './view/CategoryView';
 import InventaryView from './view/InventaryView';
 import LocalizacionView from './view/LocalizationView';
+import OrderPaymentView from './view/OrderPaymentView';
+import OrderLocationView from './view/OrderLocationView';
 
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
 import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
@@ -25,6 +27,7 @@ import OrderCreateComponent from "./OrderComponent/OrderCreateComponent";
 import DashboardLayout from "./layouts/DashboardLayouts";
 import InventaryLayout from "./layouts/InventaryLayout";
 import ClientsLayout from "./layouts/ClientsLayout";
+import LocationLayout from "./layouts/LocationLayout";
 
 export default function AppRoutes() {
   return (
@@ -55,9 +58,11 @@ export default function AppRoutes() {
             <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
             <Route path="/client/creation" element={<ClientCreationComponent />} />
             </Route>
+            <Route path="/order/pay" element={<OrderPaymentView />} />
+            <Route element={<LocationLayout />}>
             <Route path="/localization" element={<LocalizacionView />} />
-
-
+            <Route path="/localization/order" element={<OrderLocationView />} />
+            </Route>
         </Routes>
   );
 }

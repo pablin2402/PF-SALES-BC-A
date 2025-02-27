@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 import { IoPersonAdd } from "react-icons/io5";
-import { FaFilter } from "react-icons/fa";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -12,32 +11,47 @@ const ClientView = () => {
   const [salesData, setSalesData] = useState([]); // Datos originales de la API
   const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(1); // Página actual
   const [totalPages, setTotalPages] = useState(1); // Total de páginas
   const [searchTerm, setSearchTerm] = useState(""); // Estado del buscador
 
+  const [selectedSaler, setSelectedSaler] = useState("");
+  const [vendedores, setVendedores] = useState([]);
+
 
   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchVendedores = async () => {
+      try {
+        const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+          {
+            id_owner: "CL-01"
+          });
+        setVendedores(response.data);
+      } catch (error) {
+        console.error(" obteniendo vendedores", error);
+        setVendedores([]);
+      }
+    };
 
+    fetchVendedores();
+  }, []);
   const fetchProducts = async (pageNumber) => {
     setLoading(true);
-    setError(null);
+    const filters = {
+      id_owner: "CL-01",
+      page: pageNumber,
+      limit: 8,
+    };
+    if (selectedSaler) filters.sales_id = selectedSaler;
 
     try {
-      const response = await axios.post(API_URL + "/whatsapp/client/list/id",
-        {
-          id_owner: "CL-01",
-          page: pageNumber,
-          limit: 8,
-        },
-      );
+      const response = await axios.post(API_URL + "/whatsapp/client/list/id",filters );
 
       setSalesData(response.data.clients);
       setFilteredData(response.data.clients);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -45,7 +59,7 @@ const ClientView = () => {
 
   useEffect(() => {
     fetchProducts(page);
-  }, [page]);
+  }, [page, selectedSaler]);
   const goToClientDetails = (client) => {
     console.log(client)
     navigate(`/client/${client._id}`, { state: { client } });
@@ -62,6 +76,7 @@ const ClientView = () => {
       setFilteredData(filtered);
     }
   }, [searchTerm, salesData]);
+
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
       filteredData.map((item) => ({
@@ -124,23 +139,22 @@ const ClientView = () => {
               </div>
 
               <select
-                id="countries"
-                className="bg-gray-50 border border-gray-400 text-gray-900 text-m rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-48 p-2.5 pr-10"
-              >
-                <option value="default" className="text-gray-900" disabled selected>
-                  Filtrar
-                </option>
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="FR">France</option>
-                <option value="DE">Germany</option>
-              </select>
+                  className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  name="vendedor" 
+                  value={selectedSaler} 
+                  onChange={ (e) => setSelectedSaler(e.target.value)} required>
+                    <option value="">Filtrar por vendedor</option>
+                    <option value="">Mostrar Todos</option>
+                    {vendedores.map((vendedor) => (
+                      <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
+                    ))}
+                  </select>
             </div>
 
             <div className="flex justify-end items-center space-x-4">
               <button
                 onClick={exportToExcel}
-                className="px-4 py-2 bg-white font-bold text-lg text-gray-700 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
+                className="px-4 py-2 bg-white font-bold text-lg text-red-700 rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
               >
                 <FaFileExport color="##726E6E" />
                 Exportar
@@ -165,8 +179,8 @@ const ClientView = () => {
                   <th className="px-6 py-3">Categoría</th>
                   <th className="px-6 py-3">Dirección</th>
                   <th className="px-6 py-3">Telefono Celular</th>
-                  <th className="px-6 py-3">Deuda a la fecha</th>
                   <th className="px-6 py-3">Vendedor</th>
+                  <th className="px-6 py-3">Deuda a la fecha</th>
 
                 </tr>
               </thead>
@@ -178,8 +192,8 @@ const ClientView = () => {
                       <td className="px-6 py-4 text-gray-900"></td>
                       <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                       <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                      <td className="px-6 py-4 text-gray-900"></td>
                       <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName+ " "+item.sales_id?.lastName}</td>
+                      <td className="px-6 py-4 text-gray-900"></td>
 
                     </tr>
                   ))
