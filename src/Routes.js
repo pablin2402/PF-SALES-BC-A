@@ -1,40 +1,43 @@
-// src/Routes.js
 import { Routes, Route } from "react-router-dom";
 
 import HomeView from "./view/HomeView";
-import SalesView from "./view/SalesView";
+import LoginView from "./view/LoginView";
 import SalesManView from "./view/SalesManView";
 
 import ProductView from './view/ProductView';
 import ClientView from './view/ClientView';
 import OrderView from './view/OrderView';
 import CategoryView from './view/CategoryView';
-import InventaryView from './view/InventaryView';
 import LocalizacionView from './view/LocalizationView';
 import OrderPaymentView from './view/OrderPaymentView';
-import OrderLocationView from './view/OrderLocationView';
 
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
 import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
 import ClientInformationOrdenComponent from "./ClientComponent/ClientInformationOrdenComponent";
 
-import ProductCreationComponent from './ProductComponent/ProductCreationComponent';
-import CategoryCreationComponent from './CategoryComponent/CategoryCreation';
-import InventaryListComponent from "./InventaryComponent/InventaryListComponent";
-import InventaryCreateComponent from "./InventaryComponent/InventaryCreateComponent";
+import SalesManCreationComponent from "./ClientComponent/SalesManCreationComponent";
+import SalesManInformationComponent from "./ClientComponent/SalesManInformationComponent";
+
+import ProductCreationComponent from "./ProductComponent/ProductCreationComponent";
+import CategoryCreationComponent from "./CategoryComponent/CategoryCreation";
+
 import OrderCreateComponent from "./OrderComponent/OrderCreateComponent";
 
+import CreateRouteComponent from "./locationComponent/CreateRouteComponent";
+import ShowRouteComponent from "./locationComponent/ShowRouteComponent";
+
 import DashboardLayout from "./layouts/DashboardLayouts";
-import InventaryLayout from "./layouts/InventaryLayout";
 import ClientsLayout from "./layouts/ClientsLayout";
 import LocationLayout from "./layouts/LocationLayout";
 
+import ActivityRouteComponent from "./locationComponent/ActivityRouteComponent";
 export default function AppRoutes() {
   return (
         <Routes>
             <Route path="/" element={<HomeView />} />
+            <Route path="/login" element={<LoginView />} />
+            <Route path="/localization/activivty" element={<ActivityRouteComponent />}/>
             <Route element={<DashboardLayout />}>
-              <Route path="/sales" element={<SalesView />} />
               <Route path="/product" element={<ProductView />} />
               <Route path="/order" element={<OrderView />} />
               <Route path="/category" element={<CategoryView />} />
@@ -44,16 +47,11 @@ export default function AppRoutes() {
               <Route path="/order/creation" element={<OrderCreateComponent />} />
 
             </Route>
-            <Route element={<InventaryLayout />}>
-              <Route path="/inventary" element={<InventaryView />} />
-              <Route path="/inventary/list" element={<InventaryListComponent />} />
-              <Route path="/inventary/create" element={<InventaryCreateComponent />} />
-
-            </Route>
             <Route element={<ClientsLayout />}>
-
             <Route path="/client" element={<ClientView />} />
             <Route path="/sales/client" element={<SalesManView />} />
+            <Route path="/sales/create" element={<SalesManCreationComponent />} />
+            <Route path="/sales/:id" element={<SalesManInformationComponent />} />
             <Route path="/client/:id" element={<ClientInformationComponent />} />
             <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
             <Route path="/client/creation" element={<ClientCreationComponent />} />
@@ -61,7 +59,9 @@ export default function AppRoutes() {
             <Route path="/order/pay" element={<OrderPaymentView />} />
             <Route element={<LocationLayout />}>
             <Route path="/localization" element={<LocalizacionView />} />
-            <Route path="/localization/order" element={<OrderLocationView />} />
+            <Route path="/localization/route" element={<CreateRouteComponent />} />
+            <Route path="/localization/list/route" element={<ShowRouteComponent />} />
+
             </Route>
         </Routes>
   );

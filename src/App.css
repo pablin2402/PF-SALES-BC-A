@@ -2,13 +2,16 @@
 
 .App {
   text-align: center;
+  font-family: 'Montserrat', sans-serif; 
 }
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
 }
-
+.Sidebar {
+  font-family: 'Montserrat', sans-serif;
+}
 body {
   font-family: 'Montserrat', sans-serif; 
   margin: 0;
@@ -31,6 +34,7 @@ body {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  font-family: 'Montserrat', sans-serif; 
 }
 
 .App-link {

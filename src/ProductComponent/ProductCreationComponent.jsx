@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 
 const SalesView = () => {
     const defaultImage = "https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg";
 
     const [imagePreview, setImagePreview] = useState(defaultImage);
 
+    
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {

@@ -7,9 +7,9 @@ import { saveAs } from "file-saver";
 import { FaFileExport } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
 
-import { FaBuilding, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
-export default function ClientInformationComponent() {
+export default function SalesManInformationComponent() {
   const { id } = useParams();
 
   const [client, setClient] = useState();
@@ -22,50 +22,46 @@ export default function ClientInformationComponent() {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [selectedEstadoPago, setSelectedEstadoPago] = useState("");
   const [dateFilterActive, setDateFilterActive] = useState(false);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const fetchClientData = useCallback(async () => {
     try {
-      const response = await axios.post(API_URL + "/whatsapp/client/info/id", {
+      const response = await axios.post(API_URL + "/whatsapp/sales/id", {
         _id: id,
+        id_owner: user
       }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setClientId(response.data[0]._id);
+      setClientId(response.data._id);
       setClient(response.data);
     } catch (error) {
       console.error("Error al obtener los datos del cliente", error);
     }
-  }, [id, token]);
+  }, [id, token, user]);
 
   useEffect(() => {
     fetchClientData();
   }, [fetchClientData]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page) => {
     setLoading(true);
     try {
       const payload = {
         id_owner: user,
-        id_client: idClient,
+        salesId: id,
         page: page,
-        limit: 8,
+        limit: 8
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
         setDateFilterActive(true);
-
       }
-      if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
-      }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload,
+      const response = await axios.post(API_URL + "/whatsapp/order/id/sales", payload,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -82,7 +78,7 @@ export default function ClientInformationComponent() {
   };
   useEffect(() => {
     if (idClient) {
-      fetchProducts();
+      fetchProducts(page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idClient, page]);
@@ -102,10 +98,12 @@ export default function ClientInformationComponent() {
   const handleFilterClick = () => {
     setPage(1);
     setTimeout(() => {
-      fetchProducts();
+      fetchProducts(page);
     }, 0);
   };
+
   const navigate = useNavigate();
+
   const handleRowClick = (item) => {
     navigate(`/client/order/${item._id}`, { state: { products: item.products, files: item } });
   };
@@ -116,33 +114,30 @@ export default function ClientInformationComponent() {
     try {
       const payload = {
         id_owner: user,
-        id_client: idClient,
+        salesId: id,
         page: page,
-        limit: 8,
+        limit: 10000
       };
-
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
       }
-      if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
-      }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.post(API_URL + "/whatsapp/order/id/sales", payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
+      );
       const allData = response.data.orders;
 
       const ws = XLSX.utils.json_to_sheet(
-
         allData.map((item) => {
-
           const creationDateUTC = new Date(item.creationDate);
           creationDateUTC.setHours(creationDateUTC.getHours() - 4);
           const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
           return {
+
             "Número de Orden": item.receiveNumber,
             "Fecha de Venta": formattedDate,
             "Vendedor": item.salesId.fullName + " " + item.salesId.lastName,
@@ -160,7 +155,7 @@ export default function ClientInformationComponent() {
 
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
       const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-      saveAs(data, "ventas_por_clientes.xlsx");
+      saveAs(data, "Reporte_De_Ventas_Por_Vendedor.xlsx");
     } catch (error) {
       console.error("Error exporting data:", error);
     }
@@ -169,23 +164,21 @@ export default function ClientInformationComponent() {
     try {
       const payload = {
         id_owner: user,
-        id_client: idClient,
+        salesId: id,
         page: page,
-        limit: 8,
+        limit: 10000
       };
-
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
       }
-      if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
-      }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.post(API_URL + "/whatsapp/order/id/sales", payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
+      );
       const allData = response.data.orders;
 
       const doc = new jsPDF();
@@ -231,7 +224,7 @@ export default function ClientInformationComponent() {
         },
       });
 
-      doc.save("Reporte_Ventas.pdf");
+      doc.save("Reporte_Ventas_Por_Vendedor.pdf");
     } catch (error) {
       console.error("Error exporting data to PDF:", error);
     }
@@ -261,9 +254,9 @@ export default function ClientInformationComponent() {
           <div className="w-full max-w-5xl gap-6">
             <div className="flex mt-4 mb-4 justify-start space-x-2">
 
-              <nav class="flex" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                  <li class="inline-flex items-center" onClick={() => navigate(-1)}>
+              <nav className="flex" aria-label="Breadcrumb">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                  <li className="inline-flex items-center" onClick={() => navigate(-1)}>
                     <button
                       onClick={() => navigate(-2)}
                       className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
@@ -277,20 +270,20 @@ export default function ClientInformationComponent() {
                       >
                         <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
                       </svg>
-                      Lista de clientes
+                      Lista de vendedores
                     </button>
 
                   </li>
                   <li>
-                    <div class="flex items-center">
-                      <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                    <div className="flex items-center">
+                      <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                       </svg>
                       <button
                         onClick={() => navigate(-1)}
                         className="ms-1 text-sm font-medium text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                       >
-                        {client[0].name} {client[0].lastName}
+                        {client.fullName} {client.lastName}
                       </button>
 
                     </div>
@@ -303,34 +296,29 @@ export default function ClientInformationComponent() {
             <div className="w-full relative bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
               <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
                 <img
-                  src={client[0].profilePicture || "https://via.placeholder.com/150"}
-                  alt={client[0].name}
+                  src={client.profilePicture || "https://via.placeholder.com/150"}
+                  alt={client.fullName}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               <div className="mt-20 text-center">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {client[0].name} {client[0].lastName}
+                  {client.fullName} {client.lastName}
                 </h2>
                 <div className="flex items-center gap-2 text-gray-900">
-                  <FaBuilding color="#D3423E" />
-                  <p>{client[0]?.company || "No disponible"}</p>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-900">
                   <FaMapMarkerAlt color="#D3423E" />
-                  <p>{client[0]?.client_location?.direction || "No disponible"}</p>
+                  <p>{client.client_location?.direction || "No disponible"}</p>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-900">
                   <FaEnvelope color="#D3423E" />
-                  <p>{client[0]?.email || "No disponible"}</p>
+                  <p>{client?.email || "No disponible"}</p>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-900">
                   <FaPhone color="#D3423E" />
-                  <p>{client[0]?.number || "No disponible"}</p>
+                  <p>{client?.phoneNumber || "No disponible"}</p>
                 </div>
               </div>
             </div>
@@ -360,18 +348,6 @@ export default function ClientInformationComponent() {
                     className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <select
-                    value={selectedEstadoPago}
-                    onChange={(e) => setSelectedEstadoPago(e.target.value)}
-                    className="h-10 px-3 py-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  >
-                    <option value="">Mostrar Todos</option>
-                    <option value="Pagado">Pagado</option>
-                    <option value="Falta pagar">Falta pagar</option>
-                  </select>
-                </div>
-
                 <button
                   onClick={handleFilterClick}
                   className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
@@ -380,7 +356,6 @@ export default function ClientInformationComponent() {
                 </button>
 
               </div>
-
               <div className="flex justify-end items-center space-x-4">
                 <button
                   onClick={exportToExcel}
@@ -399,7 +374,6 @@ export default function ClientInformationComponent() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4">
-
               {dateFilterActive && (
                 <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
                   Fecha: {startDate} → {endDate}
@@ -417,13 +391,12 @@ export default function ClientInformationComponent() {
                   <tr>
                     <th className="px-6 py-3">Referencia</th>
                     <th className="px-6 py-3">Fecha de creación</th>
+                    <th className="px-6 py-3">Cliente</th>
                     <th className="px-6 py-3">Tipo de Pago</th>
                     <th className="px-6 py-3">Total</th>
                     <th className="px-6 py-3">Total Cobrado</th>
                     <th className="px-6 py-3">Saldo por cobrar</th>
                     <th className="px-6 py-3">Días de mora</th>
-                    <th className="px-6 py-3">Estado de pago</th>
-
                   </tr>
                 </thead>
                 <tbody>
@@ -444,6 +417,7 @@ export default function ClientInformationComponent() {
                           }).toUpperCase()
                           : ''}
                       </td>
+                      <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
                       <td className="px-6 py-4 text-gray-900 font-bold">
                         {item.accountStatus === "Crédito" && (
                           <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
@@ -455,24 +429,17 @@ export default function ClientInformationComponent() {
                             CONTADO
                           </span>
                         )}
+                        {item.accountStatus === "Cheque" && (
+                          <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
+                            CHEQUE
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-gray-900">Bs. {item.totalAmount}</td>
                       <td className="px-6 py-4 text-gray-900">Bs. {item.totalPagado}</td>
                       <td className="px-6 py-4 text-gray-900">Bs. {item.restante}</td>
                       <td className="px-6 py-4 text-gray-900">
                         {calculateDaysRemaining(item.dueDate, item.creationDate)}
-                      </td>
-                      <td className="px-6 py-4 text-m text-gray-900 font-bold">
-                        {item.estadoPago === "Falta pagar" && (
-                          <span className="bg-red-700 text-m text-white px-3.5 py-0.5 rounded-full">
-                            DEUDA
-                          </span>
-                        )}
-                        {item.estadoPago === "Pagado" && (
-                          <span className="bg-green-600 text-white px-2.5 py-0.5 rounded-full">
-                            PAGADO
-                          </span>
-                        )}
                       </td>
                     </tr>
                   ))}

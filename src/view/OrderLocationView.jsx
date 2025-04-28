@@ -26,7 +26,9 @@ export default function OrderLocationView() {
     const [selectedSaler, setSelectedSaler] = useState("");
     const limit = 8;
     const [page, setPage] = useState(1);
-
+    const user = localStorage.getItem("id_owner");
+    const token = localStorage.getItem("token");
+  
 
 
     const containerStyle = {
@@ -34,8 +36,6 @@ export default function OrderLocationView() {
         height: "100%",
     };
     const findLocation = (location) => {
-        console.log(location.client_location.latitud)
-
         if (location && location.client_location) {
             const lat = parseFloat(location.client_location.latitud);
             const lng = parseFloat(location.client_location.longitud);
@@ -58,8 +58,14 @@ export default function OrderLocationView() {
     const loadMarkersFromAPI = async () => {
         try {
             const response = await axios.post(API_URL + "/whatsapp/maps/list/id", {
-                id_owner: "CL-01",
-            });
+                id_owner: user,
+            },
+            {
+                headers: {
+                  Authorization: `Bearer ${token}`
+                }
+            }
+        );
             setMarkers(response.data);
         } catch (error) {
             console.error("Error al cargar los marcadores: ", error);
@@ -72,17 +78,25 @@ export default function OrderLocationView() {
         setLoading(true);
         try {
             const filters = {
-                id_owner: "CL-01",
+                id_owner: user,
                 page: pageNumber,
                 limit: limit,
                 status_order:"deliver"
             };
 
-            const response = await axios.post(API_URL + "/whatsapp/order/id", filters);
+            const response = await axios.post(API_URL + "/whatsapp/order/id", filters,
+                {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                }
+            );
             setSalesData(response.data.orders);
             setFilteredData(response.data.orders);
             setTotalPages(response.data.totalPages);
         } catch (error) {
+                console.error("Error fetching orders:", error.response ? error.response.data : error.message);
+
         } finally {
             setLoading(false);
         }
@@ -91,13 +105,9 @@ export default function OrderLocationView() {
         fetchOrders(page);
     }, [page, fetchOrders]);
     useEffect(() => {
-        console.log(salesData)
         if (searchTerm.trim() === "") {
             setFilteredData(salesData);
-            console.log(salesData)
-
         } else {
-            console.log(salesData)
             const filtered = salesData.filter((item) =>
                 item.id_client.name.toLowerCase().includes(searchTerm.toLowerCase())
             );

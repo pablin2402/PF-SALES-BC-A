@@ -2,23 +2,30 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
+import { IoPersonAdd } from "react-icons/io5";
 
 const ClientView = () => {
-  const [salesData, setSalesData] = useState([]); // Datos originales de la API
-  const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
+  const [salesData, setSalesData] = useState([]); 
+  const [filteredData, setFilteredData] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1); // Página actual
-  const [searchTerm, setSearchTerm] = useState(""); // Estado del buscador
+  const [page] = useState(1);
+  const [searchTerm, setSearchTerm] = useState(""); 
   const navigate = useNavigate();
 
-  const fetchProducts = async (pageNumber) => {
+  const user = localStorage.getItem("id_owner");
+  const token = localStorage.getItem("token");
+
+  const fetchProducts = async () => {
     setLoading(true);
     setError(null);
-  
     try {
       const response = await axios.post(API_URL+"/whatsapp/sales/list/id", 
-        { id_owner: "CL-01" },
+        { id_owner: user },{
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+      }
       );
       
       setSalesData(response.data); 
@@ -29,14 +36,12 @@ const ClientView = () => {
       setLoading(false);
     }
   };
-  
-
   useEffect(() => {
     fetchProducts(page);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
   const goToClientDetails = (client) => {
-    console.log(client)
-    navigate(`/client/${client._id}`, { state: { client } });
+    navigate(`/sales/${client._id}`, { state: { client } });
   };
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -83,22 +88,11 @@ const ClientView = () => {
           </div>
 
           <button
-            onClick={() => navigate("/client/creation")}
-             className="flex items-center gap-2 text-m px-4 py-2 bg-[#D3423E] text-white font-bold rounded-2xl hover:bg-white hover:text-red-600 transition duration-200"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
+            onClick={() => navigate("/sales/create")}
+            className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:bg-gray-900 hover:text-white flex items-center gap-2"
             >
-              <path
-                fillRule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-            NUEVO VENDEDOR
+            <IoPersonAdd />
+            Nuevo Vendedor
           </button>
         </div>
 

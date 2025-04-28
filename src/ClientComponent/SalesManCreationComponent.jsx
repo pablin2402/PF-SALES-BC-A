@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
 import { API_URL, GOOGLE_API_KEY } from "../config";
@@ -11,23 +11,17 @@ const containerStyle = {
   height: "300px",
 };
 
-const ClientCreationComponent = () => {
+const SalesManCreationComponent = () => {
   const [location, setLocation] = useState({ lat: -17.3835, lng: -66.1568 });
   const [address, setAddress] = useState({ road: "", state: "", house_number: "" });
-  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo:"" });
+  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo:"", role:"", password:"" });
 
-  const [vendedores, setVendedores] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
 
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
-
-  const generateUniqueId = () => {
-    return `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  };
-  const [clientId] = useState(generateUniqueId());
 
   const fetchAddress = async (lat, lng) => {
     try {
@@ -61,95 +55,89 @@ const ClientCreationComponent = () => {
     setFormData({ ...formData, [e.target.name]: e.target.name === "telefono" ? Number(e.target.value) : e.target.value });
   };
   const handleChangeLocation = (e) => {
-    setFormData({ ...address, [e.target.name]: e.target.value });
+    setAddress({ ...address, [e.target.name]: e.target.value });
   };
-  useEffect(() => {
-    const fetchVendedores = async () => {
-      try {
-        const response = await axios.post(API_URL + "/whatsapp/sales/list/id", {
-          id_owner: user,
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setVendedores(response.data);
-      } catch (error) {
-        console.error("obteniendo vendedores", error);
-        setVendedores([]);
-      }
-    };
-  
-    fetchVendedores();
-  }, [token, user]);
-  
+
   const resetForm = () => {
-    setFormData({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "" });
+    setFormData({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", password:"", });
     setAddress({ road: "", state: "", house_number: "" });
     setLocation({ lat: -17.3835, lng: -66.1568 });
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData)
     try {
-      const addressPromise = axios.post(API_URL + "/whatsapp/maps/id",
-        {
-          sucursalName: formData.punto,
-          iconType:"https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
-          longitud: location.lng,
-          latitud: location.lat,
-          logoColor: "",
+      const userResponse = await Promise.race([
+        axios.post(API_URL + "/whatsapp/user", {
           active: true,
-          client_id: clientId,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
           id_owner: user,
-          direction: address.road,
-          house_number: address.house_number,
-          city: address.state
         }, {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        }
-      );
-      const addressResponse = await Promise.race([addressPromise, new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))]);
-      if (addressResponse.status === 200) {
-        const directionId = addressResponse.data._id;
-        await axios.post(API_URL + "/whatsapp/client",
-          {
-            name: formData.nombre,
-            lastName: formData.apellido,
-            profilePicture: "",
-            icon: "",
-            company: "",
-            number: formData.telefono,
-            email: formData.email,
-            socialNetwork: "true",
-            notes: "",
-            id_user: clientId,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+      ]);
+  
+      if (userResponse.status === 200) {
+        const clientId = userResponse.data._id;
+        const addressResponse = await Promise.race([
+          axios.post(API_URL + "/whatsapp/maps/id", {
+            sucursalName: "",
+            iconType: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
+            longitud: location.lng,
+            latitud: location.lat,
+            logoColor: "",
+            active: true,
+            client_id: clientId,
             id_owner: user,
-            identityNumber: "",
-            chat: "",
-            directionId: directionId,
-            sales_id: formData.vendedor,
-            userCategory: formData.tipo
+            direction: address.road,
+            house_number: address.house_number,
+            city: address.state
           }, {
             headers: {
               Authorization: `Bearer ${token}`
             }
-          }
-        );
-        setShowToast(true);
-        resetForm();
-        navigate("/client")
-        setTimeout(() => setShowToast(false), 3000);
-      } else {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+        ]);
+  
+        if (addressResponse.status === 200) {
+          const directionId = addressResponse.data._id;
+          const userId = userResponse.data._id;
+
+          await axios.post(API_URL + "/whatsapp/sales/salesman", {
+            fullName: formData.nombre,
+            lastName:formData.apellido,
+            email: formData.email,
+            role: formData.role,
+            id_owner: user,
+            phoneNumber: formData.telefono,
+            client_location: directionId,
+            userId: userId
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setShowToast(true);
+          resetForm();
+          navigate("/sales/client");
+          setTimeout(() => setShowToast(false), 3000);
+        } else {
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }
       }
     } catch (error) {
       console.error("Error en el proceso", error);
       alert("Error inesperado");
     }
   };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-6">
       <div className="flex w-full max-w-5xl gap-6">
@@ -174,32 +162,27 @@ const ClientCreationComponent = () => {
                 <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Número de teléfono" required />
               </div>
               <div className="flex flex-col">
-                <select
-                  className="p-2  text-gray-900 hover:text-red-700  hover:border-red-700 focus:border-red-700 rounded-lg"
-                  name="vendedor" value={formData.vendedor} onChange={handleChange} required>
-                  <option value="">Seleccione un vendedor</option>
-                  {vendedores.map((vendedor) => (
-                    <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
-                  ))}
-                </select>
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Contraseña</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Contraseña" required />
               </div>
               <div className="flex flex-col">
-                <select
-                  className="p-2 text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 rounded-lg"
-                  name="tipo"
-                  value={formData.tipo}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccione tipo de punto</option>
-                  <option value="Bar">Bar</option>
-                  <option value="Mayorista">Mayorista</option>
-                  <option value="Tienda">Tienda</option>
-                  <option value="Restaurante">Restaurante</option>
-                </select>
-              </div>
+                    <label className="text-left text-sm font-medium text-gray-900 mb-1">Rol</label>
+                    <select
+                        name="role"
+                        value={formData.role}
+                        onChange={handleChange}
+                        className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5"
+                        required
+                    >
+                        <option value="">Selecciona un rol</option>
+                        <option value="SALES">Vendedor</option>
+                        <option value="RESALESW">Repartidor</option>
+                        <option value="ADMIN">Administrador</option>
+                    </select>
+                </div>
               <div className="flex flex-col sm:col-span-2">
-                <h2 className="mt-2 mb-6 text-l text-left font-bold text-gray-900">Ubicación del Punto</h2>
+                <h2 className="mt-2 mb-2 text-l text-left font-bold text-gray-900">Ubicación del Punto</h2>
+                <h2 className="mb-6 text-sm text-left text-gray-900">Haga click en el punto del mapa donde necesite registrar la ubicación </h2>
                 <LoadScript
                   googleMapsApiKey={GOOGLE_API_KEY}
                   onLoad={() => setIsMapLoaded(true)}
@@ -208,7 +191,7 @@ const ClientCreationComponent = () => {
                   <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={location}
-                    zoom={15}
+                    zoom={14}
                     onClick={handleMapClick}
                   >
                     <Marker
@@ -234,11 +217,7 @@ const ClientCreationComponent = () => {
           <form>
             <div className="grid gap-6">
               <div className="flex flex-col">
-                <label className="text-left text-sm font-medium text-gray-900 mb-1  ">Nombre del punto</label>
-                <input type="text" name="punto" onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Nombre del punto" required />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección</label>
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección de domicilio</label>
                 <input name="road" value={address.road} onChange={handleChangeLocation} ytpe="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Dirección" required />
               </div>
               <div className="flex flex-col">
@@ -274,4 +253,4 @@ const ClientCreationComponent = () => {
   );
 };
 
-export default ClientCreationComponent;
+export default SalesManCreationComponent;

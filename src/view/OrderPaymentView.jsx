@@ -1,21 +1,17 @@
-import React, { useEffect,useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
-import { IoPersonAdd } from "react-icons/io5";
-import Select from 'react-select';
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const OrderPaymentView = () => {
-  const [salesData, setSalesData] = useState([]); // Datos originales de la API
-  const [filteredData, setFilteredData] = useState([]); // Datos filtrados por búsqueda
+  const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1); // Página actual
-  const [totalPages, setTotalPages] = useState(1); // Total de páginas
-  const [searchTerm, setSearchTerm] = useState(""); // Estado del buscador
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -23,111 +19,127 @@ const OrderPaymentView = () => {
   const [endDate, setEndDate] = useState("");
   const [applyFilter, setApplyFilter] = useState(false);
 
-  const [clientes, setClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
 
-  const navigate = useNavigate();
+  const [items, setItems] = useState();
 
-  const fetchProducts = useCallback(async (pageNumber) => {
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [dateFilterActive, setDateFilterActive] = useState(false);
+
+  const user = localStorage.getItem("id_owner");
+  const token = localStorage.getItem("token");
+
+  const fetchProducts = async (pageNumber = 1) => {
     setLoading(true);
-  
     try {
       const filters = {
-        id_owner: "CL-01",
+        id_owner: user,
         page: pageNumber,
         limit: 8,
+        clientName: searchTerm
       };
-  
       if (selectedStatus) filters.status = selectedStatus;
       if (selectedCliente) filters.id_client = selectedCliente.value;
       if (startDate && endDate) {
         filters.startDate = startDate;
         filters.endDate = endDate;
+        setDateFilterActive(true);
+
       }
-  
-      const response = await axios.post(API_URL + "/whatsapp/order/pay/list/id", filters);
-      console.log(response)
+      const response = await axios.post(API_URL + "/whatsapp/order/pay/list/id", filters,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+      }
+      );
       setSalesData(response.data.data);
-      setFilteredData(response.data.data);
+      setItems(response.data.pagination.totalRecords);
       setTotalPages(response.data.pagination.totalPages || 1);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
       setLoading(false);
     }
-  }, [selectedStatus, selectedCliente, applyFilter]); 
-  
+  };
   useEffect(() => {
     fetchProducts(page);
     setApplyFilter(false)
-  }, [fetchProducts, applyFilter, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyFilter, page]);
 
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredData(salesData);
-    } else {
-      const filtered = salesData.filter((item) =>
-        item.id_client.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.id_client.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-
-      );
-      setFilteredData(filtered);
-    }
-  }, [searchTerm, salesData]);
-  const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(
-      filteredData.map((item) => ({
-        "Número de Orden": item.orderId.receiveNumber,
-        "Cliente": item.id_client.name + " " + item.id_client.lastName || "",
-        "Fecha de Pago": item.creationDate,
-        "Deuda de la nota": item.debt.toFixed(2) || "",
-        "Pago": item.total || "",
-        "Monto total": item.orderId.totalAmount || "",
-      }))
-    );
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "Clientes.xlsx");
-  };
-  const fetchClients = async () => {
+  const exportToExcel = async () => {
     try {
-      const response = await axios.post(API_URL + "/whatsapp/client/list/id",
-        {
-          id_owner: "CL-01",
-        },
+      const filters = {
+        id_owner: user,
+        page: 1,
+        limit: 100000,
+        clientName: searchTerm,
+      };
+
+      if (selectedStatus) filters.status = selectedStatus;
+      if (selectedCliente) filters.id_client = selectedCliente.value;
+      if (startDate && endDate) {
+        filters.startDate = startDate;
+        filters.endDate = endDate;
+      }
+      const response = await axios.post(API_URL + "/whatsapp/order/pay/list/id", filters,{
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+    });
+      const allData = response.data.data;
+
+      const ws = XLSX.utils.json_to_sheet(
+        allData.map((item) => {
+          const creationDateUTC = new Date(item.creationDate);
+          creationDateUTC.setHours(creationDateUTC.getHours() - 4);
+          const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
+      
+          return {
+            "Número de Orden": item.orderId.receiveNumber,
+            "Fecha de Pago": formattedDate,
+            "Vendedor": item.sales_id.fullName + " " + item.sales_id.lastName,
+            "Cliente": item.id_client.name + " " + item.id_client.lastName || "",
+            "Estado": item.paymentStatus || "",
+            "Pago": item.total || "",
+            "Monto total": item.orderId.totalAmount || "",
+            "Deuda de la nota": item.debt?.toFixed(2) || "",
+          };
+        })
       );
       
-      const clientesData = [
-        { value: "all", label: "Mostrar todos" }, 
-        ...response.data.clients.map(cliente => ({
-          value: cliente._id,
-          label: `${cliente.name} ${cliente.lastName}`,
-          directionid: cliente.client_location.direction,
-          direction_id: cliente.client_location._id,
-          number: cliente.number
-        }))
-      ];
       
-      setClientes(clientesData);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pagos_Por_Cliente");
+
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+      saveAs(data, "Pagos_Por_Cliente.xlsx");
     } catch (error) {
-    } finally {
-      setLoading(false);
+      console.error("Error exporting data:", error);
     }
   };
-  useEffect(() => {
-    fetchClients();
-  }, []);
-  const handleSelectChange = (selectedOption) => {
-    if (!selectedOption) {
-      setSelectedCliente(null); 
-    } else if (selectedOption.value === "all") {
-      setSelectedCliente(null);
-    } else {
-      setSelectedCliente(selectedOption);
+
+  const handleFilterChange = (value) => {
+    setSelectedFilter(value);
+
+    setSearchTerm("");
+    setSelectedCliente(null);
+    setSelectedStatus("");
+    setStartDate("");
+    setEndDate("");
+    setPage(1);
+    setApplyFilter(true);
+  };
+
+  const clearFilter = (type) => {
+    if (type === 'date') {
+      setStartDate('');
+      setEndDate('');
+      setDateFilterActive(false);
     }
   };
   return (
@@ -168,85 +180,41 @@ const OrderPaymentView = () => {
                   placeholder="Buscar por cliente"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-400 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      fetchProducts(1);
+                    }
+                  }}
+                  className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
               <select
                 value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
+                onChange={(e) => handleFilterChange(e.target.value)}
                 className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
               >
-                <option value="">Filtrar por: </option>
-                <option value="">Mostrar todos </option>
-                <option value="client">Filtrar por Cliente:</option>
-                <option value="status">Filtrar por Estado de cobro: </option>
+                <option value="none">Filtrar por: </option>
+                <option value="all">Mostrar todos</option>
                 <option value="date">Filtrar por Fecha:</option>
               </select>
-              {selectedFilter === "client" && (
-                <div>
-                  <Select
-                          options={clientes}
-                          value={selectedCliente}
-                          onChange={handleSelectChange}
-                          isSearchable={true}
-                          placeholder="Buscar cliente..."
-                          noOptionsMessage={() => "No se encontraron clientes"}
-                          className="text-gray-900 text-m rounded-2xl"
-                          styles={{
-                            control: (provided, state) => ({
-                              ...provided,
-                              borderColor: state.isFocused ? "#2E2B2B" : "#2E2B2B",
-                              boxShadow: state.isFocused ? "0 0 0 2px rgba(211, 66, 62, 0.5)" : "none",
-                              "&:hover": { borderColor: "#B8322F" },
-                            }),
-                            option: (provided, state) => ({
-                              ...provided,
-                              backgroundColor: state.isSelected ? "#D3423E" : "white",
-                              color: state.isSelected ? "white" : "##2E2B2B",
-                              "&:hover": { backgroundColor: "#F8D7DA", color: "#D3423E" }
-                            }),
-                            singlevalue: (provided) => ({
-                              ...provided, color: "#2E2B2B",
 
-                            }), placeholder: (provided) => ({
-                              ...provided, color: "#2E2B2B",
-                            }), menu: (provided) => ({
-                              ...provided, color: "#2E2B2B",
-                            }),
-                          }}
-                        ></Select>
-                </div>
-              )}
 
-              {selectedFilter === "status" && (
-                <select
-                  value={selectedStatus} 
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                >
-                  <option value="">Selecciona un estado</option>
-                  <option value="">Mostrar Todos</option>
-                  <option value="paid">Pago Ingresado</option>
-                  <option value="aproved">Pago Aprobado</option>
-                </select>
-              )}
             </div>
             <div className="flex justify-end items-center space-x-4">
               <button
                 onClick={exportToExcel}
-                className="px-4 py-2 bg-white font-bold text-lg text-red-700 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
+                className="px-4 py-2 bg-white font-bold text-lg text-gray-900 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
               >
                 <FaFileExport color="##726E6E" />
                 Exportar
               </button>
-              
+
             </div>
           </div>
           <div className="relative mt-8 flex items-center space-x-4">
             {selectedFilter === "date" && (
               <div className="flex space-x-4 mb-4 items-center">
                 <div className="flex items-center space-x-2">
-                  <label className="text-gray-700">De</label>
                   <input
                     type="date"
                     value={startDate}
@@ -256,7 +224,6 @@ const OrderPaymentView = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <label className="text-gray-700">Hasta</label>
                   <input
                     type="date"
                     value={endDate}
@@ -276,28 +243,65 @@ const OrderPaymentView = () => {
               </div>
             )}
           </div>
-
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            {dateFilterActive && (
+              <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                Fecha: {startDate} → {endDate}
+                <button
+                  onClick={() => clearFilter("date")}
+                  className="font-bold"            >
+                  ×
+                </button>
+              </span>
+            )}
+            </div>
           <div className="mt-5 border border-gray-400 rounded-xl">
-            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-300">
+            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+              <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                 <tr>
                   <th className="px-6 py-3">Número de Nota</th>
                   <th className="px-6 py-3">Fecha</th>
+                  <th className="px-6 py-3">Vendedor</th>
                   <th className="px-6 py-3">Cliente</th>
-                  <th className="px-6 py-3">Estado</th>
-                  <th className="px-6 py-3">Pago</th>
+                  <th className="px-6 py-3">Monto</th>
                   <th className="px-6 py-3">Total </th>
                   <th className="px-6 py-3">Deuda a la Fecha</th>
-
+                  <th className="px-6 py-3">Estado</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredData.length > 0 ? (
-                  filteredData.map((item) => (
-                    <tr key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                {salesData.length > 0 ? (
+                  salesData.map((item) => (
+                    <tr
+                      key={item._id}
+                      className="bg-white text-sm border-b border-gray-200 hover:bg-gray-50"
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setShowModal(true);
+                      }}
+                    >
                       <td className="px-6 py-4 text-gray-900">{item.orderId.receiveNumber}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{new Date(item.creationDate).toLocaleDateString("es-ES")}</td>
+                      <td className="px-6 py-4 text-gray-900">
+                        {item.creationDate 
+                          ? new Date(item.creationDate).toLocaleString("es-ES", {
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric',
+                              hour: "2-digit", 
+                              minute: "2-digit", 
+                              second: "2-digit",
+                              hour12: false, 
+                            }).toUpperCase()
+                          : ''}
+                      </td>
+                      <td className="px-6 py-4 text-gray-900">{item.sales_id.fullName + " " + item.sales_id.lastName}</td>
                       <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                      <td className="px-6 py-4 text-gray-900">Bs. {item.total}</td>
+                      <td className="px-6 py-4 text-gray-900">Bs. {item.orderId.totalAmount}</td>
+                      <td className="px-6 py-4 text-gray-900">
+                        {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "N/A"}
+                      </td>
                       <td className="px-6 py-4 font-medium text-gray-900">
                         {item.paymentStatus === "paid" && (
                           <span className="bg-orange-400 text-m text-white px-3.5 py-0.5 rounded-full">
@@ -310,11 +314,7 @@ const OrderPaymentView = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-gray-900">{item.total}</td>
-                      <td className="px-6 py-4 text-gray-900">{item.orderId.totalAmount}</td>
-                      <td className="px-6 py-4 text-gray-900">
-                        {item.debt !== undefined ? `$${item.debt.toFixed(2)}` : "N/A"}
-                      </td>
+
                     </tr>
                   ))
                 ) : (
@@ -326,36 +326,89 @@ const OrderPaymentView = () => {
                 )}
               </tbody>
             </table>
-
+            <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
+              <div>Total de Ítems: <span className="font-semibold">{items}</span></div>
+            </div>
           </div>
+          {showModal && selectedItem && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
+                <button
+                  className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-4xl"
+                  onClick={() => setShowModal(false)}
+                >
+                  &times;
+                </button>
+                <h2 className="text-xl font-bold mb-4 text-gray-800">Detalle del Pago</h2>
+                <div className="text-left space-y-2 text-gray-900">
 
+                  <p className="text-gray-900"><strong>Número de Nota:</strong> {selectedItem.orderId?.receiveNumber}</p>
+                  <p className="text-gray-900"><strong>Cliente:</strong> {selectedItem.id_client?.name} {selectedItem.id_client?.lastName}</p>
+                  <p className="text-gray-900"><strong>Monto Pagado:</strong> Bs. {selectedItem.total}</p>
+                  <p className="text-gray-900">
+                    <strong>Estado:</strong> {selectedItem.paymentStatus === "paid" ? "Pagado" : selectedItem.paymentStatus}
+                  </p>
+                  <p className="font-medium text-gray-700 mb-1">Recibo:</p>
+
+                </div>
+                {selectedItem.saleImage && (
+                  <div className="mt-4">
+                    <img
+                      src={selectedItem.saleImage}
+                      alt="Recibo"
+                      className="rounded-md border border-gray-300 max-h-80"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {totalPages > 1 && searchTerm === "" && (
             <nav className="flex items-center justify-center pt-4 space-x-2">
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                 disabled={page === 1}
-                className={`px-3 py-1 border rounded-lg ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
-                  }`}
+                className={`px-3 py-1 border rounded-lg ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"}`}
               >
                 ◀
               </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+              <button
+                onClick={() => setPage(1)}
+                className={`px-3 py-1 border rounded-lg ${page === 1 ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+              >
+                1
+              </button>
+
+              {page > 3 && <span className="px-2 text-gray-900">…</span>}
+
+              {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                .filter((p) => p > 1 && p < totalPages)
+                .map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1 border rounded-lg ${page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+
+              {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+
+              {totalPages > 1 && (
                 <button
-                  key={num}
-                  onClick={() => setPage(num)}
-                  className={`px-3 py-1 border border-gray-400 rounded-lg ${page === num ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
-                    }`}
+                  onClick={() => setPage(totalPages)}
+                  className={`px-3 py-1 border rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
                 >
-                  {num}
+                  {totalPages}
                 </button>
-              ))}
+              )}
 
               <button
                 onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={page === totalPages}
-                className={`px-3 py-1 border rounded-lg ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
-                  }`}
+                className={`px-3 py-1 border rounded-lg ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"}`}
               >
                 ▶
               </button>

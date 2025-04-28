@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 import { FaFileExport } from "react-icons/fa6";
+import { HiOutlineTrash } from "react-icons/hi";
 
 import Spinner from "../Components/Spinner";
 import OrderButton from "../Components/OrderButton";
@@ -12,23 +13,31 @@ import { saveAs } from "file-saver";
 
 const OrderView = () => {
   const [salesData, setSalesData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [inputValue, setInputValue] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
 
 
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatus] = useState("");
   const [selectedPaymentType, setSelectedPaymentType] = useState("");
   const [selectedSaler, setSelectedSaler] = useState("");
+  const [selectedPayment, setSelectedPayment] = useState("");
+  const [dateFilterActive, setDateFilterActive] = useState(false);
 
   const [vendedores, setVendedores] = useState([]);
 
-  const limit = 8;
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const navigate = useNavigate();
+
+  const user = localStorage.getItem("id_owner");
+  const token = localStorage.getItem("token");
+
   const handleNewOrderClick = () => {
     navigate("/order/creation");
   };
@@ -37,90 +46,150 @@ const OrderView = () => {
       try {
         const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
           {
-            id_owner: "CL-01"
-          });
+            id_owner: user
+          }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setVendedores(response.data);
       } catch (error) {
-        console.error(" obteniendo vendedores", error);
+        console.error("Error obteniendo vendedores", error);
         setVendedores([]);
       }
     };
 
     fetchVendedores();
-  }, []);
-
-  const fetchOrders = useCallback(async (pageNumber) => {
+  }, [user, token]);
+  const fetchOrders = useCallback(async (pageNumber, customFilters = {}) => {
     setLoading(true);
     try {
       const filters = {
-        id_owner: "CL-01",
+        id_owner: user,
         page: pageNumber,
-        limit: limit,
+        limit: 8,
+        ...customFilters,
       };
-      if (selectedStatus) filters.status = selectedStatus;
-      if (selectedPaymentType) filters.paymentType = selectedPaymentType;
-      if (selectedSaler) filters.salesMan = selectedSaler;
-  
-      const response = await axios.post(API_URL + "/whatsapp/order/id", filters);
+
+      const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setSalesData(response.data.orders);
-      setFilteredData(response.data.orders);
       setTotalPages(response.data.totalPages);
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [selectedStatus, selectedPaymentType, selectedSaler, limit]);
-  
+  }, [user, token]);
+  const applyFilters = () => {
+    const customFilters = {};
+    if (searchTerm) customFilters.fullName = searchTerm;
+    if (selectedStatus) customFilters.status = selectedStatus;
+    if (selectedPaymentType) customFilters.paymentType = selectedPaymentType;
+    if (selectedSaler) customFilters.salesId = selectedSaler;
+    if (selectedPayment) customFilters.payStatus = selectedPayment;
+    if (startDate && endDate) {
+      customFilters.startDate = startDate;
+      customFilters.endDate = endDate;
+    }
+    fetchOrders(1, customFilters);
+    setPage(1);
+  };
+
   useEffect(() => {
     fetchOrders(page);
   }, [page, fetchOrders]);
-
   const goToClientDetails = (item) => {
-    console.log(item);
-    navigate(`/client/order/${item.id_client}`, { state: { products: item.products, files: item } });
+    navigate(`/client/order/${item.id_client}`, { state: { products: item.products, files: item, flag: true } });
   };
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredData(salesData);
-    } else {
-      const filtered = salesData.filter((item) =>
-        item.id_client.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredData(filtered);
+  const exportToExcel = async () => {
+    const filters = {
+      id_owner: user,
+      page: page,
+      limit: 10000,
+    };
+    if (searchTerm) filters.fullName = searchTerm;
+    if (selectedStatus) filters.status = selectedStatus;
+    if (selectedPaymentType) filters.paymentType = selectedPaymentType;
+    if (selectedSaler) filters.salesId = selectedSaler;
+    if (selectedPayment) filters.payStatus = selectedPayment;
+    if (startDate && endDate) {
+      filters.startDate = startDate;
+      filters.endDate = endDate;
     }
-  }, [searchTerm, salesData]);
-  const calculateDaysRemaining = (dueDate, creationDate) => {
-    if (!dueDate) return '0';
+    const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const allData = response.data.orders;
 
-    const due = new Date(dueDate);
-    const today = new Date();
-
-    const diffTime = today - due;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return `${diffDays}`;
-
-  };
-  const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
-      salesData.map((item) => ({
+      allData.map((item) => {
+        const creationDateUTC = new Date(item.creationDate);
+        creationDateUTC.setHours(creationDateUTC.getHours() - 4);
+        const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
+      return {
         "Código de Cliente": item._id,
         "Nombre": item.id_client.name + " " + item.id_client.lastName,
-        "Fecha de confirmación": new Date(item.creationDate).toLocaleDateString("es-ES") || "",
+        "Fecha de confirmación": formattedDate,
         "Tipo de pago": item.accountStatus,
         "Vendedor": item.salesId.fullName + " " + item.salesId.lastName || "",
         "Fecha de Pago": item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES") || "",
         "Estado de Pago": item.payStatus || "",
+        "Saldo por pagar": item.restante,
         "Total": item.totalAmount,
-      }))
-    );
+      };
+    })
+  );
   
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-  
+    XLSX.utils.book_append_sheet(wb, ws, "Order_List");
+
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "ORDER.xlsx");
+    saveAs(data, "Order_List.xlsx");
+  };
+  const clearFilter = (type) => {
+    if (type === "seller") setSelectedSaler(null);
+    if (type === "paymentType") setSelectedPaymentType(null);
+    if (type === "payment") setSelectedPayment(null);
+    if (type === "date") {
+      setStartDate("");
+      setEndDate("");
+      setDateFilterActive(false);
+    }
+    fetchOrders(1);
+  };
+  const clearAllFilters = () => {
+    setSelectedFilter("");
+    setSelectedSaler("");
+    setSelectedPaymentType("");
+    setSelectedPayment("");
+  };
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.post('/api/orders/delete', {
+        _id: id,
+        id_owner: user,
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+      if (response.status === 200 && response.data.success) {
+        fetchOrders(1);
+      }
+
+      return response.data;
+    } catch (error) {
+    }
   };
   return (
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
@@ -129,160 +198,283 @@ const OrderView = () => {
           <Spinner />
         ) : (
           <div>
-            <div className="flex items-center justify-between w-full">
-              <div className="relative flex items-center space-x-4">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-red-500"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clipRule="evenodd"
-                      ></path>
-                    </svg>
+            <div className="flex flex-col w-full">
+              <div className="flex items-center justify-between w-full mb-4">
+                <div className="relative flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-red-500"
+                        aria-hidden="true"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          setSearchTerm(inputValue);
+                          fetchOrders(1);
+                        }
+                      }}
+                      className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Buscar producto..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
                 </div>
-
+                <div className="flex justify-end items-center space-x-4">
+                  <button
+                    onClick={exportToExcel}
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#3A3737] rounded-lg hover:text-red-700 flex items-center gap-2"
+                  >
+                    <FaFileExport color="##726E6E" />
+                    Exportar
+                  </button>
+                  <OrderButton onClick={handleNewOrderClick} />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 mb-4">
                 <select
                   value={selectedFilter}
                   onChange={(e) => setSelectedFilter(e.target.value)}
                   className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 >
                   <option value="">Filtrar por: </option>
+                  <option value="payment">Filtrar por estado de pago:</option>
+                  <option value="date">Filtrar por fecha:</option>
                   <option value="seller">Filtrar por vendedores: </option>
-                  <option value="status">Filtrar por estado:</option>
                   <option value="paymentType">Filtrar por tipo de pago:</option>
                 </select>
                 {selectedFilter === "seller" && (
-
-                  <select
-                  className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  name="vendedor" value={selectedSaler} onChange={ (e) => setSelectedSaler(e.target.value)} required>
-                    <option value="">Seleccione un vendedor</option>
-                    <option value="">Mostrar Todos</option>
-                    {vendedores.map((vendedor) => (
-                      <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
-                    ))}
-                  </select>
+                  <div className="flex gap-2">
+                    <select
+                      className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      name="vendedor" value={selectedSaler} onChange={(e) => setSelectedSaler(e.target.value)} required>
+                      <option value="">Seleccione un vendedor</option>
+                      <option value="">Mostrar Todos</option>
+                      {vendedores.map((vendedor) => (
+                        <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => {
+                        applyFilters();
+                      }}
+                      className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                    >
+                      Filtrar
+                    </button>
+                  </div>
                 )}
-
-                {selectedFilter === "status" && (
-                  <select
-                    value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  >
-                    <option value="">Selecciona un estado</option>
-                    <option value="">Mostrar Todos</option>
-                    <option value="delivered">Entregar</option>
-                    <option value="deliver">Entregado</option>
-                  </select>
-                )}
-
                 {selectedFilter === "paymentType" && (
-                  <select
-                    value={selectedPaymentType} onChange={(e) => setSelectedPaymentType(e.target.value)}
-                    className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  >
-                    <option value="">Selecciona tipo de pago</option>
-                    <option value="">Mostrar Todos</option>
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedPaymentType} onChange={(e) => setSelectedPaymentType(e.target.value)}
+                      className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    >
+                      <option value="">Selecciona tipo de pago</option>
+                      <option value="">Mostrar Todos</option>
 
-                    <option value="credito">Crédito</option>
-                    <option value="pending">Contado</option>
-                  </select>
+                      <option value="Crédito">Crédito</option>
+                      <option value="Contado">Contado</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        applyFilters();
+                      }}
+                      className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                    >
+                      Filtrar
+                    </button>
+                  </div>
                 )}
-              </div>
-              <div className="flex justify-end items-center space-x-4">
-              <button
-                onClick={exportToExcel}
-                className="px-4 py-2 bg-white font-bold text-lg text-red-700 rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
-              >
-                <FaFileExport color="##726E6E" />
-                Exportar
-              </button>
-                <OrderButton onClick={handleNewOrderClick} />
+                {selectedFilter === "payment" && (
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedPayment}
+                      onChange={(e) => setSelectedPayment(e.target.value)}
+                      className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    >
+                      <option value="">Selecciona un estado</option>
+                      <option value="">Mostrar Todos</option>
+                      <option value="Pagado">Pagado</option>
+                      <option value="Pendiente">Pendiente</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        applyFilters();
+                      }}
+                      className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                    >
+                      Filtrar
+                    </button>
+                  </div>
+                )}
+                {selectedFilter === "date" && (
+                  <div className="flex gap-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                        }}
+                        className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => {
+                          setEndDate(e.target.value);
+                        }}
+                        className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        applyFilters();
+                        setDateFilterActive(true);
+                      }}
+                      className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                    >
+                      Filtrar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              {selectedSaler && (
+                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Vendedor: {vendedores.find(v => v._id === selectedSaler)?.fullName}
+                  <button onClick={() => clearFilter("seller")} className="font-bold">×</button>
+                </span>
+              )}
+              {selectedPaymentType && (
+                <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Tipo de Pago: {selectedPaymentType}
+                  <button onClick={() => clearFilter("paymentType")} className="font-bold">×</button>
+                </span>
+              )}
+              {selectedPayment && (
+                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Estado de Pago: {selectedPayment}
+                  <button onClick={() => clearFilter("payment")} className="font-bold">×</button>
+                </span>
+              )}
+              {dateFilterActive && (
+                <span className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Fecha: {startDate} → {endDate}
+                  <button onClick={() => clearFilter("date")} className="font-bold">×</button>
+                </span>
+              )}
 
+              {(selectedSaler || selectedStatus || selectedPaymentType || selectedPayment) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="ml-2 text-sm underline font-bold text-gray-900 hover:text-[#D3423E]"
+                >
+                  Limpiar todos
+                </button>
+              )}
+
+            </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
               <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
-                    <th className="px-6 py-3">Fecha confirmación</th>
+                    <th className="px-6 py-3">Fecha de creación</th>
                     <th className="px-6 py-3">Nombre</th>
                     <th className="px-6 py-3">Tipo de Pago</th>
                     <th className="px-6 py-3">Vendedor</th>
-                    <th className="px-6 py-3">Estado</th>
-                    <th className="px-6 py-3">Fecha de Pago</th>
                     <th className="px-6 py-3">Estado de pago</th>
                     <th className="px-6 py-3">Total</th>
+                    <th className="px-6 py-3">Saldo por pagar</th>
                     <th className="px-6 py-3">Días de mora</th>
+                    <th className="px-6 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((item) => (
+                  {salesData.length > 0 ? (
+                    salesData.map((item) => (
                       <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
-                        <td className="px-6 py-4 text-gray-900">{item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : ''}</td>
+                        <td className="px-6 py-4 text-gray-900">
+                          {item.creationDate 
+                            ? new Date(item.creationDate).toLocaleString("es-ES", {
+                                weekday: 'long', 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                hour: "2-digit", 
+                                minute: "2-digit", 
+                                second: "2-digit",
+                                hour12: false, 
+                              }).toUpperCase()
+                            : ''}
+                        </td>
                         <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
                         <td className="px-6 py-4 text-gray-900 font-bold">
-                          {item.accountStatus === "credito" && (
+                          {item.accountStatus === "Crédito" && (
                             <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
                               CRÉDITO
                             </span>
                           )}
-                          {item.accountStatus === "pending" && (
+                          {item.accountStatus === "Contado" && (
                             <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
                               CONTADO
                             </span>
                           )}
+                          {item.accountStatus === "Cheque" && (
+                            <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
+                              CHEQUE
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
-                        <td className="px-6 py-4 text-m text-gray-900 font-bold">
-                          {item.orderStatus === "deliver" && (
-                            <span className="bg-orange-400 text-m text-white px-3.5 py-0.5 rounded-full">
-                              ENTREGAR
-                            </span>
-                          )}
-                          {item.accountStatus === "delivered" && (
-                            <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                              ENTREGADO
-                            </span>
-                          )}
-                          {item.accountStatus === "delivering" && (
-                            <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                              EN CAMINO
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900">{item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES")}</td>
+
                         <td className="px-6 py-4 text-gray-900 font-bold">
-                          {item.payStatus === "totallypay" && (
+                          {item.payStatus === "Pagado" && (
                             <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
                               PAGADO
                             </span>
                           )}
-                          {item.payStatus === "needpay" && (
+                          {item.payStatus === "Pendiente" && (
                             <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
-                              DEUDA
+                              PENDIENTE
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
                         <td className="px-6 py-4 text-gray-900">
-                          {calculateDaysRemaining(item.dueDate, item.creationDate)}
+                          {item.restante}
+                        </td>
+                        <td className="px-6 py-4 text-gray-900">
+                          {item.diasMora}
+                        </td>
+                        <td className="px-6 py-4 text-gray-900">
+                          {item.totalAmount === item.restante && (
+                            <button
+                              onClick={() => handleDelete(item._id)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Eliminar"
+                            >
+                              <HiOutlineTrash className="w-5 h-5" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -306,15 +498,37 @@ const OrderView = () => {
                   ◀
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                <button
+                  onClick={() => setPage(1)}
+                  className={`px-3 py-1 border rounded-lg ${page === 1 ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                >
+                  1
+                </button>
+
+                {page > 3 && <span className="px-2 text-gray-900">…</span>}
+
+                {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                  .filter((p) => p > 1 && p < totalPages)
+                  .map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`px-3 py-1 border rounded-lg ${page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+
+                {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+
+                {totalPages > 1 && (
                   <button
-                    key={num}
-                    onClick={() => setPage(num)}
-                    className={`px-3 py-1 border rounded-lg ${page === num ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                    onClick={() => setPage(totalPages)}
+                    className={`px-3 py-1 border rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
                   >
-                    {num}
+                    {totalPages}
                   </button>
-                ))}
+                )}
 
                 <button
                   onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}

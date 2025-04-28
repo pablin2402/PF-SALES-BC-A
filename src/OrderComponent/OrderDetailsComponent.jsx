@@ -3,7 +3,6 @@ import React from "react";
 const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcularFechaPago, cart, calcularTotal, handleSubmit }) => {
   return (
     <div className="flex w-full justify-center gap-6 mt-4">
-      {/* Detalles del Cliente */}
       <div className="w-2/6 p-6 bg-white border border-black rounded-lg shadow-lg">
         <h3 className="text-lg font-bold text-gray-900 mb-3">Detalles del Cliente</h3>
         <div className="grid gap-4">
@@ -22,10 +21,10 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
           <div>
             <p className="text-gray-900 font-medium text-left">Tipo de Pago:</p>
             <p className="text-gray-700 text-left">
-              {formData.tipoPago === "credito" ? "Crédito" : "Contado"}
+              {formData.tipoPago === "Crédito" ? "Crédito" : "Contado"}
             </p>
           </div>
-          {formData.tipoPago === "credito" && (
+          {formData.tipoPago === "Crédito" && (
             <div>
               <p className="text-gray-900 font-medium text-left">Plazo de Crédito:</p>
               <p className="text-gray-700 text-left">{formData.plazoCredito || "No seleccionado"}</p>
@@ -45,7 +44,6 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
         </div>
       </div>
       
-      {/* Productos Seleccionados */}
       <div className="w-4/6 p-6 bg-white border border-black rounded-lg shadow-lg flex flex-col">
         <h3 className="text-left text-lg font-bold text-gray-900 mb-4">Productos Seleccionados</h3>
         <form>
@@ -88,7 +86,7 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
         </form>
         <button
           onClick={handleSubmit}
-          className="mt-auto w-full mt-4 px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-2xl hover:bg-white hover:text-red-600 transition"
+          className="mt-auto w-full mt-6 px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-2xl hover:bg-white hover:text-red-600 transition"
         >
           GUARDAR
         </button>

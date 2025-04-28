@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 const DashboardLayout = () => {
     return (
         <div>
-            <nav className="bg-white border-gray-200 dark:bg-gray-900">
+            <nav className="bg-white border-gray-200 border-b-2 border-black-400">
                 <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                     <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
                     </a>
@@ -16,18 +16,16 @@ const DashboardLayout = () => {
                     <div className="hidden w-full md:block md:w-auto" id="navbar-default">
                         <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
                             <li>
-                                <a href="/product" className="block py-2 px-3 font-bold text-[#D3423E] rounded-sm md:bg-transparent md:p-0 md:hover:text-[#FF7F7A]">
+                                <a href="/product" className="block py-2 px-3 font-bold text-[#3A3737] rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
                                     Productos
                                 </a>
                             </li>
+                          
                             <li>
-                                <a href="/sales" className="block py-2 px-3 text-[#D3423E] font-bold rounded-sm md:p-0 md:hover:text-[#FF7F7A]">Ventas</a>
+                                <a href="/category" className="block py-2 px-3 text-[#3A3737] font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Categoria</a>
                             </li>
                             <li>
-                                <a href="/category" className="block py-2 px-3 text-[#D3423E] font-bold rounded-sm md:p-0 md:hover:text-[#FF7F7A]">Categoria</a>
-                            </li>
-                            <li>
-                                <a href="/order" className="block py-2 px-3 text-[#D3423E] font-bold rounded-sm md:p-0 md:hover:text-[#FF7F7A]">Pedidos</a>
+                                <a href="/order" className="block py-2 px-3 text-[#3A3737] font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Pedidos</a>
                             </li>
                         </ul>
                     </div>

@@ -4,16 +4,21 @@ import { API_URL } from "../config";
 
 const CategoryCreation = ({ onClose }) => {
     const [categoryName, setCategoryName] = useState("");
-
+    const user = localStorage.getItem("id_owner");
+    const token = localStorage.getItem("token");
     const handleSubmit = async (e) => {
-        console.log(categoryName)
         try {
           await axios.post(API_URL + "/whatsapp/category", {
             categoryName: categoryName,
             categoryId: "",
             categoryImage: "",
-            userId: "CL-01",
+            userId: user,
             categoryColor: "",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           });
     
           setCategoryName("");
