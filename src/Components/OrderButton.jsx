@@ -4,7 +4,7 @@ const OrderButton = ({onClick}) => {
   return (
     <button
     onClick={onClick}
-    className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-lg text-white font-bold rounded-lg hover:bg-white hover:text-[#D3423E] transition duration-200"
+    className="px-4 py-2 p-6 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-gray-100 hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
     >
       <svg
         className="w-5 h-5"

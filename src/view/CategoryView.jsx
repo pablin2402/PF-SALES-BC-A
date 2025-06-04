@@ -109,14 +109,14 @@ const CategoryView = () => {
                   placeholder="Buscar por categoría"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 ps-10 text-lg text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => setShowModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-white font-bold rounded-lg hover:bg-[#FF7F7A] transition duration-200"
-                >
+                  className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-gray-100 hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+                  >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path>
                   </svg>
@@ -146,8 +146,8 @@ const CategoryView = () => {
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
-              className={`px-3 py-1 border rounded-lg ${
-                page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
+              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
+                page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"
               }`}
             >
               ◀
@@ -155,8 +155,8 @@ const CategoryView = () => {
 
             <button
               onClick={() => setPage(1)}
-              className={`px-3 py-1 border border-gray-400 rounded-lg ${
-                page === 1 ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
+              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
+                page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
               }`}
             >
               1
@@ -170,7 +170,7 @@ const CategoryView = () => {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className={`px-3 py-1 border border-gray-400 rounded-lg ${
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
                     page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
                   }`}
                 >
@@ -178,13 +178,13 @@ const CategoryView = () => {
                 </button>
               ))}
 
-            {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+            {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
             {totalPages > 1 && (
               <button
                 onClick={() => setPage(totalPages)}
-                className={`px-3 py-1 border border-gray-400 rounded-lg ${
-                  page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
+                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
+                  page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
                 }`}
               >
                 {totalPages}
@@ -194,8 +194,8 @@ const CategoryView = () => {
             <button
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={page === totalPages}
-              className={`px-3 py-1 border rounded-lg ${
-                page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
+              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
+                page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"
               }`}
             >
               ▶
@@ -209,17 +209,17 @@ const CategoryView = () => {
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-lg text-left text-gray-900 font-bold mb-4">Crear Nueva Categoría</h2>
+            <h2 className="text-2xl text-left text-gray-900 font-bold mb-4">Crear Nueva Categoría</h2>
             <input
               type="text"
               placeholder="Nombre de la categoría"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             />
             <div className="flex justify-end gap-2 mt-4">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 font-bold bg-white text-red-500 text-bold rounded-lg">Cancelar</button>
-              <button onClick={handleCreateCategory} className="px-4 py-2 bg-red-500 font-bold text-white rounded-lg hover:bg-red-700">Crear</button>
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 font-bold border-2 border-[#D3423E] bg-white text-red-500 uppercase text-bold rounded-2xl">Cancelar</button>
+              <button onClick={handleCreateCategory} className="px-4 py-2 bg-[#D3423E] rounded-2xl font-bold text-white gap-4 uppercase">Crear</button>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useEffect,useCallback, useState } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
@@ -8,11 +8,11 @@ import { IoPersonAdd } from "react-icons/io5";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 const ClientView = () => {
-  const [salesData, setSalesData] = useState([]); 
+  const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1); 
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedSaler, setSelectedSaler] = useState("");
   const [vendedores, setVendedores] = useState([]);
@@ -21,14 +21,29 @@ const ClientView = () => {
   const token = localStorage.getItem("token");
 
   const navigate = useNavigate();
-  
+  const getInitials = (name, lastName) => {
+    const firstInitial = name?.charAt(0).toUpperCase() || '';
+    const lastInitial = lastName?.charAt(0).toUpperCase() || '';
+    return firstInitial + lastInitial;
+  };
+  const colorClasses = [
+    'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
+    'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
+  ];
+  const getColor = (name, lastName) => {
+    const hash = (name + lastName)
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const index = hash % colorClasses.length;
+    return colorClasses[index];
+  };
   useEffect(() => {
     const fetchVendedores = async () => {
       try {
-        const response = await axios.post(API_URL + "/whatsapp/sales/list/id", 
+        const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
           {
             id_owner: user
-          }, 
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -41,12 +56,11 @@ const ClientView = () => {
         setVendedores([]);
       }
     };
-  
+
     if (user && token) {
       fetchVendedores();
     }
   }, [user, token]);
-  
   const fetchProducts = useCallback(async (pageNumber) => {
     setLoading(true);
     const filters = {
@@ -56,7 +70,7 @@ const ClientView = () => {
       clientName: searchTerm
     };
     if (selectedSaler) filters.sales_id = selectedSaler;
-  
+
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/list/id", filters, {
         headers: {
@@ -71,14 +85,13 @@ const ClientView = () => {
       setLoading(false);
     }
   }, [user, searchTerm, selectedSaler, token]);
-  
   useEffect(() => {
     fetchProducts(page);
-  }, [page, fetchProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
   const goToClientDetails = (client) => {
-    navigate(`/client/${client._id}`, { state: { client,  flag: false  } });
+    navigate(`/client/${client._id}`, { state: { client, flag: false } });
   };
-
   const exportToExcel = async () => {
     const filters = {
       id_owner: user,
@@ -89,9 +102,10 @@ const ClientView = () => {
     if (selectedSaler) filters.sales_id = selectedSaler;
     const response = await axios.post(API_URL + "/whatsapp/client/list/id", filters, {
       headers: {
-          Authorization: `Bearer ${token}`
-        }
+        Authorization: `Bearer ${token}`
+      }
     });
+
     const allData = response.data.clients;
     const ws = XLSX.utils.json_to_sheet(
       allData.map((item) => ({
@@ -99,19 +113,19 @@ const ClientView = () => {
         "Categoría": item.userCategory || "",
         "Dirección": item.client_location.direction || "",
         "Teléfono Celular": item.number,
-        "Vendedor": item.sales_id?.fullName+" "+item.sales_id?.lastName || "",
+        "Vendedor": item.sales_id?.fullName + " " + item.sales_id?.lastName || "",
       }))
     );
-  
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Lista_Clientes");
-  
+
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Lista_Clientes.xlsx");
   };
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
+    <div className="bg-white min-h-screen rounded-lg p-5">
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div role="status">
@@ -123,10 +137,27 @@ const ClientView = () => {
           </div>
         </div>
       ) : (
-        <div className="ml-10 mr-10 mt-10 relative overflow-x-auto">
-          <div className="flex items-center justify-between w-full">
-            <div className="relative flex items-center space-x-4">
-              <div className="relative flex-1">
+        <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
+          <div className="flex flex-col w-full space-y-4">
+            <div className="flex justify-end items-center space-x-4">
+              <button
+                onClick={exportToExcel}
+                className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
+              >
+                <FaFileExport />
+                Exportar
+              </button>
+              <button
+                onClick={() => navigate("/client/creation")}
+                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+              >
+                <IoPersonAdd />
+                Nuevo Cliente
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
                   <svg
                     className="w-5 h-5 text-red-500"
@@ -152,62 +183,61 @@ const ClientView = () => {
                     }
                   }}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
 
               <select
-                  className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  name="vendedor" 
-                  value={selectedSaler} 
-                  onChange={ (e) => setSelectedSaler(e.target.value)} required>
-                    <option value="">Filtrar por vendedor</option>
-                    <option value="">Mostrar Todos</option>
-                    {vendedores.map((vendedor) => (
-                      <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
-                    ))}
-                  </select>
-            </div>
-
-            <div className="flex justify-end items-center space-x-4">
-              <button
-                onClick={exportToExcel}
-                className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
+                className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                name="vendedor"
+                value={selectedSaler}
+                onChange={(e) => setSelectedSaler(e.target.value)}
+                required
               >
-                <FaFileExport color="##726E6E" />
-                Exportar
-              </button>
-              <button
-                onClick={() => navigate("/client/creation")}
-                className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:bg-gray-900 hover:text-white flex items-center gap-2"
-              >
-                <IoPersonAdd />
-                Nuevo Cliente
-              </button>
+                <option value="">Filtrar por vendedor</option>
+                <option value="">Mostrar Todos</option>
+                {vendedores.map((vendedor) => (
+                  <option key={vendedor._id} value={vendedor._id}>
+                    {vendedor.fullName + " " + vendedor.lastName}
+                  </option>
+                ))}
+              </select>
             </div>
-
           </div>
 
           <div className="mt-5 border border-gray-400 rounded-xl">
             <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-            <tr>
-                  <th className="px-6 py-3">Nombre</th>
-                  <th className="px-6 py-3">Categoría</th>
-                  <th className="px-6 py-3">Dirección</th>
-                  <th className="px-6 py-3">Telefono Celular</th>
-                  <th className="px-6 py-3">Vendedor</th>
+              <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
+                <tr>
+                  <th className="px-6 py-3"></th>
+                  <th className="px-6 py-3 uppercase">Nombre</th>
+                  <th className="px-6 py-3 uppercase">Categoría</th>
+                  <th className="px-6 py-3 uppercase">Dirección</th>
+                  <th className="px-6 py-3 uppercase">Telefono Celular</th>
+                  <th className="px-6 py-3 uppercase">Vendedor</th>
                 </tr>
               </thead>
               <tbody>
                 {salesData.length > 0 ? (
                   salesData.map((item) => (
                     <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.name + " " + item.lastName}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        <div
+                          className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
+                        >
+                          <span className="font-medium text-white">
+                            {getInitials(item.name, item.lastName)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {item.name + " " + item.lastName}
+                      </td>
+
                       <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
                       <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                       <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName+ " "+item.sales_id?.lastName}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
                     </tr>
                   ))
                 ) : (
@@ -223,56 +253,56 @@ const ClientView = () => {
           </div>
 
           {totalPages > 1 && searchTerm === "" && (
-              <nav className="flex items-center justify-center pt-4 space-x-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className={`px-3 py-1 border rounded-lg ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"}`}
-                >
-                  ◀
-                </button>
+            <nav className="flex items-center justify-center pt-4 space-x-2">
+              <button
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={page === 1}
+                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+              >
+                ◀
+              </button>
 
-                <button
-                  onClick={() => setPage(1)}
-                  className={`px-3 py-1 border rounded-lg ${page === 1 ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
-                >
-                  1
-                </button>
+              <button
+                onClick={() => setPage(1)}
+                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+              >
+                1
+              </button>
 
-                {page > 3 && <span className="px-2 text-gray-900">…</span>}
+              {page > 3 && <span className="px-2 text-gray-900">…</span>}
 
-                {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                  .filter((p) => p > 1 && p < totalPages)
-                  .map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`px-3 py-1 border rounded-lg ${page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-
-                {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
-
-                {totalPages > 1 && (
+              {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                .filter((p) => p > 1 && p < totalPages)
+                .map((p) => (
                   <button
-                    onClick={() => setPage(totalPages)}
-                    className={`px-3 py-1 border rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
                   >
-                    {totalPages}
+                    {p}
                   </button>
-                )}
+                ))}
 
+              {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+
+              {totalPages > 1 && (
                 <button
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className={`px-3 py-1 border rounded-lg ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"}`}
+                  onClick={() => setPage(totalPages)}
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "}`}
                 >
-                  ▶
+                  {totalPages}
                 </button>
-              </nav>
-            )}
+              )}
+
+              <button
+                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={page === totalPages}
+                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+              >
+                ▶
+              </button>
+            </nav>
+          )}
         </div>
       )}
 

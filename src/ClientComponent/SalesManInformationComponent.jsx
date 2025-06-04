@@ -238,7 +238,7 @@ export default function SalesManInformationComponent() {
     }
   };
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-6">
+    <div className="flex flex-col items-center justify-center min-h-screen px-6">
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div role="status">
@@ -350,7 +350,7 @@ export default function SalesManInformationComponent() {
                 </div>
                 <button
                   onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold text-lg text-gray-900 rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                  className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] rounded-2xl flex items-center gap-2"
                 >
                   Filtrar
                 </button>
@@ -359,14 +359,14 @@ export default function SalesManInformationComponent() {
               <div className="flex justify-end items-center space-x-4">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-gray-900 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-2xl hover:text-[#D3423E] flex items-center gap-2"
                 >
                   <FaFileExport color="##726E6E" />
                   EXCEL
                 </button>
                 <button
                   onClick={exportToPDF}
-                  className="px-4 py-2 bg-white font-bold text-lg text-gray-900 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
+                  className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white rounded-2xl flex items-center gap-2"
                 >
                   PDF
                 </button>
@@ -454,9 +454,9 @@ export default function SalesManInformationComponent() {
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                   disabled={page === 1}
-                  className={`px-3 py-1 border rounded-lg ${page === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-900 hover:bg-gray-200"
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1
+                    ? "text-[#D3423E] cursor-not-allowed"
+                    : "text-[#D3423E] font-bold"
                     }`}
                 >
                   ◀
@@ -466,9 +466,9 @@ export default function SalesManInformationComponent() {
                   <button
                     key={num}
                     onClick={() => setPage(num)}
-                    className={`px-3 py-1 border border-gray-400 rounded-lg ${page === num
-                      ? "bg-red-500 text-white font-bold"
-                      : "text-gray-900 hover:bg-red-200"
+                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === num
+                      ? "bg-[#D3423E] text-white font-bold"
+                      : "text-gray-900 font-bold"
                       }`}
                   >
                     {num}
@@ -478,9 +478,9 @@ export default function SalesManInformationComponent() {
                 <button
                   onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                   disabled={page === totalPages}
-                  className={`px-3 py-1 border rounded-lg ${page === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-900 hover:bg-gray-200"
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages
+                    ? "text-[#D3423E] cursor-not-allowed"
+                    : "text-[#D3423E]"
                     }`}
                 >
                   ▶

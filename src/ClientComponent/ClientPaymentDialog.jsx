@@ -136,25 +136,24 @@ const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
 
                 </div>
 
-                <div className="flex justify-end space-x-4">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-lg text-gray-900 font-bold rounded-lg"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleSavePayment}
-                        disabled={isSaveDisabled}
-                        className={`px-4 py-2 text-lg font-bold rounded-lg ${
+                <div className="flex w-full space-x-4">
+                        <button
+                            onClick={onClose}
+                            className="w-1/2 px-4 py-2 text-lg border-2 border-[#D3423E] text-[#D3423E] uppercase font-bold rounded-2xl"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleSavePayment}
+                            disabled={isSaveDisabled}
+                            className={`w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${
                             isSaveDisabled
                                 ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                                 : 'bg-[#D3423E] text-white hover:bg-red-600'
-                        }`}
-                    >
-                        Guardar
-                    </button>
-
+                            }`}
+                        >
+                            Guardar
+                        </button>
                 </div>
             </div>
         </div>

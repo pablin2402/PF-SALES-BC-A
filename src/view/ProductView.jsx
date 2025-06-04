@@ -194,13 +194,13 @@ const ProductView = () => {
                     placeholder="Buscar venta..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 >
                   <option value="">Todas las categorías</option>
                   {categoriesList.map((category) => (
@@ -211,13 +211,13 @@ const ProductView = () => {
               <div className="justify-end">
                 <button
                   onClick={() => setShowImport(true)}
-                  className="mr-4 px-4 py-2 text-lg bg-transparent text-gray-900 font-bold rounded-lg hover:bg-[#D3423E] hover:text-white hover:font-bold transition duration-200"
+                  className="mr-4 px-4 py-2 text-lg bg-transparent uppercase  border-2 border-[#D3423E] text-[#D3423E] font-bold rounded-3xl hover:bg-[#D3423E] hover:text-white hover:font-bold transition duration-200"
                 >
                   Importar
                 </button>
                 <button
                   onClick={() => navigate("/product/creation")}
-                  className="px-4 py-2 bg-[#D3423E] text-white font-bold rounded-lg hover:bg-[#FFCECD] hover:text-[#D3423E] hover:font-bold transition duration-200"
+                  className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold uppercase rounded-3xl hover:bg-[#FFCECD] hover:text-[#D3423E] hover:font-bold transition duration-200"
                 >
                   + Crear Producto
                 </button>
@@ -244,14 +244,14 @@ const ProductView = () => {
             <div className="flex mt-4 justify-end space-x-2">
               <button
                 onClick={() => setViewMode("table")}
-                className=" rounded-lg text-sm p-2 text-gray-900 hover:bg-[#FFCECD] w-10 h-10 flex items-center justify-center"
+                className=" rounded-lg text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
               >
                 <FiList className="w-5 h-5 text-gray-900" />
               </button>
 
               <button
                 onClick={() => setViewMode("cards")}
-                className=" rounded-lg text-sm p-2 text-[#D3423E] hover:bg-[#FFCECD] w-10 h-10 flex items-center justify-center"
+                className=" rounded-lg text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
               >
                 <FiGrid className="w-5 h-5 text-gray-900" />
               </button>
@@ -261,7 +261,7 @@ const ProductView = () => {
             ) : viewMode === "table" ? (
               <div className="mt-5 border border-gray-400 rounded-xl">
                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                <thead className="text-sm text-gray-700 bg-white border-b border-gray-300">
                 <tr>
                       <th className="px-6 py-3">Producto</th>
                       <th className="px-6 py-3">Precio</th>
@@ -273,7 +273,7 @@ const ProductView = () => {
                   </thead>
                   <tbody>
                     {filteredData.map((item) => (
-                      <tr key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                      <tr key={item._id} className="bg-white border-b border-gray-200">
                         <td className="px-6 py-4 font-medium text-gray-900">{item.productName || "Sin nombre"}</td>
                         <td className="px-6 py-4">{item.priceId?.price || "N/A"}</td>
                         <td className="px-6 py-4">{item.priceId?.offerPrice ? item.priceId.offerPrice : "No"}</td>
@@ -292,7 +292,6 @@ const ProductView = () => {
                             className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
                           >
                             <MdEdit size={20} />
-                            
                           </button>
                         </td>
                       </tr>
@@ -303,7 +302,7 @@ const ProductView = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-5">
                 {filteredData.map((item) => (
-                  <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg bg-gray-100 flex flex-col">
+                  <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg flex flex-col">
                     <a href="/#">
                       <img className="w-40 h-40 object-cover mx-auto rounded-lg" src={item.productImage} alt={`Imagen de ${item.productName}`} />
                     </a>
@@ -342,7 +341,7 @@ const ProductView = () => {
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                   disabled={page === 1}
-                  className={`px-3 py-1 border rounded-lg ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
                     }`}
                 >
                   ◀
@@ -350,13 +349,13 @@ const ProductView = () => {
 
                 <button
                   onClick={() => setPage(1)}
-                  className={`px-3 py-1 border border-gray-400 rounded-lg ${page === 1 ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
                     }`}
                 >
                   1
                 </button>
 
-                {page > 3 && <span className="px-2 text-gray-900">…</span>}
+                {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
                 {Array.from({ length: 3 }, (_, i) => page - 1 + i)
                   .filter((p) => p > 1 && p < totalPages)
@@ -364,7 +363,7 @@ const ProductView = () => {
                     <button
                       key={p}
                       onClick={() => setPage(p)}
-                      className={`px-3 py-1 border border-gray-400 rounded-lg ${page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
                         }`}
                     >
                       {p}
@@ -376,7 +375,7 @@ const ProductView = () => {
                 {totalPages > 1 && (
                   <button
                     onClick={() => setPage(totalPages)}
-                    className={`px-3 py-1 border border-gray-400 rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
+                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
                       }`}
                   >
                     {totalPages}
@@ -386,7 +385,7 @@ const ProductView = () => {
                 <button
                   onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                   disabled={page === totalPages}
-                  className={`px-3 py-1 border rounded-lg ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E]"
                     }`}
                 >
                   ▶
@@ -398,45 +397,46 @@ const ProductView = () => {
       </div>
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-            <h2 className="text-lg font-bold mb-4 text-center text-gray-800">Editar Producto</h2>
-
-            <div className="mb-4">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del Producto</label>
-              <input
-                type="text"
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Precio</label>
-              <input
-                type="number"
-                value={editedPrice}
-                onChange={(e) => setEditedPrice(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveChanges}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg"
-              >
-                Guardar
-              </button>
-            </div>
+        <div className="bg-white p-6 rounded-lg shadow-xl w-96">
+          <h2 className="text-lg font-bold mb-4 text-center text-gray-800">Editar Producto</h2>
+      
+          <div className="mb-4">
+            <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del Producto</label>
+            <input
+              type="text"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+            />
+          </div>
+      
+          <div className="mb-4">
+            <label className="block mb-1 text-sm font-medium text-gray-700">Precio</label>
+            <input
+              type="number"
+              value={editedPrice}
+              onChange={(e) => setEditedPrice(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+            />
+          </div>
+      
+          <div className="flex gap-2 w-full">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveChanges}
+              className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+            >
+              Guardar
+            </button>
           </div>
         </div>
+      </div>
+      
       )}
 
     </div>

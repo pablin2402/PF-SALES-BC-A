@@ -155,7 +155,7 @@ const OrderPaymentView = () => {
           </div>
         </div>
       ) : (
-        <div className="ml-10 mr-10 mt-10 relative overflow-x-auto">
+        <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
 
           <div className="flex items-center justify-between w-full">
             <div className="relative flex items-center space-x-4">
@@ -185,27 +185,24 @@ const OrderPaymentView = () => {
                       fetchProducts(1);
                     }
                   }}
-                  className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
               <select
                 value={selectedFilter}
                 onChange={(e) => handleFilterChange(e.target.value)}
-                className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
               >
                 <option value="none">Filtrar por: </option>
                 <option value="all">Mostrar todos</option>
                 <option value="date">Filtrar por Fecha:</option>
               </select>
-
-
             </div>
-            <div className="flex justify-end items-center space-x-4">
+            <div className="flex justify-end items-center space-x-10">
               <button
                 onClick={exportToExcel}
-                className="px-4 py-2 bg-white font-bold text-lg text-gray-900 rounded-lg hover:text-[#D3423E] flex items-center gap-2"
+                className="px-4 py-2 bg-[#D3423E] rounded-2xl uppercase font-bold text-lg text-white rounded-lgflex items-center gap-4"
               >
-                <FaFileExport color="##726E6E" />
                 Exportar
               </button>
 
@@ -219,7 +216,7 @@ const OrderPaymentView = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="px-3 py-2 border text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500 h-full"
+                    className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
                   />
                 </div>
 
@@ -228,13 +225,13 @@ const OrderPaymentView = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="px-3 py-2 border text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500 h-full"
+                    className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
                   />
                 </div>
 
                 <div className="flex items-center">
                   <button
-                    className="px-4 py-2 border text-white bg-[#D3423E] font-bold rounded-lg hover:bg-gray-100 hover:text-[#D3423E] h-full"
+                    className="px-4 py-2 border text-white bg-[#D3423E] font-bold rounded-3xl uppercase h-full"
                     onClick={() => setApplyFilter(true)}
                   >
                     Aplicar Filtro
@@ -245,7 +242,7 @@ const OrderPaymentView = () => {
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-4">
             {dateFilterActive && (
-              <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+              <span className="bg-orange-400 text-white px-3 py-1 rounded-full font-bold text-sm flex items-center gap-2">
                 Fecha: {startDate} → {endDate}
                 <button
                   onClick={() => clearFilter("date")}
@@ -254,7 +251,7 @@ const OrderPaymentView = () => {
                 </button>
               </span>
             )}
-            </div>
+          </div>
           <div className="mt-5 border border-gray-400 rounded-xl">
             <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
               <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
@@ -304,7 +301,7 @@ const OrderPaymentView = () => {
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-900">
                         {item.paymentStatus === "paid" && (
-                          <span className="bg-orange-400 text-m text-white px-3.5 py-0.5 rounded-full">
+                          <span className="bg-green-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
                             INGRESADO
                           </span>
                         )}
@@ -368,14 +365,14 @@ const OrderPaymentView = () => {
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                 disabled={page === 1}
-                className={`px-3 py-1 border rounded-lg ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"}`}
+                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 font-bold"}`}
               >
                 ◀
               </button>
 
               <button
                 onClick={() => setPage(1)}
-                className={`px-3 py-1 border rounded-lg ${page === 1 ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                className={`px-3 py-1 border rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
               >
                 1
               </button>
@@ -388,18 +385,18 @@ const OrderPaymentView = () => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`px-3 py-1 border rounded-lg ${page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
                   >
                     {p}
                   </button>
                 ))}
 
-              {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+              {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
               {totalPages > 1 && (
                 <button
                   onClick={() => setPage(totalPages)}
-                  className={`px-3 py-1 border rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"}`}
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
                 >
                   {totalPages}
                 </button>
@@ -408,7 +405,7 @@ const OrderPaymentView = () => {
               <button
                 onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={page === totalPages}
-                className={`px-3 py-1 border rounded-lg ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"}`}
+                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] hover:bg-gray-200"}`}
               >
                 ▶
               </button>

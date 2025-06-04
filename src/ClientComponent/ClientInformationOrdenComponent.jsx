@@ -259,7 +259,7 @@ export default function ClientInformationOrdenComponent() {
                                 {totalPaid < totalGeneral && (
                                     <button
                                     onClick={handleOpenDialog}
-                                    className="px-4 py-2 bg-white font-bold text-xl text-[#2E2B2B] rounded-lg hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                                    className="px-4 py-2 bg-[#D3423E] font-bold text-xl text-white rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
                                     >
                                     Ingresar Pago
                                     </button>
