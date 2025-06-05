@@ -70,6 +70,7 @@ const OrderView = () => {
         id_owner: user,
         page: pageNumber,
         limit: itemsPerPage,
+        fullName: inputValue,
         ...customFilters,
       };
 
@@ -87,7 +88,7 @@ const OrderView = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, token,itemsPerPage]);
+  }, [user, token, itemsPerPage]);
 
   const applyFilters = () => {
     const customFilters = {};
@@ -106,7 +107,7 @@ const OrderView = () => {
 
   useEffect(() => {
     fetchOrders(page);
-  }, [page, fetchOrders,itemsPerPage]);
+  }, [page, fetchOrders, itemsPerPage]);
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, { state: { products: item.products, files: item, flag: true } });
   };
@@ -137,20 +138,20 @@ const OrderView = () => {
         const creationDateUTC = new Date(item.creationDate);
         creationDateUTC.setHours(creationDateUTC.getHours() - 4);
         const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
-      return {
-        "Código de Cliente": item._id,
-        "Nombre": item.id_client.name + " " + item.id_client.lastName,
-        "Fecha de confirmación": formattedDate,
-        "Tipo de pago": item.accountStatus,
-        "Vendedor": item.salesId.fullName + " " + item.salesId.lastName || "",
-        "Fecha de Pago": item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES") || "",
-        "Estado de Pago": item.payStatus || "",
-        "Saldo por pagar": item.restante,
-        "Total": item.totalAmount,
-      };
-    })
-  );
-  
+        return {
+          "Código de Cliente": item._id,
+          "Nombre": item.id_client.name + " " + item.id_client.lastName,
+          "Fecha de confirmación": formattedDate,
+          "Tipo de pago": item.accountStatus,
+          "Vendedor": item.salesId.fullName + " " + item.salesId.lastName || "",
+          "Fecha de Pago": item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES") || "",
+          "Estado de Pago": item.payStatus || "",
+          "Saldo por pagar": item.restante,
+          "Total": item.totalAmount,
+        };
+      })
+    );
+
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Order_List");
@@ -229,8 +230,6 @@ const OrderView = () => {
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          e.preventDefault();
-                          setSearchTerm(inputValue);
                           fetchOrders(1);
                         }
                       }}
@@ -242,7 +241,7 @@ const OrderView = () => {
                   <button
                     onClick={exportToExcel}
                     className="px-4 py-2 bg-white font-bold text-m text-[#D3423E] uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
-                    >
+                  >
                     <FaFileExport color="##726E6E" />
                     Exportar
                   </button>
@@ -399,8 +398,8 @@ const OrderView = () => {
 
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
-            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-6 py-3 uppercase">Fecha de creación</th>
                     <th className="px-6 py-3 uppercase">Nombre</th>
@@ -418,17 +417,17 @@ const OrderView = () => {
                     salesData.map((item) => (
                       <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
                         <td className="px-6 py-4 text-gray-900">
-                          {item.creationDate 
+                          {item.creationDate
                             ? new Date(item.creationDate).toLocaleString("es-ES", {
-                                weekday: 'long', 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric',
-                                hour: "2-digit", 
-                                minute: "2-digit", 
-                                second: "2-digit",
-                                hour12: false, 
-                              }).toUpperCase()
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                              hour12: false,
+                            }).toUpperCase()
                             : ''}
                         </td>
                         <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
@@ -450,7 +449,6 @@ const OrderView = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
-
                         <td className="px-6 py-4 text-gray-900 font-bold">
                           {item.payStatus === "Pagado" && (
                             <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
@@ -494,84 +492,84 @@ const OrderView = () => {
               </table>
               <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
                 <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
-              
+
               </div>
-              {totalPages > 1 && searchTerm === "" && (
-              <div className="flex justify-between items-center px-6 pb-4">
-                 <div className="flex mb-4 justify-end items-center pt-4">
-                        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                          Ítems por página:
-                        </label>
-                        <select
-                          id="itemsPerPage"
-                          value={itemsPerPage}
-                          onChange={(e) => {
-                            setItemsPerPage(Number(e.target.value));
-                            setPage(1);
-                            fetchOrders(page);
-                          }}
-                          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
-                        >
-                          {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                <nav className="flex items-center justify-center pt-4 space-x-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
-                >
-                  ◀
-                </button>
-
-                <button
-                  onClick={() => setPage(1)}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                >
-                  1
-                </button>
-
-                {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-                {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                  .filter((p) => p > 1 && p < totalPages)
-                  .map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+              {totalPages > 1 && (
+                <div className="flex justify-between items-center px-6 pb-4">
+                  <div className="flex mb-4 justify-end items-center pt-4">
+                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                      Ítems por página:
+                    </label>
+                    <select
+                      id="itemsPerPage"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setPage(1);
+                        fetchOrders(page);
+                      }}
+                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                     >
-                      {p}
+                      {[5, 10, 20, 50, 100].map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <nav className="flex items-center justify-center pt-4 space-x-2">
+                    <button
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
+                    >
+                      ◀
                     </button>
-                  ))}
 
-                {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+                    <button
+                      onClick={() => setPage(1)}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                    >
+                      1
+                    </button>
 
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setPage(totalPages)}
-                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                  >
-                    {totalPages}
-                  </button>
-                )}
+                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
-                <button
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                >
-                  ▶
-                </button>
-                </nav>
-              </div>
-            )}
+                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                      .filter((p) => p > 1 && p < totalPages)
+                      .map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+
+                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                    {totalPages > 1 && (
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                      >
+                        {totalPages}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={page === totalPages}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                    >
+                      ▶
+                    </button>
+                  </nav>
+                </div>
+              )}
             </div>
-           
+
           </div>
         )}
       </div>

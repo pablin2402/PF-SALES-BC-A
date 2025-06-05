@@ -59,6 +59,7 @@ const OrderPaymentView = () => {
       setSalesData(response.data.data);
       setItems(response.data.pagination.totalRecords);
       setTotalPages(response.data.pagination.totalPages || 1);
+      console.log(response.data.pagination.totalPages)
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -345,9 +346,9 @@ const OrderPaymentView = () => {
                 <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
                   <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
                   </div>
-                  {totalPages > 1 && searchTerm === "" && (
+                  {totalPages > 1  && (
                     <div className="flex justify-between items-center px-6 pb-4">
-                      <div className="flex mb-4 justify-end items-center pt-4">
+                    <div className="flex mb-4 justify-end items-center pt-4">
                         <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
                           Ítems por página:
                         </label>

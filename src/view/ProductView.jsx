@@ -488,7 +488,7 @@ const ProductView = () => {
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-            <h2 className="text-lg font-bold mb-4 text-center text-gray-800">Editar Producto</h2>
+            <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Editar Producto</h2>
 
             <div className="mb-4">
               <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del Producto</label>
@@ -496,7 +496,7 @@ const ProductView = () => {
                 type="text"
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
               />
             </div>
 
@@ -506,7 +506,7 @@ const ProductView = () => {
                 type="number"
                 value={editedPrice}
                 onChange={(e) => setEditedPrice(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
               />
             </div>
 

@@ -10,7 +10,7 @@ import OrderView from './view/OrderView';
 import CategoryView from './view/CategoryView';
 import LocalizacionView from './view/LocalizationView';
 import OrderPaymentView from './view/OrderPaymentView';
-
+import StatisticsView from "./view/StatisticsView";
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
 import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
 import ClientInformationOrdenComponent from "./ClientComponent/ClientInformationOrdenComponent";
@@ -41,6 +41,7 @@ export default function AppRoutes() {
               <Route path="/product" element={<ProductView />} />
               <Route path="/order" element={<OrderView />} />
               <Route path="/category" element={<CategoryView />} />
+              <Route path="/stadistics" element={<StatisticsView />} />
 
               <Route path="/product/creation" element={<ProductCreationComponent />} />
               <Route path="/category/creation" element={<CategoryCreationComponent />} />
