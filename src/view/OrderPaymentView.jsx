@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
-import { FaFileExport } from "react-icons/fa6";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
+import { FiGrid, FiList } from "react-icons/fi";
+import OrderCalendarView from "./OrderCalendarView";
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -26,6 +27,7 @@ const OrderPaymentView = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [dateFilterActive, setDateFilterActive] = useState(false);
+  const [viewMode, setViewMode] = useState("table");
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -36,7 +38,7 @@ const OrderPaymentView = () => {
       const filters = {
         id_owner: user,
         page: pageNumber,
-        limit: 8,
+        limit: itemsPerPage,
         clientName: searchTerm
       };
       if (selectedStatus) filters.status = selectedStatus;
@@ -52,7 +54,7 @@ const OrderPaymentView = () => {
           headers: {
             Authorization: `Bearer ${token}`
           }
-      }
+        }
       );
       setSalesData(response.data.data);
       setItems(response.data.pagination.totalRecords);
@@ -67,7 +69,7 @@ const OrderPaymentView = () => {
     fetchProducts(page);
     setApplyFilter(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applyFilter, page]);
+  }, [applyFilter, page, itemsPerPage]);
 
   const exportToExcel = async () => {
     try {
@@ -84,11 +86,11 @@ const OrderPaymentView = () => {
         filters.startDate = startDate;
         filters.endDate = endDate;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/pay/list/id", filters,{
+      const response = await axios.post(API_URL + "/whatsapp/order/pay/list/id", filters, {
         headers: {
           Authorization: `Bearer ${token}`
         }
-    });
+      });
       const allData = response.data.data;
 
       const ws = XLSX.utils.json_to_sheet(
@@ -96,7 +98,7 @@ const OrderPaymentView = () => {
           const creationDateUTC = new Date(item.creationDate);
           creationDateUTC.setHours(creationDateUTC.getHours() - 4);
           const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
-      
+
           return {
             "Número de Orden": item.orderId.receiveNumber,
             "Fecha de Pago": formattedDate,
@@ -109,8 +111,8 @@ const OrderPaymentView = () => {
           };
         })
       );
-      
-      
+
+
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Pagos_Por_Cliente");
@@ -156,177 +158,289 @@ const OrderPaymentView = () => {
         </div>
       ) : (
         <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
-
-          <div className="flex items-center justify-between w-full">
-            <div className="relative flex items-center space-x-4">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-red-500"
-                    aria-hidden="true"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
+          {salesData.length === 0 ? (
+            <p className="text-center text-gray-500 mt-5">No existen ordenes disponibles.</p>
+          ) : viewMode === "table" ? (
+            <div>
+              <div className="flex items-center justify-between w-full">
+                <div className="relative flex items-center space-x-4">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-red-500"
+                        aria-hidden="true"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Buscar por cliente"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          fetchProducts(1);
+                        }
+                      }}
+                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    />
+                  </div>
+                  <select
+                    value={selectedFilter}
+                    onChange={(e) => handleFilterChange(e.target.value)}
+                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
+                    <option value="none">Filtrar por: </option>
+                    <option value="all">Mostrar todos</option>
+                    <option value="date">Filtrar por Fecha:</option>
+                  </select>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Buscar por cliente"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      fetchProducts(1);
-                    }
-                  }}
-                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                />
-              </div>
-              <select
-                value={selectedFilter}
-                onChange={(e) => handleFilterChange(e.target.value)}
-                className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-              >
-                <option value="none">Filtrar por: </option>
-                <option value="all">Mostrar todos</option>
-                <option value="date">Filtrar por Fecha:</option>
-              </select>
-            </div>
-            <div className="flex justify-end items-center space-x-10">
-              <button
-                onClick={exportToExcel}
-                className="px-4 py-2 bg-[#D3423E] rounded-2xl uppercase font-bold text-lg text-white rounded-lgflex items-center gap-4"
-              >
-                Exportar
-              </button>
-
-            </div>
-          </div>
-          <div className="relative mt-8 flex items-center space-x-4">
-            {selectedFilter === "date" && (
-              <div className="flex space-x-4 mb-4 items-center">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
-                  />
-                </div>
-
-                <div className="flex items-center">
+                <div className="flex justify-end items-center space-x-10">
                   <button
-                    className="px-4 py-2 border text-white bg-[#D3423E] font-bold rounded-3xl uppercase h-full"
-                    onClick={() => setApplyFilter(true)}
+                    onClick={exportToExcel}
+                    className="px-4 py-2 bg-[#D3423E] rounded-2xl uppercase font-bold text-lg text-white rounded-lgflex items-center gap-4"
                   >
-                    Aplicar Filtro
+                    Exportar
                   </button>
                 </div>
               </div>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2 mt-4">
-            {dateFilterActive && (
-              <span className="bg-orange-400 text-white px-3 py-1 rounded-full font-bold text-sm flex items-center gap-2">
-                Fecha: {startDate} → {endDate}
-                <button
-                  onClick={() => clearFilter("date")}
-                  className="font-bold"            >
-                  ×
-                </button>
-              </span>
-            )}
-          </div>
-          <div className="mt-5 border border-gray-400 rounded-xl">
-            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-              <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                <tr>
-                  <th className="px-6 py-3">Número de Nota</th>
-                  <th className="px-6 py-3">Fecha</th>
-                  <th className="px-6 py-3">Vendedor</th>
-                  <th className="px-6 py-3">Cliente</th>
-                  <th className="px-6 py-3">Monto</th>
-                  <th className="px-6 py-3">Total </th>
-                  <th className="px-6 py-3">Deuda a la Fecha</th>
-                  <th className="px-6 py-3">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesData.length > 0 ? (
-                  salesData.map((item) => (
-                    <tr
-                      key={item._id}
-                      className="bg-white text-sm border-b border-gray-200 hover:bg-gray-50"
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setShowModal(true);
-                      }}
-                    >
-                      <td className="px-6 py-4 text-gray-900">{item.orderId.receiveNumber}</td>
-                      <td className="px-6 py-4 text-gray-900">
-                        {item.creationDate 
-                          ? new Date(item.creationDate).toLocaleString("es-ES", {
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric',
-                              hour: "2-digit", 
-                              minute: "2-digit", 
-                              second: "2-digit",
-                              hour12: false, 
-                            }).toUpperCase()
-                          : ''}
-                      </td>
-                      <td className="px-6 py-4 text-gray-900">{item.sales_id.fullName + " " + item.sales_id.lastName}</td>
-                      <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.total}</td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.orderId.totalAmount}</td>
-                      <td className="px-6 py-4 text-gray-900">
-                        {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "N/A"}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-900">
-                        {item.paymentStatus === "paid" && (
-                          <span className="bg-green-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
-                            INGRESADO
-                          </span>
-                        )}
-                        {item.paymentStatus === "pagado" && (
-                          <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                            APROBADO
-                          </span>
-                        )}
-                      </td>
+              <div className="relative mt-8 flex items-center space-x-4">
+                {selectedFilter === "date" && (
+                  <div className="flex space-x-4 mb-4 items-center">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
+                      />
+                    </div>
 
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                      No se encontraron clientes.
-                    </td>
-                  </tr>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
+                      />
+                    </div>
+
+                    <div className="flex items-center">
+                      <button
+                        className="px-4 py-2 border text-white bg-[#D3423E] font-bold rounded-3xl uppercase h-full"
+                        onClick={() => setApplyFilter(true)}
+                      >
+                        Aplicar Filtro
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
-            <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
-              <div>Total de Ítems: <span className="font-semibold">{items}</span></div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                {dateFilterActive && (
+                  <span className="bg-orange-400 text-white px-3 py-1 rounded-full font-bold text-sm flex items-center gap-2">
+                    Fecha: {startDate} → {endDate}
+                    <button
+                      onClick={() => clearFilter("date")}
+                      className="font-bold"            >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+              <div className="flex mt-4 justify-end space-x-2">
+                <button
+                  onClick={() => setViewMode("table")}
+                  className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
+                >
+                  <FiList className="w-5 h-5 text-[#D3423E] font-bold" />
+                </button>
+
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
+                >
+                  <FiGrid className="w-5 h-5 text-[#D3423E] font-bold" />
+                </button>
+              </div>
+              <div className="mt-5 border border-gray-400 rounded-xl">
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 uppercase">Número de Nota</th>
+                      <th className="px-6 py-3 uppercase">Fecha</th>
+                      <th className="px-6 py-3 uppercase">Vendedor</th>
+                      <th className="px-6 py-3 uppercase">Cliente</th>
+                      <th className="px-6 py-3 uppercase">Monto</th>
+                      <th className="px-6 py-3 uppercase">Total </th>
+                      <th className="px-6 py-3 uppercase">Deuda a la Fecha</th>
+                      <th className="px-6 py-3 uppercase">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.length > 0 ? (
+                      salesData.map((item) => (
+                        <tr
+                          key={item._id}
+                          className="bg-white text-sm border-b border-gray-200 hover:bg-gray-50"
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setShowModal(true);
+                          }}
+                        >
+                          <td className="px-6 py-4 text-gray-900">{item.orderId.receiveNumber}</td>
+                          <td className="px-6 py-4 text-gray-900">
+                            {item.creationDate
+                              ? new Date(item.creationDate).toLocaleString("es-ES", {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                hour12: false,
+                              }).toUpperCase()
+                              : ''}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">{item.sales_id.fullName + " " + item.sales_id.lastName}</td>
+                          <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                          <td className="px-6 py-4 text-gray-900">Bs. {item.total}</td>
+                          <td className="px-6 py-4 text-gray-900">Bs. {item.orderId.totalAmount}</td>
+                          <td className="px-6 py-4 text-gray-900">
+                            {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "N/A"}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {item.paymentStatus === "paid" && (
+                              <span className="bg-green-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
+                                INGRESADO
+                              </span>
+                            )}
+                            {item.paymentStatus === "pagado" && (
+                              <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                                APROBADO
+                              </span>
+                            )}
+                          </td>
+
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          No se encontraron clientes.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                  <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
+                  </div>
+                  {totalPages > 1 && searchTerm === "" && (
+                    <div className="flex justify-between items-center px-6 pb-4">
+                      <div className="flex mb-4 justify-end items-center pt-4">
+                        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                          Ítems por página:
+                        </label>
+                        <select
+                          id="itemsPerPage"
+                          value={itemsPerPage}
+                          onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setPage(1);
+                            fetchProducts(page);
+                          }}
+                          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                        >
+                          {[5, 10, 20, 50, 100].map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <nav className="flex items-center mb-4 justify-center pt-4 space-x-2">
+                        <button
+                          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                          disabled={page === 1}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 font-bold"}`}
+                        >
+                          ◀
+                        </button>
+
+                        <button
+                          onClick={() => setPage(1)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                        >
+                          1
+                        </button>
+
+                        {page > 3 && <span className="px-2 text-gray-900">…</span>}
+
+                        {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                          .filter((p) => p > 1 && p < totalPages)
+                          .map((p) => (
+                            <button
+                              key={p}
+                              onClick={() => setPage(p)}
+                              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                            >
+                              {p}
+                            </button>
+                          ))}
+
+                        {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                        {totalPages > 1 && (
+                          <button
+                            onClick={() => setPage(totalPages)}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
+                          >
+                            {totalPages}
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                          disabled={page === totalPages}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] hover:bg-gray-200"}`}
+                        >
+                          ▶
+                        </button>
+                      </nav>
+                    </div>
+                  )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div>
+              <div className="flex mt-4 mb-4 justify-end space-x-2">
+                <button
+                  onClick={() => setViewMode("table")}
+                  className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
+                >
+                  <FiList className="w-5 h-5 text-[#D3423E] font-bold" />
+                </button>
+
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
+                >
+                  <FiGrid className="w-5 h-5 text-[#D3423E] font-bold" />
+                </button>
+              </div>
+              <OrderCalendarView></OrderCalendarView>
+            </div>
+          )}
           {showModal && selectedItem && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
@@ -360,60 +474,9 @@ const OrderPaymentView = () => {
               </div>
             </div>
           )}
-          {totalPages > 1 && searchTerm === "" && (
-            <nav className="flex items-center justify-center pt-4 space-x-2">
-              <button
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 font-bold"}`}
-              >
-                ◀
-              </button>
 
-              <button
-                onClick={() => setPage(1)}
-                className={`px-3 py-1 border rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-              >
-                1
-              </button>
-
-              {page > 3 && <span className="px-2 text-gray-900">…</span>}
-
-              {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                .filter((p) => p > 1 && p < totalPages)
-                .map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                  >
-                    {p}
-                  </button>
-                ))}
-
-              {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-              {totalPages > 1 && (
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
-                >
-                  {totalPages}
-                </button>
-              )}
-
-              <button
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page === totalPages}
-                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] hover:bg-gray-200"}`}
-              >
-                ▶
-              </button>
-            </nav>
-          )}
         </div>
       )}
-
     </div>
   );
 };

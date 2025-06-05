@@ -17,6 +17,9 @@ const ClientView = () => {
   const [selectedSaler, setSelectedSaler] = useState("");
   const [vendedores, setVendedores] = useState([]);
 
+  const [items, setItems] = useState();
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
@@ -66,7 +69,7 @@ const ClientView = () => {
     const filters = {
       id_owner: user,
       page: pageNumber,
-      limit: 8,
+      limit: itemsPerPage,
       clientName: searchTerm
     };
     if (selectedSaler) filters.sales_id = selectedSaler;
@@ -79,16 +82,17 @@ const ClientView = () => {
       });
       setSalesData(response.data.clients);
       setTotalPages(response.data.totalPages);
+      setItems(response.data.totalItems);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
       setLoading(false);
     }
-  }, [user, searchTerm, selectedSaler, token]);
+  }, [user, searchTerm, selectedSaler,itemsPerPage, token]);
   useEffect(() => {
     fetchProducts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, itemsPerPage]);
   const goToClientDetails = (client) => {
     navigate(`/client/${client._id}`, { state: { client, flag: false } });
   };
@@ -206,8 +210,8 @@ const ClientView = () => {
           </div>
 
           <div className="mt-5 border border-gray-400 rounded-xl">
-            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-              <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
+          <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+          <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
                 <tr>
                   <th className="px-6 py-3"></th>
                   <th className="px-6 py-3 uppercase">Nombre</th>
@@ -249,10 +253,32 @@ const ClientView = () => {
                 )}
               </tbody>
             </table>
-
-          </div>
-
+            <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                  <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
+                  </div>
           {totalPages > 1 && searchTerm === "" && (
+            <div className="flex justify-between items-center px-6 pb-4">
+            <div className="flex mb-4 justify-end items-center pt-4">
+              <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                Ítems por página:
+              </label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setPage(1);
+                  fetchProducts(page);
+                }}
+                className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+              >
+                {[5, 10, 20, 50, 100].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
             <nav className="flex items-center justify-center pt-4 space-x-2">
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -302,8 +328,11 @@ const ClientView = () => {
                 ▶
               </button>
             </nav>
+            </div>
           )}
-        </div>
+          </div>
+          </div>
+          
       )}
 
     </div>

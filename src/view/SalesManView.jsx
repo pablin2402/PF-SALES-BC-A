@@ -83,13 +83,13 @@ const ClientView = () => {
               placeholder="Buscar por Nombre, apellido"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block p-2 ps-10 text-lg text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             />
           </div>
 
           <button
             onClick={() => navigate("/sales/create")}
-            className="px-4 py-2 font-bold text-lg rounded-3xl text-white rounded-lg bg-[#D3423E] hover:text-white flex items-center gap-2"
+            className="px-4 py-2 font-bold text-lg rounded-3xl text-white bg-[#D3423E] flex items-center gap-2"
             >
             <IoPersonAdd />
             Nuevo Vendedor

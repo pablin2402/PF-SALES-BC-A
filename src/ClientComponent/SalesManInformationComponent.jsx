@@ -16,6 +16,7 @@ export default function SalesManInformationComponent() {
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
   const [idClient, setClientId] = useState("");
+  const [itemsPerPage, setItemsPerPage] = useState(1);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -54,7 +55,7 @@ export default function SalesManInformationComponent() {
         id_owner: user,
         salesId: id,
         page: page,
-        limit: 8
+        limit: itemsPerPage
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
@@ -81,7 +82,7 @@ export default function SalesManInformationComponent() {
       fetchProducts(page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idClient, page]);
+  }, [idClient, page,itemsPerPage]);
 
   const calculateDaysRemaining = (dueDate) => {
     if (!dueDate) return '0';
@@ -385,18 +386,18 @@ export default function SalesManInformationComponent() {
                 </span>
               )}
             </div>
-            <div className="mt-5 border border-black rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+            <div className="mt-5 border border-gray-400 rounded-xl">
+            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+              <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
-                    <th className="px-6 py-3">Referencia</th>
-                    <th className="px-6 py-3">Fecha de creación</th>
-                    <th className="px-6 py-3">Cliente</th>
-                    <th className="px-6 py-3">Tipo de Pago</th>
-                    <th className="px-6 py-3">Total</th>
-                    <th className="px-6 py-3">Total Cobrado</th>
-                    <th className="px-6 py-3">Saldo por cobrar</th>
-                    <th className="px-6 py-3">Días de mora</th>
+                    <th className="px-6 py-3 uppercase">Referencia</th>
+                    <th className="px-6 py-3 uppercase">Fecha de creación</th>
+                    <th className="px-6 py-3 uppercase">Cliente</th>
+                    <th className="px-6 py-3 uppercase">Tipo de Pago</th>
+                    <th className="px-6 py-3 uppercase">Total</th>
+                    <th className="px-6 py-3 uppercase">Total Cobrado</th>
+                    <th className="px-6 py-3 uppercase">Saldo por cobrar</th>
+                    <th className="px-6 py-3 uppercase">Días de mora</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -445,11 +446,32 @@ export default function SalesManInformationComponent() {
                   ))}
                 </tbody>
               </table>
-              <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
+              <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
                 <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
               </div>
-            </div>
-            {totalPages > 1 && (
+              {totalPages > 1 && (
+               <div className="flex justify-between items-center px-6 pb-4">
+               <div className="flex mb-4 justify-end items-center pt-4">
+                 <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                   Ítems por página:
+                 </label>
+                 <select
+                   id="itemsPerPage"
+                   value={itemsPerPage}
+                   onChange={(e) => {
+                     setItemsPerPage(Number(e.target.value));
+                     setPage(1);
+                     fetchProducts(page);
+                   }}
+                   className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                 >
+                   {[5, 10, 20, 50, 100].map((option) => (
+                     <option key={option} value={option}>
+                       {option}
+                     </option>
+                   ))}
+                 </select>
+               </div>
               <nav className="flex items-center justify-center pt-4 space-x-2">
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -462,31 +484,51 @@ export default function SalesManInformationComponent() {
                   ◀
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => setPage(num)}
-                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === num
-                      ? "bg-[#D3423E] text-white font-bold"
-                      : "text-gray-900 font-bold"
-                      }`}
-                  >
-                    {num}
-                  </button>
-                ))}
-
                 <button
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages
-                    ? "text-[#D3423E] cursor-not-allowed"
-                    : "text-[#D3423E]"
-                    }`}
-                >
-                  ▶
-                </button>
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                      >
+                        1
+                      </button>
+
+                      {page > 3 && <span className="px-2 text-gray-900">…</span>}
+                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                        .filter((p) => p > 1 && p < totalPages)
+                        .map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                      {totalPages > 1 && (
+                        <button
+                          onClick={() => setPage(totalPages)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={page === totalPages}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages
+                          ? "text-[#D3423E] cursor-not-allowed"
+                          : "text-[#D3423E] font-bold"
+                          }`}
+                      >
+                        ▶
+                      </button>
               </nav>
+              </div>
             )}
+            </div>
+            
+            
           </div>
         </div>
       )}

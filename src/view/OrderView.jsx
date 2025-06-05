@@ -32,11 +32,13 @@ const OrderView = () => {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [items, setItems] = useState();
 
   const navigate = useNavigate();
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const handleNewOrderClick = () => {
     navigate("/order/creation");
@@ -67,7 +69,7 @@ const OrderView = () => {
       const filters = {
         id_owner: user,
         page: pageNumber,
-        limit: 8,
+        limit: itemsPerPage,
         ...customFilters,
       };
 
@@ -78,12 +80,15 @@ const OrderView = () => {
       });
       setSalesData(response.data.orders);
       setTotalPages(response.data.totalPages);
+      setItems(response.data.totalRecords);
+
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [user, token]);
+  }, [user, token,itemsPerPage]);
+
   const applyFilters = () => {
     const customFilters = {};
     if (searchTerm) customFilters.fullName = searchTerm;
@@ -101,7 +106,7 @@ const OrderView = () => {
 
   useEffect(() => {
     fetchOrders(page);
-  }, [page, fetchOrders]);
+  }, [page, fetchOrders,itemsPerPage]);
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, { state: { products: item.products, files: item, flag: true } });
   };
@@ -193,7 +198,7 @@ const OrderView = () => {
   };
   return (
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
-      <div className="ml-10 mr-10 relative overflow-x-auto">
+      <div className="relative overflow-x-auto">
         {loading ? (
           <Spinner />
         ) : (
@@ -394,18 +399,18 @@ const OrderView = () => {
 
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
-                    <th className="px-6 py-3">Fecha de creación</th>
-                    <th className="px-6 py-3">Nombre</th>
-                    <th className="px-6 py-3">Tipo de Pago</th>
-                    <th className="px-6 py-3">Vendedor</th>
-                    <th className="px-6 py-3">Estado de pago</th>
-                    <th className="px-6 py-3">Total</th>
-                    <th className="px-6 py-3">Saldo por pagar</th>
-                    <th className="px-6 py-3">Días de mora</th>
-                    <th className="px-6 py-3"></th>
+                    <th className="px-6 py-3 uppercase">Fecha de creación</th>
+                    <th className="px-6 py-3 uppercase">Nombre</th>
+                    <th className="px-6 py-3 uppercase">Tipo de Pago</th>
+                    <th className="px-6 py-3 uppercase">Vendedor</th>
+                    <th className="px-6 py-3 uppercase">Estado de pago</th>
+                    <th className="px-6 py-3 uppercase">Total</th>
+                    <th className="px-6 py-3 uppercase">Saldo por pagar</th>
+                    <th className="px-6 py-3 uppercase">Días de mora</th>
+                    <th className="px-6 py-3 uppercase"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -487,9 +492,34 @@ const OrderView = () => {
                   )}
                 </tbody>
               </table>
-            </div>
-            {totalPages > 1 && searchTerm === "" && (
-              <nav className="flex items-center justify-center pt-4 space-x-2">
+              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
+              
+              </div>
+              {totalPages > 1 && searchTerm === "" && (
+              <div className="flex justify-between items-center px-6 pb-4">
+                 <div className="flex mb-4 justify-end items-center pt-4">
+                        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                          Ítems por página:
+                        </label>
+                        <select
+                          id="itemsPerPage"
+                          value={itemsPerPage}
+                          onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setPage(1);
+                            fetchOrders(page);
+                          }}
+                          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                        >
+                          {[5, 10, 20, 50, 100].map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                <nav className="flex items-center justify-center pt-4 space-x-2">
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                   disabled={page === 1}
@@ -537,8 +567,11 @@ const OrderView = () => {
                 >
                   ▶
                 </button>
-              </nav>
+                </nav>
+              </div>
             )}
+            </div>
+           
           </div>
         )}
       </div>

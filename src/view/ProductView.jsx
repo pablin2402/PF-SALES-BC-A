@@ -25,11 +25,15 @@ const ProductView = () => {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  
+
   const [editedId, setEditedId] = useState("");
   const [editedName, setEditedName] = useState("");
   const [editedPrice, setEditedPrice] = useState("");
-  const [editedPriceId,setEditedPriceId] = useState("");
+  const [editedPriceId, setEditedPriceId] = useState("");
+
+  const [items, setItems] = useState();
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -77,7 +81,7 @@ const ProductView = () => {
         id_user: user,
         status: false,
         page: pageNumber,
-        limit: 8,
+        limit: itemsPerPage,
         search: searchTerm,
         category: selectedCategory
       }, {
@@ -88,6 +92,7 @@ const ProductView = () => {
       setSalesData(response.data.products || []);
       setFilteredData(response.data.products || []);
       setTotalPages(response.data.totalPages || 1);
+      setItems(response.data.total)
     } catch (error) {
       console.error("❌ Error al cargar los productos:", error);
     } finally {
@@ -97,8 +102,7 @@ const ProductView = () => {
   useEffect(() => {
     fetchProducts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
-
+  }, [page, itemsPerPage]);
   useEffect(() => {
     let filtered = salesData;
     if (searchTerm.trim() !== "") {
@@ -110,7 +114,7 @@ const ProductView = () => {
       filtered = filtered.filter((item) => item.categoryId?._id === selectedCategory);
     }
     setFilteredData(filtered);
-  }, [searchTerm, selectedCategory, salesData]);
+  }, [searchTerm, selectedCategory, salesData, itemsPerPage]);
   const fetchCategories = async () => {
     setLoading(true);
     try {
@@ -138,8 +142,8 @@ const ProductView = () => {
 
     try {
       await axios.put(API_URL + "/whatsapp/product/price/id", {
-        productId: editedId,   
-        priceId: editedPriceId, 
+        productId: editedId,
+        priceId: editedPriceId,
         newName: editedName,
         newPrice: editedPrice
       }, {
@@ -260,15 +264,15 @@ const ProductView = () => {
               <p className="text-center text-gray-500 mt-5">No hay productos disponibles.</p>
             ) : viewMode === "table" ? (
               <div className="mt-5 border border-gray-400 rounded-xl">
-                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-white border-b border-gray-300">
-                <tr>
-                      <th className="px-6 py-3">Producto</th>
-                      <th className="px-6 py-3">Precio</th>
-                      <th className="px-6 py-3">Oferta</th>
-                      <th className="px-6 py-3">Descuento</th>
-                      <th className="px-6 py-3">Categoría</th>
-                      <th className="px-6 py-3"></th>
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 uppercase">Producto</th>
+                      <th className="px-6 py-3 uppercase">Precio</th>
+                      <th className="px-6 py-3 uppercase">Oferta</th>
+                      <th className="px-6 py-3 uppercase">Descuento</th>
+                      <th className="px-6 py-3 uppercase">Categoría</th>
+                      <th className="px-6 py-3 uppercase"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -298,21 +302,104 @@ const ProductView = () => {
                     ))}
                   </tbody>
                 </table>
+                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                  <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
+                </div>
+                {totalPages > 1 && searchTerm === "" && (
+                  <div className="flex justify-between items-center px-6 pb-4">
+                    <div className="flex mb-4 justify-end items-center pt-4">
+                      <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                        Ítems por página:
+                      </label>
+                      <select
+                        id="itemsPerPage"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setPage(1);
+                          fetchProducts(page);
+                        }}
+                        className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                      >
+                        {[5, 10, 20, 50, 100].map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <nav className="flex items-center justify-center pt-4 space-x-2">
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
+                          }`}
+                      >
+                        ◀
+                      </button>
+
+                      <button
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
+                          }`}
+                      >
+                        1
+                      </button>
+
+                      {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                        .filter((p) => p > 1 && p < totalPages)
+                        .map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
+                              }`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+
+                      {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+
+                      {totalPages > 1 && (
+                        <button
+                          onClick={() => setPage(totalPages)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
+                            }`}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={page === totalPages}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E]"
+                          }`}
+                      >
+                        ▶
+                      </button>
+                    </nav>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-5">
-                {filteredData.map((item) => (
-                  <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg flex flex-col">
-                    <a href="/#">
-                      <img className="w-40 h-40 object-cover mx-auto rounded-lg" src={item.productImage} alt={`Imagen de ${item.productName}`} />
-                    </a>
-                    <h3 className="mt-2 text-m text-gray-900 font-bold">{item.productName || "Sin nombre"}</h3>
-                    <div className="flex-grow"></div>
-                    <p className="text-gray-900">{item.categoryId?.categoryName || "Sin categoría"}</p>
-                    <div className="flex-grow"></div>
-                    <div>
-                    <div className="flex items-center justify-start mt-3">
-                    <button
+              <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-5">
+                  {filteredData.map((item) => (
+                    <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg flex flex-col">
+                      <a href="/#">
+                        <img className="w-40 h-40 object-cover mx-auto rounded-lg" src={item.productImage} alt={`Imagen de ${item.productName}`} />
+                      </a>
+                      <h3 className="mt-2 text-m text-gray-900 font-bold">{item.productName || "Sin nombre"}</h3>
+                      <div className="flex-grow"></div>
+                      <p className="text-gray-900">{item.categoryId?.categoryName || "Sin categoría"}</p>
+                      <div className="flex-grow"></div>
+                      <div>
+                        <div className="flex items-center justify-start mt-3">
+                          <button
                             onClick={() => {
                               setEditingProduct(item);
                               setEditedId(item._id || "");
@@ -324,119 +411,122 @@ const ProductView = () => {
                             className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
                           >
                             <MdEdit size={20} />
-                            
+
                           </button>
-                    </div>  
-                    <div className="flex items-center justify-end mt-3">
-                     
-                      <span className="text-3xl font-bold text-gray-900">{item.priceId?.price ? `Bs. ${item.priceId.price}` : "N/A"}</span>
+                        </div>
+                        <div className="flex items-center justify-end mt-3">
+
+                          <span className="text-3xl font-bold text-gray-900">{item.priceId?.price ? `Bs. ${item.priceId.price}` : "N/A"}</span>
+                        </div>
+                      </div>
                     </div>
-                    </div>            
-                  </div>
-                ))}
-              </div>
-            )}
-            {totalPages > 1 && searchTerm === "" && (
-              <nav className="flex items-center justify-center pt-4 space-x-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
-                    }`}
-                >
-                  ◀
-                </button>
+                  ))}
+                </div>
+                {totalPages > 1 && searchTerm === "" && (
 
-                <button
-                  onClick={() => setPage(1)}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
-                    }`}
-                >
-                  1
-                </button>
-
-                {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-                {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                  .filter((p) => p > 1 && p < totalPages)
-                  .map((p) => (
+                  <nav className="flex items-center justify-center pt-4 space-x-2">
                     <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 hover:bg-gray-200"
                         }`}
                     >
-                      {p}
+                      ◀
                     </button>
-                  ))}
 
-                {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+                    <button
+                      onClick={() => setPage(1)}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
+                        }`}
+                    >
+                      1
+                    </button>
 
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setPage(totalPages)}
-                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
-                      }`}
-                  >
-                    {totalPages}
-                  </button>
+                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                      .filter((p) => p > 1 && p < totalPages)
+                      .map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
+                            }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+
+                    {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+
+                    {totalPages > 1 && (
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "
+                          }`}
+                      >
+                        {totalPages}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={page === totalPages}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E]"
+                        }`}
+                    >
+                      ▶
+                    </button>
+                  </nav>
                 )}
-
-                <button
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E]"
-                    }`}
-                >
-                  ▶
-                </button>
-              </nav>
+              </div>
             )}
+
           </div>
         )}
       </div>
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-          <h2 className="text-lg font-bold mb-4 text-center text-gray-800">Editar Producto</h2>
-      
-          <div className="mb-4">
-            <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del Producto</label>
-            <input
-              type="text"
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-            />
-          </div>
-      
-          <div className="mb-4">
-            <label className="block mb-1 text-sm font-medium text-gray-700">Precio</label>
-            <input
-              type="number"
-              value={editedPrice}
-              onChange={(e) => setEditedPrice(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
-            />
-          </div>
-      
-          <div className="flex gap-2 w-full">
-            <button
-              onClick={() => setShowEditModal(false)}
-              className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSaveChanges}
-              className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
-            >
-              Guardar
-            </button>
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96">
+            <h2 className="text-lg font-bold mb-4 text-center text-gray-800">Editar Producto</h2>
+
+            <div className="mb-4">
+              <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del Producto</label>
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 text-sm font-medium text-gray-700">Precio</label>
+              <input
+                type="number"
+                value={editedPrice}
+                onChange={(e) => setEditedPrice(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+              />
+            </div>
+
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+              >
+                Guardar
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      
+
       )}
 
     </div>

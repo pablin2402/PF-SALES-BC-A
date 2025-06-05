@@ -139,7 +139,7 @@ const SalesManCreationComponent = () => {
   };
   
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-6">
+    <div className="flex items-center justify-center min-h-screen] px-6">
       <div className="flex w-full max-w-5xl gap-6">
         <div className="w-4/6 p-6 bg-white border border-black rounded-lg shadow-lg">
           <h2 className="mb-6 text-lg text-left font-bold text-gray-900">Datos personales</h2>
@@ -147,23 +147,23 @@ const SalesManCreationComponent = () => {
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Nombre</label>
-                <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Nombre" required />
+                <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Nombre" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Apellido</label>
-                <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Apellido" required />
+                <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Apellido" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Correo electrónico</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Correo electrónico" required />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Correo electrónico" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de teléfono</label>
-                <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Número de teléfono" required />
+                <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de teléfono" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Contraseña</label>
-                <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Contraseña" required />
+                <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Contraseña" required />
               </div>
               <div className="flex flex-col">
                     <label className="text-left text-sm font-medium text-gray-900 mb-1">Rol</label>
@@ -171,7 +171,7 @@ const SalesManCreationComponent = () => {
                         name="role"
                         value={formData.role}
                         onChange={handleChange}
-                        className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5"
+                        className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
                         required
                     >
                         <option value="">Selecciona un rol</option>
@@ -218,19 +218,19 @@ const SalesManCreationComponent = () => {
             <div className="grid gap-6">
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección de domicilio</label>
-                <input name="road" value={address.road} onChange={handleChangeLocation} ytpe="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Dirección" required />
+                <input name="road" value={address.road} onChange={handleChangeLocation} ytpe="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Dirección" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1  ">Ciudad</label>
-                <input name="state" value={address.state} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Ciudad" required />
+                <input name="state" value={address.state} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Ciudad" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1  ">Número de casa</label>
-                <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5" placeholder="Número de casa" required />
+                <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de casa" required />
               </div>
               <button
                 onClick={handleSubmit}
-                className="mt-4 w-full px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-2xl hover:bg-white hover:text-red-600 transition"
+                className="mt-4 w-full px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-3xl hover:bg-white hover:text-red-600 transition"
               >
                 GUARDAR
               </button>
