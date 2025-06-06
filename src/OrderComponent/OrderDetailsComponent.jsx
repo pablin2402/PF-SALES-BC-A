@@ -79,14 +79,14 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
             <h3 className="text-lg text-gray-900 font-bold text-right">
               Total Descuentos: Bs. {cart.reduce((sum, item) => sum + item.quantity * (item.discount || 0), 0).toFixed(2)}
             </h3>
-            <h3 className="mt-auto text-lg text-gray-900 font-bold mt-3 text-right">
+            <h3 className="mt-auto mb-4 text-lg text-gray-900 font-bold mt-3 text-right">
               Total: Bs. {calcularTotal(cart)}
             </h3>
           </div>
         </form>
         <button
           onClick={handleSubmit}
-          className="mt-auto w-full mt-6 px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-2xl hover:bg-white hover:text-red-600 transition"
+          className="mt-auto w-full mt-10 px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-3xl transition"
         >
           GUARDAR
         </button>

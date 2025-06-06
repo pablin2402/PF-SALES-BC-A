@@ -26,7 +26,6 @@ const OrderCalendarView = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [showModal1, setShowModal1] = useState(false);
-    const [getEvent, SetGetEvent] = useState([]);
     useEffect(() => {
         const fetchOrdersForCalendar = async () => {
             try {
@@ -99,7 +98,6 @@ const OrderCalendarView = () => {
         setModalDate(dayStr);
         setModalEvents(dayEvents);
         setShowModal(true);
-        SetGetEvent(dayEvents);
     };
     const renderCalendar = () => {
         const monthStart = startOfMonth(currentDate);

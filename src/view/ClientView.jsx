@@ -206,6 +206,12 @@ const ClientView = () => {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={() => fetchProducts(1)}
+                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+              >
+                FILTRAR
+              </button>
             </div>
           </div>
 

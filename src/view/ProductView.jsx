@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import * as XLSX from "xlsx";
 import { FiGrid, FiList } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
@@ -8,17 +7,12 @@ import { MdEdit } from "react-icons/md";
 
 const ProductView = () => {
   const [salesData, setSalesData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("table");
   const navigate = useNavigate();
-
-  const [categories, setCategories] = useState([]);
-  const [showImport, setShowImport] = useState(false);
-  const [isFileUploaded, setIsFileUploaded] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categoriesList, setCategoriesList] = useState([]);
@@ -38,42 +32,7 @@ const ProductView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(sheet);
-      setCategories(jsonData);
-      setIsFileUploaded(true);
-    };
-
-    reader.readAsArrayBuffer(file);
-  };
-  const handleImport = async () => {
-    if (categories.length === 0) {
-      alert("No hay categorías para importar.");
-      return;
-    }
-    try {
-      await axios.post(API_URL + "/whatsapp/product/import", { categories }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      alert("Productos importadas correctamente.");
-      setShowImport(false);
-      setIsFileUploaded(false);
-      fetchProducts();
-    } catch (error) {
-      console.error("Error al importar:", error);
-      alert("Hubo un problema al importar las categorías.");
-    }
-  };
   const fetchProducts = async (pageNumber) => {
     setLoading(true);
     try {
@@ -90,7 +49,6 @@ const ProductView = () => {
         }
       });
       setSalesData(response.data.products || []);
-      setFilteredData(response.data.products || []);
       setTotalPages(response.data.totalPages || 1);
       setItems(response.data.total)
     } catch (error) {
@@ -103,18 +61,7 @@ const ProductView = () => {
     fetchProducts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, itemsPerPage]);
-  useEffect(() => {
-    let filtered = salesData;
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((item) =>
-        item.productName?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (selectedCategory) {
-      filtered = filtered.filter((item) => item.categoryId?._id === selectedCategory);
-    }
-    setFilteredData(filtered);
-  }, [searchTerm, selectedCategory, salesData, itemsPerPage]);
+
   const fetchCategories = async () => {
     setLoading(true);
     try {
@@ -161,8 +108,8 @@ const ProductView = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
-      <div className="ml-10 mr-10 relative overflow-x-auto">
+    <div className="bg-white min-h-screenrounded-lg p-5">
+      <div className="relative overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div role="status">
@@ -175,7 +122,16 @@ const ProductView = () => {
           </div>
         ) : (
           <div>
-            <div className="flex items-center justify-between w-full">
+            <div className="flex flex-col w-full gap-4">
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => navigate("/product/creation")}
+                  className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold uppercase rounded-3xl hover:bg-[#FFCECD] hover:text-[#D3423E] hover:font-bold transition duration-200"
+                >
+                  + Crear Producto
+                </button>
+              </div>
+              <div className="flex items-center justify-between w-full">
               <div className="relative flex items-center space-x-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
@@ -198,6 +154,11 @@ const ProductView = () => {
                     placeholder="Buscar venta..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        fetchProducts(1);
+                      }
+                    }}
                     className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
@@ -211,40 +172,17 @@ const ProductView = () => {
                     <option key={category._id} value={category._id}>{category.categoryName}</option>
                   ))}
                 </select>
-              </div>
-              <div className="justify-end">
                 <button
-                  onClick={() => setShowImport(true)}
-                  className="mr-4 px-4 py-2 text-lg bg-transparent uppercase  border-2 border-[#D3423E] text-[#D3423E] font-bold rounded-3xl hover:bg-[#D3423E] hover:text-white hover:font-bold transition duration-200"
-                >
-                  Importar
-                </button>
-                <button
-                  onClick={() => navigate("/product/creation")}
-                  className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold uppercase rounded-3xl hover:bg-[#FFCECD] hover:text-[#D3423E] hover:font-bold transition duration-200"
-                >
-                  + Crear Producto
-                </button>
+                      onClick={() => {
+                        fetchProducts(1);
+                      }}
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl flex items-center gap-2"
+                    >
+                      Filtrar
+                    </button>
               </div>
             </div>
-            {showImport && (
-              <div className="flex mt-4 justify-end space-x-2">
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  onChange={handleFileUpload}
-                  className="block w-2/4 text-m text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-                />
-                <button
-                  onClick={handleImport}
-                  disabled={!isFileUploaded}
-                  className={`flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition duration-200 
-                ${isFileUploaded ? "bg-[#D3423E] text-white hover:bg-[#FF7F7A]" : "bg-[#FF9C99] text-white cursor-not-allowed"}`}
-                >
-                  Importar Excel
-                </button>
-              </div>
-            )}
+            </div>
             <div className="flex mt-4 justify-end space-x-2">
               <button
                 onClick={() => setViewMode("table")}
@@ -260,7 +198,7 @@ const ProductView = () => {
                 <FiGrid className="w-5 h-5 text-gray-900" />
               </button>
             </div>
-            {filteredData.length === 0 ? (
+            {salesData.length === 0 ? (
               <p className="text-center text-gray-500 mt-5">No hay productos disponibles.</p>
             ) : viewMode === "table" ? (
               <div className="mt-5 border border-gray-400 rounded-xl">
@@ -276,7 +214,7 @@ const ProductView = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredData.map((item) => (
+                    {salesData.map((item) => (
                       <tr key={item._id} className="bg-white border-b border-gray-200">
                         <td className="px-6 py-4 font-medium text-gray-900">{item.productName || "Sin nombre"}</td>
                         <td className="px-6 py-4">{item.priceId?.price || "N/A"}</td>
@@ -388,7 +326,7 @@ const ProductView = () => {
             ) : (
               <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-5">
-                  {filteredData.map((item) => (
+                  {salesData.map((item) => (
                     <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg flex flex-col">
                       <a href="/#">
                         <img className="w-40 h-40 object-cover mx-auto rounded-lg" src={item.productImage} alt={`Imagen de ${item.productName}`} />
@@ -499,7 +437,6 @@ const ProductView = () => {
                 className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
               />
             </div>
-
             <div className="mb-4">
               <label className="block mb-1 text-sm font-medium text-gray-700">Precio</label>
               <input
@@ -509,7 +446,6 @@ const ProductView = () => {
                 className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
               />
             </div>
-
             <div className="flex gap-2 w-full">
               <button
                 onClick={() => setShowEditModal(false)}

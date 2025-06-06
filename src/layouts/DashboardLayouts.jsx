@@ -16,18 +16,18 @@ const DashboardLayout = () => {
                     <div className="hidden w-full md:block md:w-auto" id="navbar-default">
                         <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
                             <li>
-                                <a href="/stadistics" className="block py-2 px-3 font-bold text-[#3A3737] rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                <a href="/stadistics" className="block py-2 px-3 text-m md:hover:text-lg font-bold text-[#3A3737] rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
                                     Análisis de ventas
                                 </a>
                             </li>
                             <li>
-                                <a href="/category" className="block py-2 px-3 text-[#3A3737] font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Categoria</a>
+                                <a href="/category" className="block py-2 text-m px-3 text-[#3A3737] md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Categoria</a>
                             </li>
                             <li>
-                                <a href="/order" className="block py-2 px-3 text-[#3A3737] font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Pedidos</a>
+                                <a href="/order" className="block py-2 px-3 text-m text-[#3A3737] md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Pedidos</a>
                             </li>
                             <li>
-                                <a href="/product" className="block py-2 px-3 font-bold text-[#3A3737] rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                <a href="/product" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
                                     Productos
                                 </a>
                             </li>

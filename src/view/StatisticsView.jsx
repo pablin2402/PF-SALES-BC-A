@@ -1,11 +1,9 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
-import { useNavigate } from "react-router-dom";
 import { FaFileExport } from "react-icons/fa6";
 
 import Spinner from "../Components/Spinner";
-import OrderButton from "../Components/OrderButton";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -35,34 +33,25 @@ const StatisticsView = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm] = useState("");
-    const [inputValue, setInputValue] = useState("");
-    const [selectedFilter, setSelectedFilter] = useState("");
     const [selectedMonth, setSelectedMonth] = useState(null);
 
 
     const [selectedStatus] = useState("");
-    const [selectedPaymentType, setSelectedPaymentType] = useState("");
-    const [selectedSaler, setSelectedSaler] = useState("");
-    const [selectedPayment, setSelectedPayment] = useState("");
 
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
     const [items, setItems] = useState();
-    const [data, setData] = useState([]);
     const [chartData, setChartData] = useState({ labels: [], datasets: [] });
 
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [years, setYears] = useState([]);
 
-    const navigate = useNavigate();
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    const handleNewOrderClick = () => {
-        navigate("/order/creation");
-    };
+    const [products, setProducts] = useState([]);
+
+
     useEffect(() => {
         const startYear = 2010;
         const endYear = new Date().getFullYear();
@@ -79,14 +68,22 @@ const StatisticsView = () => {
         '#D3423E', '#F7A64A', '#3080ED', '#22BD3D', '#00A7C7',
         '#86BBFA', '#66BB6A', '#CEFCD0', '#FF7F7A', '#00ACC1'
     ];
-    const fetchOrders = useCallback(async () => {
+    useEffect(() => {
+        axios.post(API_URL + "/whatsapp/order/products/analysis")
+            .then((res) => {
+                setProducts(res.data);
+            })
+            .catch((err) => console.error('Error al obtener predicciones:', err));
+    }, []);
+
+    const fetchOrders = async (pages) => {
         setLoading(true);
         try {
             const response = await axios.post(API_URL + "/whatsapp/order/products/stadistics",
                 {
                     year: selectedYear,
                     month: selectedMonth,
-                    page: page,
+                    page: pages,
                     itemsPerPage: itemsPerPage
                 },
                 {
@@ -120,7 +117,7 @@ const StatisticsView = () => {
         } finally {
             setLoading(false);
         }
-    }, [user, page,token,selectedMonth,selectedYear, itemsPerPage, inputValue, itemsPerPage]);
+    };
     const options = {
         responsive: true,
         plugins: {
@@ -150,8 +147,10 @@ const StatisticsView = () => {
         },
     };
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         fetchOrders(page);
-    }, [page, fetchOrders, selectedYear, itemsPerPage]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, selectedYear, itemsPerPage]);
     const exportToExcel = async () => {
         const filters = {
             id_owner: user,
@@ -160,42 +159,34 @@ const StatisticsView = () => {
         };
         if (searchTerm) filters.fullName = searchTerm;
         if (selectedStatus) filters.status = selectedStatus;
-        if (selectedPaymentType) filters.paymentType = selectedPaymentType;
-        if (selectedSaler) filters.salesId = selectedSaler;
-        if (selectedPayment) filters.payStatus = selectedPayment;
-        if (startDate && endDate) {
-            filters.startDate = startDate;
-            filters.endDate = endDate;
-        }
-        const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        const allData = response.data.orders;
+
+        const response = await axios.post(API_URL + "/whatsapp/order/products/stadistics",
+            {
+                year: selectedYear,
+                month: selectedMonth,
+                page: 1,
+                itemsPerPage: 10000
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+        const allData = response.data.data;
 
         const ws = XLSX.utils.json_to_sheet(
             allData.map((item) => {
-                const creationDateUTC = new Date(item.creationDate);
-                creationDateUTC.setHours(creationDateUTC.getHours() - 4);
-                const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
                 return {
-                    "Código de Cliente": item._id,
-                    "Nombre": item.id_client.name + " " + item.id_client.lastName,
-                    "Fecha de confirmación": formattedDate,
-                    "Tipo de pago": item.accountStatus,
-                    "Vendedor": item.salesId.fullName + " " + item.salesId.lastName || "",
-                    "Fecha de Pago": item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES") || "",
-                    "Estado de Pago": item.payStatus || "",
-                    "Saldo por pagar": item.restante,
-                    "Total": item.totalAmount,
+                    "Cantidad": item._id,
+                    "Producto": item.totalCantidad,
+
                 };
             })
         );
 
 
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Order_List");
+        XLSX.utils.book_append_sheet(wb, ws, "Lista_Productos_Vendidos");
 
         const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
         const data = new Blob([excelBuffer], { type: "application/octet-stream" });
@@ -253,10 +244,10 @@ const StatisticsView = () => {
                                     </div>
                                     {chartData?.datasets?.[0]?.data?.length > 0 && (
                                         <div className="flex justify-end items-center space-x-4">
-                                             <button
-                                                    onClick={exportToExcel}
-                                                    className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
-                                                >
+                                            <button
+                                                onClick={exportToExcel}
+                                                className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
+                                            >
                                                 <FaFileExport color="#FFFFFF" />
                                                 Exportar
                                             </button>
@@ -266,21 +257,21 @@ const StatisticsView = () => {
                             </div>
                         </div>
                         <div className="flex flex-col gap-4 px-4 py-4">
-                        <div className="max-w p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                            <div style={{ height: "600px" }}>
-                                {chartData?.datasets?.[0]?.data?.length > 0 ? (
-                                    <Bar data={chartData} options={options} />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-gray-500 text-lg">
-                                        No se encontraron resultados.
-                                    </div>
-                                )}
+                            <div className="max-w p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                                <div style={{ height: "600px" }}>
+                                    {chartData?.datasets?.[0]?.data?.length > 0 ? (
+                                        <Bar data={chartData} options={options} />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-gray-500 text-lg">
+                                            No se encontraron resultados.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
                             <div className="w-full overflow-x-auto">
                                 <div className="border border-gray-400 rounded-xl">
-                                
+
                                     <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                                         <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                             <tr>
@@ -291,7 +282,7 @@ const StatisticsView = () => {
                                         <tbody>
                                             {salesData.length > 0 ? (
                                                 salesData.map((item) => (
-                                                    <tr key={item._id}className="bg-white border-b hover:bg-gray-50">
+                                                    <tr key={item._id} className="bg-white border-b hover:bg-gray-50">
                                                         <td className="px-6 py-4 text-m text-gray-900">{item._id}</td>
                                                         <td className="px-6 py-4 text-m text-gray-900">{item.totalCantidad}</td>
 
@@ -325,7 +316,7 @@ const StatisticsView = () => {
                                                     }}
                                                     className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                                                 >
-                                                    {[5, 10, 20, 50, 100].map((option) => (
+                                                    {[5, 10].map((option) => (
                                                         <option key={option} value={option}>
                                                             {option}
                                                         </option>
@@ -385,6 +376,42 @@ const StatisticsView = () => {
                                     )}
                                 </div>
                             </div>
+                        </div>
+                        <div className="p-4">
+                            <h2 className="text-2xl font-bold mb-4">Predicción de ventas por producto</h2>
+                            <table className="w-full border">
+                                <thead>
+                                    <tr className="bg-gray-200">
+                                        <th className="p-2 border">Producto</th>
+                                        <th className="p-2 border">Ventas anteriores</th>
+                                        <th className="p-2 border">Predicción siguiente mes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Array.isArray(products) && products.length > 0 ? (
+                                        products.map((prod, index) => (
+                                            <tr key={index}>
+                                                <td className="border px-4 py-2">{prod.nombre}</td>
+                                                <td className="border px-4 py-2">{prod.totalCantidad}</td>
+                                                <td className="border px-4 py-2">
+                                                    {prod.forecast.length > 0 ? (
+                                                        prod.forecast.map((f, i) => (
+                                                            <div key={i}>{f.mes}: {f.valor}</div>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-red-600 font-semibold">{prod.error}</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3" className="text-center py-4">Cargando o sin datos...</td>
+                                        </tr>
+                                    )}
+
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}

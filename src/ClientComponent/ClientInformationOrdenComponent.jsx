@@ -93,11 +93,11 @@ export default function ClientInformationOrdenComponent() {
                 id_client: state?.files.id_client._id,
                 id_owner: user,
                 orderId: state.files._id
-            },{
+            }, {
                 headers: {
-                  Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
-              });
+            });
             const payments = response.data || [];
             const totalPaidSum = payments.reduce((sum, payment) => sum + (payment.total || 0), 0);
 
@@ -106,7 +106,7 @@ export default function ClientInformationOrdenComponent() {
         } catch (error) {
             console.error("Error al obtener los pagos", error);
         }
-    }, [state?.files, token,user]);
+    }, [state?.files, token, user]);
 
     useEffect(() => {
         fetchPayments();
@@ -145,29 +145,29 @@ export default function ClientInformationOrdenComponent() {
 
     return (
         <div className="bg-white min-h-screen p-5">
-            <div className="ml-10 mr-10 relative overflow-x-auto">
-            <div className="flex mt-4 mb-4 justify-start space-x-2">
+            <div className="relative overflow-x-auto">
+                <div className="flex mt-4 mb-4 justify-start space-x-2">
                     {state.flag ? (
                         <nav className="flex" aria-label="Breadcrumb">
                             <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                                 <li className="inline-flex items-center" >
-                                <button
-                                   onClick={() => navigate(-1)}
-                                    className="inline-flex items-center text-sm font-medium text-gray-400 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
+                                    <button
+                                        onClick={() => navigate(-1)}
+                                        className="inline-flex items-center text-sm font-medium text-gray-400 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
                                     >
-                                    <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
-                                    </svg>
-                                    Lista de ventas
+                                        <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
+                                        </svg>
+                                        Lista de ventas
                                     </button>
 
                                 </li>
                                 <li aria-current="page">
                                     <div className="flex items-center">
                                         <svg className="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                                         </svg>
-                                        <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Detalle del pago</span>
+                                        <span className="ms-1 text-m font-bold  text-[#D3423E] md:ms-2 dark:text-gray-400">Detalle del pago</span>
                                     </div>
                                 </li>
                             </ol>
@@ -176,33 +176,33 @@ export default function ClientInformationOrdenComponent() {
                         <nav className="flex" aria-label="Breadcrumb">
                             <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                                 <li className="inline-flex items-center" >
-                                <button
-                                    onClick={() => navigate(-2)}
-                                    className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
+                                    <button
+                                        onClick={() => navigate(-2)}
+                                        className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
                                     >
-                                    <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
-                                    </svg>
-                                    Lista de clientes
-                                </button>
+                                        <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
+                                        </svg>
+                                        Lista de clientes
+                                    </button>
                                 </li>
                                 <li>
                                     <div className="flex items-center">
                                         <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                                         </svg>
                                         <button
                                             onClick={() => navigate(-1)}
-                                            className="ms-1 text-sm font-medium text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
-                                            >
+                                            className="ms-1 text-m font-medium text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                                        >
                                             {state.files.id_client.name + " " + state.files.id_client.lastName}
-                                         </button>
+                                        </button>
                                     </div>
                                 </li>
                                 <li aria-current="page">
                                     <div className="flex items-center">
                                         <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                                         </svg>
                                         <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Detalle del pedido</span>
                                     </div>
@@ -210,63 +210,53 @@ export default function ClientInformationOrdenComponent() {
                             </ol>
                         </nav>
                     )}
+
+                </div>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        Nota de remisión <span className="text-gray-900 text-2xl">{"# " + state.files.receiveNumber}</span>
+                    </h2>
+
+                    <div className="flex items-center space-x-4">
+                        {state.files.accountStatus === 'DEUDA' && (
+                            <button
+                                className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold rounded-lg hover:bg-[#FF9C99] hover:text-gray-900 transition duration-200"
+                            >
+                                Registrar pago
+                            </button>
+                        )}
+
+                        <ClientPaymentDialog
+                            isOpen={isDialogOpen}
+                            onClose={handleCloseDialog}
+                            onSave={handleSavePayment}
+                            orderId={state.files._id}
+                            totalPaid={totalPaid}
+                            idClient={state.files.id_client._id}
+                            salesID={state.files.salesId._id}
+                            totalGeneral={totalGeneral}
+                        />
+
+                        <button
+                            onClick={exportToPDF}
+                            className="px-4 py-2 bg-white font-bold text-lg text-red-700 rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
+                        >
+                            <FaFilePdf size="25" color="##726E6E" />
+                        </button>
+
+                        {totalPaid < totalGeneral && (
+                            <button
+                                onClick={handleOpenDialog}
+                                className="px-4 py-2 bg-[#D3423E] font-bold text-xl text-white rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                            >
+                                Ingresar Pago
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <div className="p-6">
-                    <div>
-                        <h2 className="text-2xl text-left font-bold text-gray-900 mb-4">
-                            Nota de remisión <span className="text-gray-900 text-2xl">{state.files.receiveNumber}</span>
-                        </h2>
-                        <h2 className="text-xl text-left font-bold text-gray-900 mb-4">
-                            Cliente: <span className="text-gray-900 text-lg">{state.files.id_client.name + " " + state.files.id_client.lastName}</span>
-                        </h2>
-                        <h2 className="text-xl text-left font-bold text-gray-900 mb-4">
-                            Estado: <span className="text-gray-900 text-lg">{formatAccountStatus(state.files.accountStatus)}</span>
-                        </h2>
-                        <h2 className="text-xl text-left font-bold text-gray-900 mb-4">
-                            Vencimiento: <span className="text-gray-900 text-lg">
-                                {state.files.dueDate ? new Date(state.files.dueDate).toLocaleDateString("es-ES") : new Date(state.files.creationDate).toLocaleDateString("es-ES")}
-                            </span>
-                        </h2>
-                        <div className="flex mt-4 justify-end space-x-2">
-                            {state.files.accountStatus === 'DEUDA' && (
-                                <div>
-                                    <button
-                                        className="mr-4 px-4 py-2 text-lg bg-[#D3423E] text-white font-bold rounded-lg hover:bg-[#FF9C99] hover:text-gray-900 hover:font-bold transition duration-200"
-                                    >
-                                        Registrar pago
-                                    </button>
-                                </div>
-                            )}
-                            <ClientPaymentDialog
-                                isOpen={isDialogOpen}
-                                onClose={handleCloseDialog}
-                                onSave={handleSavePayment}
-                                orderId={state.files._id}
-                                totalPaid={totalPaid}
-                                idClient={state.files.id_client._id}
-                                salesID={state.files.salesId._id}
-                                totalGeneral={totalGeneral}
 
-                            />
-                            <div className="flex justify-end items-center space-x-4">
-                                <button
-                                    onClick={exportToPDF}
-                                    className="px-4 py-2 bg-white font-bold text-lg text-red-700 rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
-                                >
-                                    <FaFilePdf size="25" color="##726E6E" />
-                                </button>
-                                {totalPaid < totalGeneral && (
-                                    <button
-                                    onClick={handleOpenDialog}
-                                    className="px-4 py-2 bg-[#D3423E] font-bold text-xl text-white rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                    >
-                                    Ingresar Pago
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                <div class="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <div className="border-b border-gray-200 dark:border-gray-700">
                         <ul className="flex flex-wrap text-m text-center text-red-700 font-bold">
                             <li className="me-2">
@@ -335,7 +325,7 @@ export default function ClientInformationOrdenComponent() {
                                 <p className="text-m font-semibold text-gray-600 flex justify-between w-full max-w-xs">
                                     Saldo por Pagar:
                                     <span className="text-gray-900 font-bold text-lg ml-4">
-                                        Bs. {totalGeneral.toFixed(2)-totalPaid.toFixed(2)}
+                                        Bs. {totalGeneral.toFixed(2) - totalPaid.toFixed(2)}
                                     </span>
                                 </p>
 
@@ -385,9 +375,9 @@ export default function ClientInformationOrdenComponent() {
                             </div>
                             <div className="mt-4 flex flex-col items-end gap-2">
                                 <p className="text-m font-semibold text-gray-600 flex justify-between w-full max-w-xs">
-                                Saldo por Pagar:
+                                    Saldo por Pagar:
                                     <span className="text-gray-900 font-bold text-lg ml-4">
-                                        Bs. {totalGeneral.toFixed(2)-totalPaid.toFixed(2)}
+                                        Bs. {totalGeneral.toFixed(2) - totalPaid.toFixed(2)}
                                     </span>
                                 </p>
 
@@ -401,8 +391,38 @@ export default function ClientInformationOrdenComponent() {
                                 </p>
                             </div>
                         </div>
-
                     )}
+                </div>
+                <div class="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                    <div className="space-y-4">
+                        <div className="flex justify-between pb-2">
+                            <span className="text-xl font-bold text-gray-900">Detalles del cliente:</span>
+                        </div>
+                        <div className="flex justify-between border-b pb-2">
+                            <span className="text-xl font-bold text-gray-900">Cliente:</span>
+                            <span className="text-lg text-gray-900">
+                                {state.files.id_client.name + " " + state.files.id_client.lastName}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between border-b pb-2">
+                            <span className="text-xl font-bold text-gray-900">Estado:</span>
+                            <span className="text-lg text-gray-900">
+                                {formatAccountStatus(state.files.accountStatus)}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between border-b pb-2">
+                            <span className="text-xl font-bold text-gray-900">Vencimiento:</span>
+                            <span className="text-lg text-gray-900">
+                                {state.files.dueDate
+                                    ? new Date(state.files.dueDate).toLocaleDateString("es-ES")
+                                    : new Date(state.files.creationDate).toLocaleDateString("es-ES")}
+                            </span>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
         </div>

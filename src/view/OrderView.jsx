@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,6 @@ const OrderView = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
 
@@ -63,7 +62,7 @@ const OrderView = () => {
 
     fetchVendedores();
   }, [user, token]);
-  const fetchOrders = useCallback(async (pageNumber, customFilters = {}) => {
+  const fetchOrders = async (pageNumber, customFilters) => {
     setLoading(true);
     try {
       const filters = {
@@ -88,11 +87,11 @@ const OrderView = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, token, itemsPerPage]);
+  };
 
   const applyFilters = () => {
     const customFilters = {};
-    if (searchTerm) customFilters.fullName = searchTerm;
+    if (inputValue) customFilters.fullName = inputValue;
     if (selectedStatus) customFilters.status = selectedStatus;
     if (selectedPaymentType) customFilters.paymentType = selectedPaymentType;
     if (selectedSaler) customFilters.salesId = selectedSaler;
@@ -107,7 +106,8 @@ const OrderView = () => {
 
   useEffect(() => {
     fetchOrders(page);
-  }, [page, fetchOrders, itemsPerPage]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, itemsPerPage]);
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, { state: { products: item.products, files: item, flag: true } });
   };
@@ -117,7 +117,7 @@ const OrderView = () => {
       page: page,
       limit: 10000,
     };
-    if (searchTerm) filters.fullName = searchTerm;
+    if (inputValue) filters.fullName = inputValue;
     if (selectedStatus) filters.status = selectedStatus;
     if (selectedPaymentType) filters.paymentType = selectedPaymentType;
     if (selectedSaler) filters.salesId = selectedSaler;

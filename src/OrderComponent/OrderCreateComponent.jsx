@@ -273,8 +273,8 @@ const OrderCreateComponent = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
-      <div className="ml-10 mr-10 relative overflow-x-auto">
+    <div className="bg-white min-h-screen rounded-lg p-5">
+      <div className="relative overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div role="status">
@@ -287,7 +287,7 @@ const OrderCreateComponent = () => {
           </div>
         ) : (
           <div>
-            <div className="flex mt-4 justify-end space-x-2">
+            <div className="flex mt-4 justify-start space-x-2">
               {viewMode === "card" ? (
                 <div className="flex mt-4 mb-4 justify-start space-x-2">
                   <nav class="flex" aria-label="Breadcrumb">
@@ -296,7 +296,7 @@ const OrderCreateComponent = () => {
                       >
                        <button
                         onClick={() => setViewMode("card")}
-                        className="inline-flex items-center text-sm font-bold text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
+                        className="inline-flex items-center text-m font-bold text-[#D3423E] hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
                       >
                         <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                           <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
@@ -355,7 +355,7 @@ const OrderCreateComponent = () => {
                           </svg>
                           <button
                            onClick={() => setViewMode("form")}
-                            className="ms-1 text-sm font-bold text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                            className="ms-1 text-m font-bold text-[#D3423E] hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                           >
                             Detalle del pedido
                           </button>
@@ -409,7 +409,7 @@ const OrderCreateComponent = () => {
                         <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
                         </svg>
-                        <span class="ms-1 text-sm font-bold text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
+                        <span class="ms-1 text-m font-bold text-[#D3423E] md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
                       </div>
                     </li>
                   </ol>
@@ -421,7 +421,7 @@ const OrderCreateComponent = () => {
             {viewMode === "card" ? (
               <>
                 <div className="flex items-center justify-between w-full">
-                  <div className="relative flex items-center space-x-4">
+                  <div className="relative mb-4 mt-4 flex items-center space-x-4">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
                         <svg
@@ -444,13 +444,13 @@ const OrderCreateComponent = () => {
                         value={searchTerm}
                         onChange={handleSearchChange}
                         onKeyDown={handleSearchKeyDown}
-                        className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-lg w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                        className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Todas las categorías</option>
                       {categoriesList.map((category) => (
@@ -459,16 +459,17 @@ const OrderCreateComponent = () => {
                     </select>
                     <button
                       onClick={() => fetchProducts(1)}                       
-                      className="flex items-center gap-2 px-4 py-2 bg-white text-lg text-[#D3423E] font-bold rounded-lg hover:bg-white hover:text-[#D3423E] transition duration-200"
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-lg text-white font-bold rounded-3xl transition duration-200"
                     >
                       <FaSearch className="h-5 w-5" /> 
                       Filtrar
                     </button>
                   </div>
                 </div>
+                <div class="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-5">
                   {salesData.map((item) => (
-                    <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg bg-gray-100 flex flex-col">
+                    <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg flex flex-col">
                       <img className="w-40 h-40 object-cover mx-auto rounded-lg" src={item.productImage} alt={item.productName} />
                       <h3 className="mt-2 text-m text-gray-900 font-bold">{item.productName || "Sin nombre"}</h3>
                       <div className="flex-grow"></div>
@@ -538,6 +539,7 @@ const OrderCreateComponent = () => {
                     </button>
                   </nav>
                 )}
+                </div>
               </>
             ) : viewMode === "form" ? (
               <div className="flex w-full justify-center gap-6 mt-4">
@@ -554,7 +556,7 @@ const OrderCreateComponent = () => {
                           isSearchable={true}
                           placeholder="Buscar cliente..."
                           noOptionsMessage={() => "No se encontraron clientes"}
-                          className="text-gray-900 rounded-lg"
+                          className="text-gray-900 rounded-2xl"
                           styles={{
                             control: (provided, state) => ({
                               ...provided,
@@ -582,7 +584,7 @@ const OrderCreateComponent = () => {
                       <div className="flex flex-col">
                         <label className="text-left text-sm font-medium text-gray-900 mb-1">Tipo de pago</label>
                         <select
-                          className="p-2 text-gray-900 focus:border-red-700 rounded-lg"
+                          className="p-2 text-gray-900 focus:border-red-700 rounded-2xl"
                           name="tipoPago"
                           value={formData.tipoPago}
                           onChange={handleChange}
@@ -598,7 +600,7 @@ const OrderCreateComponent = () => {
                         <div className="flex flex-col">
                           <label className="text-left text-sm font-medium text-gray-900 mb-1">Plazo de pago</label>
                           <select
-                            className="p-2 text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 rounded-lg mt-2"
+                            className="p-2 text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 rounded-2xl mt-2"
                             name="plazoCredito"
                             value={formData.plazoCredito}
                             onChange={handleChange}
@@ -615,7 +617,7 @@ const OrderCreateComponent = () => {
                       <div className="flex flex-col">
                         <label className="text-left text-sm font-medium text-gray-900 mb-1">Vendedor</label>
                         <select
-                          className="p-2  text-gray-900 hover:text-red-700  hover:border-red-700 focus:border-red-700 rounded-lg"
+                          className="p-2  text-gray-900 hover:text-red-700  hover:border-red-700 focus:border-red-700 rounded-2xl"
                           name="vendedor" value={formData.vendedor} onChange={handleChange} required>
                           <option value="">Seleccione un vendedor</option>
                           {vendedores.map((vendedor) => (
@@ -629,7 +631,7 @@ const OrderCreateComponent = () => {
                           <input
                             type="text"
                             value={formData.direccion}
-                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5"
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
                             readOnly
                           />
                         </div>
@@ -640,7 +642,7 @@ const OrderCreateComponent = () => {
                           <input
                             type="text"
                             value={formData.telefono}
-                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5"
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
                             readOnly
                           />
                         </div>
@@ -650,7 +652,7 @@ const OrderCreateComponent = () => {
                         <input
                           type="text"
                           value={formData.note}
-                          className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-lg p-2.5"
+                          className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
                           readOnly
                         />
                       </div>
