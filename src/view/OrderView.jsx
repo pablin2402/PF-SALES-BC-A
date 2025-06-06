@@ -42,25 +42,25 @@ const OrderView = () => {
   const handleNewOrderClick = () => {
     navigate("/order/creation");
   };
-  useEffect(() => {
-    const fetchVendedores = async () => {
-      try {
-        const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
-          {
-            id_owner: user
-          }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setVendedores(response.data);
-      } catch (error) {
-        console.error("Error obteniendo vendedores", error);
-        setVendedores([]);
-      }
-    };
-
+  const fetchVendedores = async () => {
+    try {
+      const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+        {
+          id_owner: user
+        }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setVendedores(response.data.data);
+    } catch (error) {
+      console.error("Error obteniendo vendedores", error);
+      setVendedores([]);
+    }
+  };
+  useEffect(() => { 
     fetchVendedores();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token]);
   const fetchOrders = async (pageNumber, customFilters) => {
     setLoading(true);

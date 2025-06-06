@@ -10,7 +10,10 @@ import OrderView from './view/OrderView';
 import CategoryView from './view/CategoryView';
 import LocalizacionView from './view/LocalizationView';
 import OrderPaymentView from './view/OrderPaymentView';
+import DeliveryView from "./view/DeliveryView";
 import StatisticsView from "./view/StatisticsView";
+
+import DeliveryCreationComponent from "./ClientComponent/DeliveryCreationComponent";
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
 import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
 import ClientInformationOrdenComponent from "./ClientComponent/ClientInformationOrdenComponent";
@@ -49,13 +52,15 @@ export default function AppRoutes() {
 
             </Route>
             <Route element={<ClientsLayout />}>
-            <Route path="/client" element={<ClientView />} />
-            <Route path="/sales/client" element={<SalesManView />} />
-            <Route path="/sales/create" element={<SalesManCreationComponent />} />
-            <Route path="/sales/:id" element={<SalesManInformationComponent />} />
-            <Route path="/client/:id" element={<ClientInformationComponent />} />
-            <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
-            <Route path="/client/creation" element={<ClientCreationComponent />} />
+              <Route path="/client" element={<ClientView />} />
+              <Route path="/sales/client" element={<SalesManView />} />
+              <Route path="/delivery/list" element={<DeliveryView />} />
+              <Route path="/sales/create" element={<SalesManCreationComponent />} />
+              <Route path="/sales/:id" element={<SalesManInformationComponent />} />
+              <Route path="/client/:id" element={<ClientInformationComponent />} />
+              <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
+              <Route path="/client/creation" element={<ClientCreationComponent />} />
+              <Route path="/delivery/creation" element={<DeliveryCreationComponent />} />
             </Route>
             <Route path="/order/pay" element={<OrderPaymentView />} />
             <Route element={<LocationLayout />}>

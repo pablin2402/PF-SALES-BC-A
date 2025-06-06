@@ -53,7 +53,7 @@ const ClientView = () => {
             }
           }
         );
-        setVendedores(response.data);
+        setVendedores(response.data.data);
       } catch (error) {
         console.error("Error obteniendo vendedores", error);
         setVendedores([]);

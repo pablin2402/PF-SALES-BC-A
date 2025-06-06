@@ -180,7 +180,7 @@ const OrderCreateComponent = () => {
               Authorization: `Bearer ${token}`
             }
           });
-        setVendedores(response.data);
+        setVendedores(response.data.data);
   
       } catch (error) {
         console.error("obteniendo vendedores", error);

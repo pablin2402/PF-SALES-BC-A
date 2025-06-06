@@ -41,7 +41,7 @@ export default function ActivityRouteComponent() {
                           Authorization: `Bearer ${token}`
                         }
                       });
-                setVendedores(response.data);
+                setVendedores(response.data.data);
             } catch (error) {
                 console.error(" obteniendo vendedores", error);
                 setVendedores([]);

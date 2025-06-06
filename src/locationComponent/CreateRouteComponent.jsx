@@ -79,7 +79,7 @@ export default function CreateRouteComponent() {
                         Authorization: `Bearer ${token}`
                     }
                 });
-            setVendedores(response.data);
+            setVendedores(response.data.data);
         } catch (error) {
             console.error("Obteniendo vendedores", error);
             setVendedores([]);

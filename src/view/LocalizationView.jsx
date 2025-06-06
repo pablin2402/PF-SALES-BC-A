@@ -35,7 +35,7 @@ export default function LocalizationView() {
           }
         }
       );
-      setSalesManData(response.data);
+      setSalesManData(response.data.data);
     } catch (error) {
       console.error("Error al obtener datos", error);
     }

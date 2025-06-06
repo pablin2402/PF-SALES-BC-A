@@ -21,6 +21,11 @@ const ClientsLayout = () => {
                                 </a>
                             </li>
                             <li>
+                                <a href="/delivery/list" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                    Personal de Reparto
+                                </a>
+                            </li>
+                            <li>
                                 <a href="/sales/client" className="block py-2 px-3 text-m text-[#3A3737] font-bold md:hover:text-lg rounded-sm md:p-0 md:hover:text-[#D3423E]">
                                 Vendedores
                                 </a>
