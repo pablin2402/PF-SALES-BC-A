@@ -32,9 +32,10 @@ const OrderCreateComponent = () => {
     telefono: 0,
     punto: "",
     vendedor: "",
+    vendedorId:"",
     tipoPago: '',
     direccion: "",
-    plazoCredito: '',
+    plazoCredito: 0,
     note: '',
     fechaPago: new Date()
   });
@@ -46,6 +47,8 @@ const OrderCreateComponent = () => {
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const id_user = localStorage.getItem("id_user");
+
 
   const fetchClients = useCallback(async () => {
     try {
@@ -56,13 +59,15 @@ const OrderCreateComponent = () => {
           Authorization: `Bearer ${token}`
         }
       });
-  
+      console.log(response)
       const clientesData = response.data.clients.map(cliente => ({
         value: cliente._id,
         label: `${cliente.name} ${cliente.lastName}`,
         directionid: cliente.client_location.direction,
         direction_id: cliente.client_location._id,
-        number: cliente.number
+        number: cliente.number,
+        sales_id: cliente.sales_id,
+        salesMan: cliente.sales_id.fullName
       }));
   
       setClientes(clientesData);
@@ -77,11 +82,35 @@ const OrderCreateComponent = () => {
     fetchClients(); 
   }, [fetchClients]);
 
+  useEffect(() => {
+    const fetchVendedores = async () => {
+      try {
+        const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+          {
+            id_owner: user
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          console.log(response)
+        setVendedores(response.data.data);
+  
+      } catch (error) {
+        setVendedores([]);
+      }
+    };
+  
+    fetchVendedores();
+  }, [user, token]); 
+  
   const handleSelectChange = (selectedOption) => {
     setSelectedCliente(selectedOption);
     const clienteSeleccionado = clientes.find(cliente => cliente.value === selectedOption.value);
     setFormData(prevState => ({
       ...prevState,
+      vendedorId:clienteSeleccionado ? clienteSeleccionado.sales_id : "",
+      vendedor: clienteSeleccionado ? clienteSeleccionado.salesMan : "",
       direccion: clienteSeleccionado ? clienteSeleccionado.directionid : "",
       telefono: clienteSeleccionado ? clienteSeleccionado.number : "",
     }));
@@ -123,7 +152,7 @@ const OrderCreateComponent = () => {
       updatedCart[existingProductIndex].quantity += 1;
       setCart(updatedCart);
     } else {
-      setCart([...cart, { ...product, quantity: 1, price: product.priceId?.price || 0 }]);
+      setCart([...cart, { ...product, quantity: 1, price: product.priceId?.price, numberofUnitsPerBox: product.numberofUnitsPerBox || 0 }]);
     }
   };
   const calcularTotal = () => {
@@ -146,51 +175,11 @@ const OrderCreateComponent = () => {
   };
   const calcularFechaPago = (creationDate, plazoCredito) => {
     if (!creationDate || !plazoCredito) return "No disponible";
-
     const fecha = new Date(creationDate);
-
-    switch (plazoCredito) {
-      case "1_semana":
-        fecha.setDate(fecha.getDate() + 7);
-        break;
-      case "2_semanas":
-        fecha.setDate(fecha.getDate() + 14);
-        break;
-      case "1_mes":
-        fecha.setMonth(fecha.getMonth() + 1);
-        break;
-      case "45_días":
-        fecha.setDate(fecha.getDate() + 45);
-
-        break;
-      default:
-        return "Plazo no válido";
-    }
-
+    fecha.setDate(fecha.getDate() + plazoCredito);
     return fecha;
   };
-  useEffect(() => {
-    const fetchVendedores = async () => {
-      try {
-        const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
-          {
-            id_owner: user
-          }, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-        setVendedores(response.data.data);
-  
-      } catch (error) {
-        console.error("obteniendo vendedores", error);
-        setVendedores([]);
-      }
-    };
-  
-    fetchVendedores();
-  }, [user, token]); 
-  
+ 
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
@@ -234,44 +223,94 @@ const OrderCreateComponent = () => {
       return;
     }
     try {
-      await axios.post(API_URL + "/whatsapp/order", {
-        creationDate: new Date(),
-        receiveNumber: generateReceiveNumber(),
-        noteAditional: formData.note,
-        id_owner: user,
-        products: cart.map(item => ({
-          id: item.id,
-          nombre: item.productName,
-          cantidad: item.quantity,
-          precio: item.price,
-        })),
-        disscount: calcularDescuentos(),
-        tax: 0,
-        totalAmount: calcularTotal(),
-        nit: 0,
-        razonSocial: "",
-        cellPhone: formData.telefono || "No disponible",
-        direction: formData.direccion || "No disponible",
-        accountStatus: formData.tipoPago,
-        dueDate: formData.fechaPago,
-        id_client: selectedCliente?.value || "No seleccionado",
-        salesId: formData.vendedor,
-      },{
+      const orderResponse = await Promise.race([ 
+        await axios.post(API_URL + "/whatsapp/order", {
+          creationDate: new Date(),
+          receiveNumber: generateReceiveNumber(),
+          noteAditional: formData.note,
+          id_owner: user,
+          products: cart.map(item => ({
+            id: item.id,
+            nombre: item.productName,
+            cantidad: item.quantity,
+            precio: item.price,
+            unidadesPorCaja: item.numberofUnitsPerBox,
+            productImage: item.productImage,
+            caja: item.quantity/item.numberofUnitsPerBox,
+            categoria: item.categoryId.categoryName
+          })),
+          disscount: calcularDescuentos(),
+          tax: 0,
+          totalAmount: calcularTotal(),
+          nit: 0,
+          razonSocial: "",
+          cellPhone: formData.telefono || "No disponible",
+          direction: formData.direccion || "No disponible",
+          accountStatus: formData.tipoPago,
+          dueDate: formData.fechaPago,
+          id_client: selectedCliente?.value || "No seleccionado",
+          salesId: formData.vendedorId,
+          orderTrackId: null,
+          region: "TOTAL CBB"
+        },{
         headers: {
           Authorization: `Bearer ${token}`
+          }
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+      ]);
+      console.log(orderResponse)
+      if (orderResponse.status === 200) {
+        alert("Orden guardada exitosamente.");
+        setCart([]);
+        navigate("/order");
+        setFormData({ nombre: "", apellido: "", email: "", direccion: "", telefono: 0, punto: "", vendedor: "", tipopago: '', plazoCredito: 0,vendedorId:'' });
+        setSelectedCliente(null);
+        const clientId = orderResponse.data._id;
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+        
+              try {
+                const response = await axios.post(API_URL + "/whatsapp/order/track", {
+                  orderId: clientId,
+                  eventType: "Orden Creada",
+                  triggeredBySalesman: id_user,
+                  triggeredByDelivery: "",
+                  triggeredByUser: "",
+                  location: { lat, lng }
+                }, {
+                  headers: {
+                    Authorization: `Bearer ${token}`
+                  }
+                });
+        
+                setSalesData(response.data.products || []);
+                setTotalPages(response.data.totalPages || 1);
+              } catch (error) {
+                console.error("Error al enviar evento de orden:", error);
+              } finally {
+                setLoading(false);
+              }
+            },
+            (error) => {
+              console.error("No se pudo obtener la ubicación:", error);
+              setLoading(false);
+            }
+          );
+        } else {
+          console.warn("La geolocalización no es soportada por este navegador.");
         }
-      });
-      alert("Orden guardada exitosamente.");
-      setCart([]);
-      navigate("/order");
-      setFormData({ nombre: "", apellido: "", email: "", direccion: "", telefono: 0, punto: "", vendedor: "", tipopago: '', plazoCredito: '' });
-      setSelectedCliente(null);
+        
+      }
+     
     } catch (error) {
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="bg-white min-h-screen rounded-lg p-5">
       <div className="relative overflow-x-auto">
@@ -290,9 +329,9 @@ const OrderCreateComponent = () => {
             <div className="flex mt-4 justify-start space-x-2">
               {viewMode === "card" ? (
                 <div className="flex mt-4 mb-4 justify-start space-x-2">
-                  <nav class="flex" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                      <li class="inline-flex items-center" 
+                  <nav className="flex" aria-label="Breadcrumb">
+                    <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                      <li className="inline-flex items-center" 
                       >
                        <button
                         onClick={() => setViewMode("card")}
@@ -306,10 +345,10 @@ const OrderCreateComponent = () => {
 
                       </li>
                       <li>
-                        <div class="flex items-center" 
+                        <div className="flex items-center" 
                         >
-                          <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                          <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                           </svg>
                           <button
                             onClick={() => setViewMode("form")}                            
@@ -321,11 +360,11 @@ const OrderCreateComponent = () => {
                         </div>
                       </li>
                       <li aria-current="page">
-                        <div class="flex items-center" onClick={() => setViewMode("table")}>
-                          <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                        <div className="flex items-center" onClick={() => setViewMode("table")}>
+                          <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                           </svg>
-                          <span class="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
+                          <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
                         </div>
                       </li>
                     </ol>
@@ -333,9 +372,9 @@ const OrderCreateComponent = () => {
                 </div>
               ) : viewMode === "form" ? (
                 <div className="flex mt-4 mb-4 justify-start space-x-2">
-                  <nav class="flex" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                      <li class="inline-flex items-center" 
+                  <nav className="flex" aria-label="Breadcrumb">
+                    <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                      <li className="inline-flex items-center" 
                       >
                        <button
                           onClick={() => setViewMode("card")}                          
@@ -349,9 +388,9 @@ const OrderCreateComponent = () => {
 
                       </li>
                       <li>
-                        <div class="flex items-center">
-                          <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                        <div className="flex items-center">
+                          <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                           </svg>
                           <button
                            onClick={() => setViewMode("form")}
@@ -362,11 +401,11 @@ const OrderCreateComponent = () => {
                         </div>
                       </li>
                       <li aria-current="page">
-                        <div class="flex items-center" onClick={() => setViewMode("table")}>
-                          <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                        <div className="flex items-center" onClick={() => setViewMode("table")}>
+                          <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                           </svg>
-                          <span class="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
+                          <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
                         </div>
                       </li>
                     </ol>
@@ -374,9 +413,9 @@ const OrderCreateComponent = () => {
                 </div>
               ) : (
                 <div className="flex mt-4 mb-4 justify-start space-x-2">
-                <nav class="flex" aria-label="Breadcrumb">
-                  <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li class="inline-flex items-center" 
+                <nav className="flex" aria-label="Breadcrumb">
+                  <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li className="inline-flex items-center" 
                     >
                      <button
                       onClick={() => setViewMode("card")}
@@ -390,10 +429,10 @@ const OrderCreateComponent = () => {
 
                     </li>
                     <li>
-                      <div class="flex items-center"
+                      <div className="flex items-center"
                       >
-                        <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                        <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                         </svg>
                         <button
                          onClick={() => setViewMode("form")}
@@ -405,11 +444,11 @@ const OrderCreateComponent = () => {
                       </div>
                     </li>
                     <li aria-current="page">
-                      <div class="flex items-center" onClick={() => setViewMode("table")}>
-                        <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                      <div className="flex items-center" onClick={() => setViewMode("table")}>
+                        <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                         </svg>
-                        <span class="ms-1 text-m font-bold text-[#D3423E] md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
+                        <span className="ms-1 text-m font-bold text-[#D3423E] md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
                       </div>
                     </li>
                   </ol>
@@ -466,7 +505,7 @@ const OrderCreateComponent = () => {
                     </button>
                   </div>
                 </div>
-                <div class="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div className="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-5">
                   {salesData.map((item) => (
                     <div key={item._id} className="p-5 border border-gray-400 rounded-2xl shadow-lg flex flex-col">
@@ -599,32 +638,29 @@ const OrderCreateComponent = () => {
                       {formData.tipoPago === 'Crédito' && (
                         <div className="flex flex-col">
                           <label className="text-left text-sm font-medium text-gray-900 mb-1">Plazo de pago</label>
-                          <select
-                            className="p-2 text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 rounded-2xl mt-2"
-                            name="plazoCredito"
+                          <input
+                            type="number"
                             value={formData.plazoCredito}
-                            onChange={handleChange}
-                            required
-                          >
-                            <option value="">Seleccione el plazo</option>
-                            <option value="1_semana">1 Semana</option>
-                            <option value="2_semanas">2 Semanas</option>
-                            <option value="1_mes">1 Mes</option>
-                            <option value="45_dias">45 Días</option>
-                          </select>
+                            onChange={(e) =>
+                              setFormData({ ...formData, plazoCredito: e.target.value })
+                            }
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                          />
+
                         </div>
                       )}
-                      <div className="flex flex-col">
-                        <label className="text-left text-sm font-medium text-gray-900 mb-1">Vendedor</label>
-                        <select
-                          className="p-2  text-gray-900 hover:text-red-700  hover:border-red-700 focus:border-red-700 rounded-2xl"
-                          name="vendedor" value={formData.vendedor} onChange={handleChange} required>
-                          <option value="">Seleccione un vendedor</option>
-                          {vendedores.map((vendedor) => (
-                            <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
-                          ))}
-                        </select>
-                      </div>
+                     
+                      {selectedCliente && (
+                        <div className="flex flex-col">
+                          <label className="text-left text-sm font-medium text-gray-900 mb-1">Vendedor</label>
+                          <input
+                            type="text"
+                            value={formData.vendedor}
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                            readOnly
+                          />
+                        </div>
+                      )}
                       {selectedCliente && (
                         <div className="flex flex-col">
                           <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección</label>
@@ -688,10 +724,15 @@ const OrderCreateComponent = () => {
                               }}
                               className="w-1/6  mr-1 ml-1 text-center border rounded-lg text-gray-900"
                             />
-
-                            <span className="w-1/6 text-center font-bold text-gray-900">
-                              Bs. {(item.price || 0).toFixed(2)}
-                            </span>
+                            <input
+                              type="number"
+                              value={item.price}
+                              onChange={(e) => {
+                                const newPrice = parseFloat(e.target.value) || 0;
+                                setCart(cart.map((c, i) => i === index ? { ...c, price: newPrice } : c));
+                              }}
+                              className="w-1/6  mr-1 ml-1 text-center border rounded-lg text-gray-900"
+                            />
                             <span className="w-1/6 text-center font-bold text-gray-900">
                               Bs. {(item.discount || 0).toFixed(2)}
                             </span>

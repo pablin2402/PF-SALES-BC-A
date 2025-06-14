@@ -29,6 +29,12 @@ export default function Sidebars() {
             </Link>
           </li>
           <li>
+            <Link to="/delivery" className="flex mt-2 mb-2 items-center justify-start text-gray-900 text-lg hover:font-bold hover:bg-white rounded-md px-4 py-2">
+              <HiUserGroup className="font-medium ml-4" />
+              <h1 className="ml-3 flex-1 whitespace-nowrap font-bold m-0">Entregas</h1>
+            </Link>
+          </li>
+          <li>
             <Link to="/order/pay" className="flex mt-2 mb-2 items-center justify-start text-gray-900 text-lg hover:font-bold hover:bg-white rounded-md px-4 py-2">
               <HiCurrencyDollar className="font-medium ml-4" />
               <h1 className="ml-3 flex-1 whitespace-nowrap font-bold m-0">Finanzas</h1>
@@ -44,6 +50,12 @@ export default function Sidebars() {
             <Link to="/localization/activivty" className="flex mt-2 mb-2 items-center justify-start text-gray-900 text-lg hover:font-bold hover:bg-white rounded-md px-4 py-2">
               <HiCurrencyDollar className="font-medium ml-4" />
               <h1 className="ml-3 flex-1 whitespace-nowrap font-bold m-0">Monitoreo</h1>
+            </Link>
+          </li>
+          <li>
+            <Link to="/objective/sales" className="flex mt-2 mb-2 items-center justify-start text-gray-900 text-lg hover:font-bold hover:bg-white rounded-md px-4 py-2">
+              <HiCurrencyDollar className="font-medium ml-4" />
+              <h1 className="ml-3 flex-1 whitespace-nowrap font-bold m-0">Objetivos</h1>
             </Link>
           </li>
           <li>

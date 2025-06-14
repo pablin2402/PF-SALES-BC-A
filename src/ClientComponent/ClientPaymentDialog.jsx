@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { API_URL, CONTRACT_DIRECTION } from '../config';
-import PagoRegistroABI from "../contracts/PagoRegistro.json"
-import { ethers } from 'ethers';
+//import PagoRegistroABI from "../contracts/PagoRegistro.json"
+//import { ethers } from 'ethers';
 
 const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid,totalGeneral,orderId,idClient,salesID }) => {
     const [paymentData, setPaymentData] = useState({
         amount: '',
         payer: ''
     });
+    const id_user = localStorage.getItem("id_user");
     const [file, setFile] = useState(null);
     const [amountError, setAmountError] = useState('');
     const total = totalGeneral - totalPaid;
@@ -31,28 +32,28 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid,totalGeneral,o
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
       };
-      
-const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
-    try {
-        if (!window.ethereum) {
-            alert("MetaMask no está disponible");
-            return;
+    /*      
+    const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
+        try {
+            if (!window.ethereum) {
+                alert("MetaMask no está disponible");
+                return;
+            }
+
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+            const provider = new ethers.BrowserProvider(window.ethereum); 
+            const signer = await provider.getSigner();
+            const contrato = new ethers.Contract(CONTRACT_DIRECTION, PagoRegistroABI, signer);
+
+            const tx = await contrato.registrarPago(orderId, payer, ethers.parseUnits(amount.toString(), 0));
+            await tx.wait();
+
+            console.log("✅ Pago registrado en blockchain:", tx.hash);
+        } catch (error) {
+            console.error("❌ Error al registrar pago en blockchain:", error);
         }
-
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-        const provider = new ethers.BrowserProvider(window.ethereum); 
-        const signer = await provider.getSigner();
-        const contrato = new ethers.Contract(CONTRACT_DIRECTION, PagoRegistroABI, signer);
-
-        const tx = await contrato.registrarPago(orderId, payer, ethers.parseUnits(amount.toString(), 0));
-        await tx.wait();
-
-        console.log("✅ Pago registrado en blockchain:", tx.hash);
-    } catch (error) {
-        console.error("❌ Error al registrar pago en blockchain:", error);
-    }
-};
+    }*/
     const handleSavePayment = async () => {
         try {
             const formData = new FormData();
@@ -65,18 +66,59 @@ const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
             formData.append("id_client", idClient);
             formData.append("sales_id", salesID);
             formData.append("id_owner", user);
-        
-            await axios.post(API_URL + "/whatsapp/order/pay", formData, {
-              headers: { "Content-Type": "multipart/form-data",     
-                        Authorization: `Bearer ${token}`
-            },
-            });
-            await registrarPagoEnBlockchain(orderId, paymentData.payer, paymentData.amount);
+            const orderResponse = await Promise.race([ 
+                await axios.post(API_URL + "/whatsapp/order/pay",
+                formData, 
+                {
+                headers: { 
+                    "Content-Type": "multipart/form-data",     
+                    Authorization: `Bearer ${token}`
+                }
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+            ]);
+            if (orderResponse.status === 200) {
+                onSave();
+                setPaymentData({ amount: '', payer: '' });
+                setFile(null);
+                console.log(orderResponse)
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                      const lat = position.coords.latitude;  
+                      const lng = position.coords.longitude;
+                
+                      try {
+                        await axios.post(API_URL + "/whatsapp/order/track", {
+                          orderId: orderId,
+                          eventType: "Pago Ingresado",
+                          triggeredBySalesman: id_user,
+                          triggeredByDelivery: "",
+                          triggeredByUser: "",
+                          location: { lat, lng }
+                        }, {
+                          headers: {
+                            Authorization: `Bearer ${token}`
+                          }
+                        });
+                
+                      } catch (error) {
+                        console.error("Error al enviar evento de orden:", error);
+                      } finally {
+                      }
+                    },
+                    (error) => {
+                      console.error("No se pudo obtener la ubicación:", error);
+                    }
+                  );
+                } else {
+                  console.warn("La geolocalización no es soportada por este navegador.");
+                }
+                onClose();
+            }
+            //await registrarPagoEnBlockchain(orderId, paymentData.payer, paymentData.amount);
 
-            onSave();
-            setPaymentData({ amount: '', payer: '' });
-            setFile(null);
-            onClose();
+            
           } catch (error) {
             console.error("Error al registrar el pago", error);
           }
@@ -126,7 +168,7 @@ const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
                 <div className="mb-4">
                 <label htmlFor="payer" className="text-m font-bold block text-left text-gray-700 mb-2">Adjunta una imagen del comprobante de pago</label>
                 <input 
-                    class="block w-full text-sm text-gray-900 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" 
+                    className="block w-full text-sm text-gray-900 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" 
                     aria-describedby="user_avatar_help" 
                     id="user_avatar" 
                     type="file"

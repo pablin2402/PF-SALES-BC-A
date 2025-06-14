@@ -101,7 +101,10 @@ const loadMarkersFromAPI = useCallback(async (sales_id) => {
               Authorization: `Bearer ${token}`
           }
       });
-      setMarkers(response.data);
+      setMarkers(response.data.users);
+      setFilteredData(response.data.users);
+      console.log(response)
+
   } catch (error) {
       console.error("Error al cargar los marcadores: ", error);
   }
@@ -190,7 +193,7 @@ useEffect(() => {
                 <div className="flex justify-end items-center space-x-2 w-full">
                   <button
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-lg text-[#3A3737] font-bold rounded-lg hover:bg-[#FF7F7A] transition duration-200 flex-shrink-0 h-[40px] w-32"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-red-700 text-lg text-white font-bold rounded-3xl transition duration-200 flex-shrink-0 h-[40px] w-32"
                   >
                     Siguiente
                   </button>
@@ -199,12 +202,13 @@ useEffect(() => {
                  <div
                     key={client._id}
                     onClick={() => findLocation(client)}
-                    className={`flex flex-col items-center bg-white md:flex-row hover:bg-gray-100 gap-x-2 min-w-[250px] cursor-pointer 
-                    ${index !== selectedMarkers.length - 1 ? "border-b border-gray-700" : "border-b border-gray-700"}`}
+                    className="flex flex-col items-center bg-white md:flex-row gap-x-4 w-full max-w-screen-lg h-auto border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative"
+                    style={{ minHeight: "120px" }}
+
                   >
                  <img
-                   className="w-16 h-16 object-cover rounded-md"
-                   src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
+                className="w-[120px] h-[120px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
+                src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
                    alt={client.name || "Cliente"}
                  />
                  <div className="flex flex-col justify-between leading-normal">
@@ -224,7 +228,7 @@ useEffect(() => {
                     e.preventDefault();
                     handleDelete(client._id);
                   }} className="text-red-500 hover:text-red-700 ml-auto">
-                   <MdDelete className="h-5 w-5" />
+                   <MdDelete className="h-7 w-7" />
                  </button>
                </div>
                
@@ -365,32 +369,32 @@ useEffect(() => {
             <div className="p-4 md:p-5">
             <form className="space-y-4" action="#">
             <div className="text-left">
-              <label htmlFor="routeName" className="block mb-2 text-sm font-medium text-gray-900">Nombre de la ruta</label>
+              <label htmlFor="routeName" className="block mb-2 text-m font-medium text-gray-900">Nombre de la ruta</label>
               <input
                 id="routeName"
                 type="text"
                 placeholder="Nombre de la ruta"
                 value={routeName}
                 onChange={(e) => setRouteName(e.target.value)}
-                className="w-full p-2 border text-gray-900 rounded-lg mb-2"
+                className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
               />
             </div>
             <div className="text-left">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Fecha de inicio</label>
+                <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de inicio</label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full p-2 border text-gray-900 rounded-lg mb-2"
+                  className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
                 />
             </div>
             <div className="text-left">
-              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Fecha de fin</label>
+              <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de fin</label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full p-2 border text-gray-900 rounded-lg mb-4"
+                  className="w-full p-2 border text-gray-900 rounded-2xl mb-4"
                 />
             </div>
             <div className="flex justify-end gap-2">
@@ -398,7 +402,7 @@ useEffect(() => {
                   type="button" 
                   onClick={() => handleCreateRoute()} 
                   disabled={!routeName || !startDate || !endDate}
-                  className={`px-4 py-2 font-semibold rounded-lg transition-colors ${
+                  className={`px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${
                     !routeName || !startDate || !endDate
                       ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                       : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'

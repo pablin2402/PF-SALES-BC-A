@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { LoadScript, GoogleMap, Marker} from "@react-google-maps/api";
+import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../config";
 
 import tiendaIcon2 from "../icons/tienda.png";
@@ -19,7 +19,7 @@ export default function ActivityRouteComponent() {
     const getCurrentDateUTCMinus4 = () => {
         const now = new Date();
         now.setUTCHours(now.getUTCHours() - 4);
-        return now.toISOString().split("T")[0]; 
+        return now.toISOString().split("T")[0];
     };
     const [startDate, setStartDate] = useState(getCurrentDateUTCMinus4());
     const [salesData, setSalesData] = useState([]);
@@ -37,10 +37,10 @@ export default function ActivityRouteComponent() {
                     {
                         id_owner: user
                     }, {
-                        headers: {
-                          Authorization: `Bearer ${token}`
-                        }
-                      });
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 setVendedores(response.data.data);
             } catch (error) {
                 console.error(" obteniendo vendedores", error);
@@ -51,7 +51,7 @@ export default function ActivityRouteComponent() {
     }, [user, token]);
     useEffect(() => {
         if (searchTerm.trim() === "") {
-            setFilteredData(salesData);        
+            setFilteredData(salesData);
         } else {
             const filtered = salesData.filter((item) =>
                 item.clientName.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,7 +61,7 @@ export default function ActivityRouteComponent() {
             setFilteredData(filtered);
         }
     }, [searchTerm, salesData]);
-    
+
     const findLocation = (client) => {
         if (client) {
             const lat = parseFloat(client.latitude);
@@ -92,9 +92,9 @@ export default function ActivityRouteComponent() {
                 page: page
             }, {
                 headers: {
-                  Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
-              });
+            });
             setSalesData(response.data.data || []);
             setFilteredData(response.data.data || []);
             setTotalPages(response.data.pages);
@@ -102,8 +102,8 @@ export default function ActivityRouteComponent() {
         } catch (error) {
         } finally {
         }
-    }, [startDate, user, token]); 
-    
+    }, [startDate, user, token]);
+
     useEffect(() => {
         fetchActivities(selectedSaler, page);
     }, [fetchActivities, selectedSaler, page]);
@@ -124,7 +124,7 @@ export default function ActivityRouteComponent() {
                 },
                 stopover: true,
             }));
-            setDirectionsResponse(null); 
+            setDirectionsResponse(null);
 
             const directionsService = new window.google.maps.DirectionsService();
             directionsService.route(
@@ -145,7 +145,7 @@ export default function ActivityRouteComponent() {
             );
         }
     }, [salesData]);
-    
+
     return (
         <div className="h-screen w-full flex overflow-hidden">
             <div className="w-2/6 h-full overflow-auto border-r-2 border-gray-200">
@@ -175,7 +175,7 @@ export default function ActivityRouteComponent() {
                                 onChange={(e) => setStartDate(e.target.value)}
                                 className="w-2/5 p-2 border text-sm border-gray-900 rounded-lg text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
-                           
+
                             <button
                                 onClick={() => fetchActivities(selectedSaler)}
                                 className="flex items-center justify-center px-4 py-2 bg-white rounded-lg transition duration-200 w-1/5 h-12"
@@ -200,7 +200,7 @@ export default function ActivityRouteComponent() {
                                                     {client.clientName.name} {client.clientName.lastName}
 
                                                 </h5>
-                                               
+
                                                 <h5 className="text-l font-bold tracking-tight">
                                                     <span
                                                         className={`
@@ -234,7 +234,7 @@ export default function ActivityRouteComponent() {
                                                     {client.clientName.name} {client.clientName.lastName}
                                                 </h5>
                                                 <h5 className="text-l tracking-tight font-bold text-gray-900">
-                                                {client.salesMan.fullName} {client.salesMan.lastName}
+                                                    {client.salesMan.fullName} {client.salesMan.lastName}
                                                 </h5>
                                                 <h5 className="text-l tracking-tight font-bold text-gray-900">
                                                     {client.visitDuration}
@@ -301,27 +301,27 @@ export default function ActivityRouteComponent() {
             </div>
             <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">
                 <LoadScript googleMapsApiKey={GOOGLE_API_KEY} >
-                <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={mapZoom}>
-                    {salesData.length > 0 &&
-                        salesData.map((client, index) => {
-                            const latReal = client.latitude;
-                            const lngReal = client.longitude;
-                            const latEsperado = client.clientName.client_location.latitud;
-                            const lngEsperado = client.clientName.client_location.longitud;
-                            return (
-                                <React.Fragment key={index}>
-                                    <Marker
-                                        key={client._id}
-                                        position={{ lat: latEsperado, lng: lngEsperado }}
-                                        icon={{
-                                            url: tiendaIcon2,
-                                            scaledSize: new window.google.maps.Size(48, 48),
-                                        }}
-                                    />
-                                    <Marker
-                                        position={{ lat: latReal, lng: lngReal }}
-                                                icon={{
-                                                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                    <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={mapZoom}>
+                        {salesData.length > 0 &&
+                            salesData.map((client, index) => {
+                                const latReal = client.latitude;
+                                const lngReal = client.longitude;
+                                const latEsperado = client.clientName.client_location.latitud;
+                                const lngEsperado = client.clientName.client_location.longitud;
+                                return (
+                                    <React.Fragment key={index}>
+                                        <Marker
+                                            key={client._id}
+                                            position={{ lat: latEsperado, lng: lngEsperado }}
+                                            icon={{
+                                                url: tiendaIcon2,
+                                                scaledSize: new window.google.maps.Size(48, 48),
+                                            }}
+                                        />
+                                        <Marker
+                                            position={{ lat: latReal, lng: lngReal }}
+                                            icon={{
+                                                url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
                                                         <svg width="70" height="70" xmlns="http://www.w3.org/2000/svg">
                                                             <defs>
                                                                 <clipPath id="circleView">
@@ -331,30 +331,30 @@ export default function ActivityRouteComponent() {
                                                             <image href="${tiendaIcon2}" x="9" y="9" width="52" height="52" clip-path="url(#circleView)" />
                                                             <circle cx="56" cy="14" r="10" fill="white" />
                                                             <circle cx="56" cy="14" r="9" fill="green" />
-                                                            <path d="M52.5 14l3 3.5L60 10" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M52.5 14l3 3.5L60 10" stroke="white" strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                                                         </svg>
                                                     `)}`,
-                                                    scaledSize: new window.google.maps.Size(70, 70),
-                                        }}
-                                    />   
-                                    
-                                </React.Fragment>
-                    );
-                })}
-            {directionsResponse && (
-                <DirectionsRenderer
-                    directions={directionsResponse}
-                    options={{
-                        polylineOptions: {
-                            strokeColor: "#000000",
-                            strokeOpacity: 0.8,
-                            strokeWeight: 6,
-                        },
-                        suppressMarkers: true,
-                    }}
-                />
-            )}
-        </GoogleMap>
+                                                scaledSize: new window.google.maps.Size(70, 70),
+                                            }}
+                                        />
+
+                                    </React.Fragment>
+                                );
+                            })}
+                        {directionsResponse && (
+                            <DirectionsRenderer
+                                directions={directionsResponse}
+                                options={{
+                                    polylineOptions: {
+                                        strokeColor: "#000000",
+                                        strokeOpacity: 0.8,
+                                        strokeWeight: 6,
+                                    },
+                                    suppressMarkers: true,
+                                }}
+                            />
+                        )}
+                    </GoogleMap>
                 </LoadScript>
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-4">
                     <div className="relative">

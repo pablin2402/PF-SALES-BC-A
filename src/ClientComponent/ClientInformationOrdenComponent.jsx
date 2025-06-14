@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import ClientPaymentDialog from "./ClientPaymentDialog";
 import axios from "axios";
 import { API_URL } from "../config";
@@ -18,7 +18,8 @@ export default function ClientInformationOrdenComponent() {
     const [paymentsData, setPaymentsData] = useState([]);
     const [totalPaid, setTotalPaid] = useState(0);
     const tabs = ["Año", "Mes"];
-
+    const [orderData, setOrderData] = useState([]);
+console.log(state)
     const [activeTab] = useState(0);
     const tabRefs = useRef(new Array(tabs.length).fill(null));
     const [setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -81,9 +82,7 @@ export default function ClientInformationOrdenComponent() {
             setTotalDescuentos(descuentos);
         }
     }, [state]);
-
-
-    const fetchPayments = useCallback(async () => {
+    const fetchPayments = async () => {
         if (!state?.files?.id_client.id_user) {
             console.error("No se encontró orderId en el estado.");
             return;
@@ -98,19 +97,44 @@ export default function ClientInformationOrdenComponent() {
                     Authorization: `Bearer ${token}`
                 }
             });
-            const payments = response.data || [];
-            const totalPaidSum = payments.reduce((sum, payment) => sum + (payment.total || 0), 0);
+            const payments = response.data;
+            console.log(payments)
+            if (payments.length > 0) {
+                const totalPaidSum = payments.reduce((sum, payment) => sum + (payment.total || 0), 0);
+                setPaymentsData(payments);
+                setTotalPaid(totalPaidSum);
+            } else {
+                setPaymentsData([]);
+                setTotalPaid(0);
+            }
 
-            setPaymentsData(payments);
-            setTotalPaid(totalPaidSum);
         } catch (error) {
             console.error("Error al obtener los pagos", error);
         }
-    }, [state?.files, token, user]);
-
+    };
+    const fetchOrderTracks = async () => {
+        try {
+            const response = await axios.post(API_URL + "/whatsapp/order/track/list", {
+                orderId: state.files._id
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const payments = response.data || [];
+            console.log(payments)
+            setOrderData(payments);
+        } catch (error) {
+            console.error("Error al obtener los pagos", error);
+        }
+    };
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         fetchPayments();
-    }, [fetchPayments]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchOrderTracks();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleSavePayment = () => {
         fetchPayments();
@@ -141,8 +165,29 @@ export default function ClientInformationOrdenComponent() {
     const closeModal = () => {
         setSelectedImage(null);
     };
-
-
+    const getInitials = (name = "", lastName = "") => {
+        if (typeof name !== "string" || typeof lastName !== "string") return "";
+      
+        const fullName = `${name} ${lastName}`.trim();
+        const parts = fullName.split(" ");
+        return parts
+          .filter(Boolean)
+          .map((p) => p[0].toUpperCase())
+          .slice(0, 2)
+          .join("");
+      };
+      
+    const colorClasses = [
+        'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
+        'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
+    ];
+    const getColor = (name, lastName) => {
+        const hash = (name + lastName)
+            .split('')
+            .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const index = hash % colorClasses.length;
+        return colorClasses[index];
+    };
     return (
         <div className="bg-white min-h-screen p-5">
             <div className="relative overflow-x-auto">
@@ -210,7 +255,6 @@ export default function ClientInformationOrdenComponent() {
                             </ol>
                         </nav>
                     )}
-
                 </div>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-900">
@@ -255,16 +299,19 @@ export default function ClientInformationOrdenComponent() {
                     </div>
                 </div>
 
-
-                <div class="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div className="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <div className="border-b border-gray-200 dark:border-gray-700">
                         <ul className="flex flex-wrap text-m text-center text-red-700 font-bold">
                             <li className="me-2">
                                 <button className="p-4 border-b-2 text-gray-900 rounded-lg border-transparent" onClick={() => setShowPayments(false)}>Productos</button>
                             </li>
-                            <li className="me-2">
-                                <button className="p-4 text-gray-900 rounded-lg " onClick={() => setShowPayments(true)}>Pagos</button>
-                            </li>
+                            {paymentsData.length > 0 && (
+                                <li className="me-2">
+                                    <button className="p-4 text-gray-900 rounded-lg" onClick={() => setShowPayments(true)}>
+                                    Pagos
+                                    </button>
+                                </li>
+                            )}
                         </ul>
                     </div>
                     {showPayments ? (
@@ -393,7 +440,7 @@ export default function ClientInformationOrdenComponent() {
                         </div>
                     )}
                 </div>
-                <div class="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <div className="space-y-4">
                         <div className="flex justify-between pb-2">
                             <span className="text-xl font-bold text-gray-900">Detalles del cliente:</span>
@@ -404,13 +451,22 @@ export default function ClientInformationOrdenComponent() {
                                 {state.files.id_client.name + " " + state.files.id_client.lastName}
                             </span>
                         </div>
+                        <div className="flex justify-between border-b pb-2">
+                            <span className="text-xl font-bold text-gray-900">Repartidor:</span>
+                            <span className="text-lg text-gray-900">
+                                {state.files.orderTrackId
+                                    ? `${state.files.orderTrackId.fullName} ${state.files.orderTrackId.lastName}`
+                                    : 'No asignado'}
+                                </span>
 
+                        </div>
                         <div className="flex justify-between border-b pb-2">
                             <span className="text-xl font-bold text-gray-900">Estado:</span>
                             <span className="text-lg text-gray-900">
                                 {formatAccountStatus(state.files.accountStatus)}
                             </span>
                         </div>
+                       
 
                         <div className="flex justify-between border-b pb-2">
                             <span className="text-xl font-bold text-gray-900">Vencimiento:</span>
@@ -422,6 +478,75 @@ export default function ClientInformationOrdenComponent() {
                         </div>
 
                     </div>
+
+                </div>
+                <div className="max-w-full mt-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <ol className="relative border-s border-gray-300 dark:border-gray-700">
+  {Array.isArray(orderData) && orderData.length > 0 ? (
+    orderData.map((event, index) => (
+      <li key={index} className="mb-10 ms-6">
+        <span className="absolute flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-full ${getColor(
+              event.triggeredBySalesman?.fullName,
+              event.triggeredBySalesman?.lastName
+            )}`}
+          >
+            <span className="font-medium text-white">
+              {getInitials(
+                event.triggeredBySalesman?.fullName,
+                event.triggeredBySalesman?.lastName
+              )}
+            </span>
+          </div>
+        </span>
+
+        <div className="p-8 ml-4 bg-white border border-gray-200 rounded-lg shadow-xs dark:bg-gray-700 dark:border-gray-600">
+          <div className="items-center justify-between mb-3 sm:flex">
+            <time className="mb-1 text-xs font-normal text-gray-900 sm:order-last sm:mb-0">
+              {new Date(event.timestamp).toLocaleString()}
+            </time>
+            <div className="text-m font-normal text-gray-900 dark:text-gray-300">
+              {event.eventType === "Orden Creada" && (
+                <div>
+                  <strong>
+                    {event.triggeredBySalesman?.fullName
+                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                      : event.triggeredByUser?.fullName
+                      ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
+                      : event.triggeredByDelivery?.fullName
+                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                      : "Alguien"}
+                  </strong>{" "}
+                  ha creado el pedido
+                </div>
+              )}
+
+              {event.eventType === "Pago Ingresado" && (
+                <div>
+                  <strong>
+                    {event.triggeredBySalesman?.fullName
+                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                      : event.triggeredByUser?.fullName
+                      ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
+                      : event.triggeredByDelivery?.fullName
+                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                      : "Alguien"}
+                  </strong>{" "}
+                  ha ingresado un pago
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </li>
+    ))
+  ) : (
+    <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+      No se tienen datos de registro de actividad.
+    </div>
+  )}
+</ol>
 
                 </div>
             </div>

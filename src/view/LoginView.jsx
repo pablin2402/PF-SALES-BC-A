@@ -17,9 +17,10 @@ const Login = ({ onLogin }) => {
         email,
         password,
       });
-
+      console.log(response)
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("id_owner", response.data.usuarioDB.id_owner);
+      localStorage.setItem("id_user", response.data.usuarioDB.salesMan);
 
       onLogin(response.data.token);
       navigate("/");
@@ -46,7 +47,7 @@ const Login = ({ onLogin }) => {
           <div className="text-red-600 text-sm font-medium text-center">{errorMessage}</div>
         )}
         <div>
-          <label for="email" class="block mb-2 text-lg font-medium text-gray-900 dark:text-white">
+          <label for="email" className="block mb-2 text-lg font-medium text-gray-900 dark:text-white">
             Correo electrónico
           </label>
           <input
@@ -55,12 +56,12 @@ const Login = ({ onLogin }) => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="nombre@correo.com"
             required="" />
         </div>
         <div>
-          <label for="password" class="block mb-2 text-lg font-medium text-gray-900 dark:text-white">
+          <label for="password" className="block mb-2 text-lg font-medium text-gray-900 dark:text-white">
             Contraseña
           </label>
           <input
@@ -70,11 +71,11 @@ const Login = ({ onLogin }) => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             required="" />
         </div>
 
-        <button type="submit" class="w-full text-white bg-[#D3423E] hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-2xl text-lg px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">INICIAR SESIÓN</button>
+        <button type="submit" className="w-full text-white bg-[#D3423E] hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-2xl text-lg px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">INICIAR SESIÓN</button>
 
       </form>
     </div>

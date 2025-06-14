@@ -126,7 +126,7 @@ const ProductView = () => {
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => navigate("/product/creation")}
-                  className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold uppercase rounded-3xl hover:bg-[#FFCECD] hover:text-[#D3423E] hover:font-bold transition duration-200"
+                  className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold uppercase rounded-3xl transition duration-200"
                 >
                   + Crear Producto
                 </button>

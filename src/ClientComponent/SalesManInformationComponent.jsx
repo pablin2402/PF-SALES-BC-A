@@ -16,7 +16,7 @@ export default function SalesManInformationComponent() {
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
   const [idClient, setClientId] = useState("");
-  const [itemsPerPage, setItemsPerPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -82,7 +82,7 @@ export default function SalesManInformationComponent() {
       fetchProducts(page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idClient, page,itemsPerPage]);
+  }, [idClient, page, itemsPerPage]);
 
   const calculateDaysRemaining = (dueDate) => {
     if (!dueDate) return '0';
@@ -117,11 +117,12 @@ export default function SalesManInformationComponent() {
         id_owner: user,
         salesId: id,
         page: page,
-        limit: 10000
+        limit: itemsPerPage
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
+        setDateFilterActive(true);
       }
       const response = await axios.post(API_URL + "/whatsapp/order/id/sales", payload,
         {
@@ -167,11 +168,12 @@ export default function SalesManInformationComponent() {
         id_owner: user,
         salesId: id,
         page: page,
-        limit: 10000
+        limit: itemsPerPage
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
+        setDateFilterActive(true);
       }
       const response = await axios.post(API_URL + "/whatsapp/order/id/sales", payload,
         {
@@ -387,8 +389,8 @@ export default function SalesManInformationComponent() {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
-            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-              <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-6 py-3 uppercase">Referencia</th>
                     <th className="px-6 py-3 uppercase">Fecha de creación</th>
@@ -450,85 +452,85 @@ export default function SalesManInformationComponent() {
                 <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
               </div>
               {totalPages > 1 && (
-               <div className="flex justify-between items-center px-6 pb-4">
-               <div className="flex mb-4 justify-end items-center pt-4">
-                 <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                   Ítems por página:
-                 </label>
-                 <select
-                   id="itemsPerPage"
-                   value={itemsPerPage}
-                   onChange={(e) => {
-                     setItemsPerPage(Number(e.target.value));
-                     setPage(1);
-                     fetchProducts(page);
-                   }}
-                   className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
-                 >
-                   {[5, 10, 20, 50, 100].map((option) => (
-                     <option key={option} value={option}>
-                       {option}
-                     </option>
-                   ))}
-                 </select>
-               </div>
-              <nav className="flex items-center justify-center pt-4 space-x-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1
-                    ? "text-[#D3423E] cursor-not-allowed"
-                    : "text-[#D3423E] font-bold"
-                    }`}
-                >
-                  ◀
-                </button>
+                <div className="flex justify-between items-center px-6 pb-4">
+                  <div className="flex mb-4 justify-end items-center pt-4">
+                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                      Ítems por página:
+                    </label>
+                    <select
+                      id="itemsPerPage"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setPage(1);
+                        fetchProducts(page);
+                      }}
+                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                    >
+                      {[5, 10, 20, 50, 100].map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <nav className="flex items-center justify-center pt-4 space-x-2">
+                    <button
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1
+                        ? "text-[#D3423E] cursor-not-allowed"
+                        : "text-[#D3423E] font-bold"
+                        }`}
+                    >
+                      ◀
+                    </button>
 
-                <button
-                        onClick={() => setPage(1)}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                      >
-                        1
-                      </button>
+                    <button
+                      onClick={() => setPage(1)}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                    >
+                      1
+                    </button>
 
-                      {page > 3 && <span className="px-2 text-gray-900">…</span>}
-                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                        .filter((p) => p > 1 && p < totalPages)
-                        .map((p) => (
-                          <button
-                            key={p}
-                            onClick={() => setPage(p)}
-                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-                      {totalPages > 1 && (
+                    {page > 3 && <span className="px-2 text-gray-900">…</span>}
+                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                      .filter((p) => p > 1 && p < totalPages)
+                      .map((p) => (
                         <button
-                          onClick={() => setPage(totalPages)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
                         >
-                          {totalPages}
+                          {p}
                         </button>
-                      )}
+                      ))}
+                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                    {totalPages > 1 && (
                       <button
-                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={page === totalPages}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages
-                          ? "text-[#D3423E] cursor-not-allowed"
-                          : "text-[#D3423E] font-bold"
-                          }`}
+                        onClick={() => setPage(totalPages)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
                       >
-                        ▶
+                        {totalPages}
                       </button>
-              </nav>
-              </div>
-            )}
+                    )}
+                    <button
+                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={page === totalPages}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages
+                        ? "text-[#D3423E] cursor-not-allowed"
+                        : "text-[#D3423E] font-bold"
+                        }`}
+                    >
+                      ▶
+                    </button>
+                  </nav>
+                </div>
+              )}
             </div>
-            
-            
+
+
           </div>
         </div>
       )}

@@ -119,18 +119,19 @@ export default function ClientInformationComponent() {
       const payload = {
         id_owner: user,
         id_client: idClient,
-        page: page,
-        limit: 8,
+        page: 1,
+        limit: itemsPerPage,
       };
-
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
+        setDateFilterActive(true);
+
       }
       if (selectedEstadoPago) {
         payload.estadoPago = selectedEstadoPago;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
+      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload,{
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -172,18 +173,19 @@ export default function ClientInformationComponent() {
       const payload = {
         id_owner: user,
         id_client: idClient,
-        page: page,
-        limit: 8,
+        page: 1,
+        limit: itemsPerPage,
       };
-
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
+        setDateFilterActive(true);
+
       }
       if (selectedEstadoPago) {
         payload.estadoPago = selectedEstadoPago;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
+      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload,{
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -263,9 +265,9 @@ export default function ClientInformationComponent() {
           <div className="w-full max-w-5xl gap-6">
             <div className="flex mt-4 mb-4 justify-start space-x-2">
 
-              <nav class="flex" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                  <li class="inline-flex items-center" onClick={() => navigate(-1)}>
+              <nav className="flex" aria-label="Breadcrumb">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                  <li className="inline-flex items-center" onClick={() => navigate(-1)}>
                     <button
                       onClick={() => navigate(-2)}
                       className="inline-flex items-center text-lg font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
@@ -284,9 +286,9 @@ export default function ClientInformationComponent() {
 
                   </li>
                   <li>
-                    <div class="flex items-center">
-                      <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
+                    <div className="flex items-center">
+                      <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                       </svg>
                       <button
                         onClick={() => navigate(-1)}

@@ -27,7 +27,7 @@ const SalesView = () => {
         } finally {
         }
     };
-    const [formData, setFormData] = useState({ productName1: "",supplier:"", categoryId:"",productImage: "", qty: 1, description:"", id_user:"", productId:"",status: true, buttonStatus: false, addDisccount:0, extra:0 });
+    const [formData, setFormData] = useState({ productName1: "",supplier:"", categoryId:"",productImage: "", qty: 1, description:"", id_user:"", productId:"",status: true, buttonStatus: false, addDisccount:0, extra:0 ,numberofUnitsPerBox:0});
     const [formDataPrice, setFormDataPrice] = useState({ price: 0, offerPrice: false, merchandiseCost: 0, revenue: 0, marginGain:0, disscount:0, productId:"" });
 
     const handleChange = (e) => {
@@ -35,6 +35,8 @@ const SalesView = () => {
         setFormData({
           ...formData,
           [name]: name === "qty" ? Number(value) : value,
+          [name]: name === "numberofUnitsPerBox" ? Number(value) : value,
+
         });
       };
       
@@ -51,7 +53,7 @@ const SalesView = () => {
         });
       };  
     const resetForm = () => {
-        setFormData({ productName1: "",supplier:"", productImage: "", qty: 1, description:"", categoryId:"", id_user:"", productId:"",status: true, buttonStatus: false, addDisccount:0, extra:0 });
+        setFormData({ productName1: "",supplier:"", productImage: "", qty: 1, description:"", categoryId:"", id_user:"", productId:"",status: true, buttonStatus: false, addDisccount:0, extra:0,numberofUnitsPerBox:0 });
         setFormDataPrice({ price: 0, offerPrice: false, merchandiseCost: 0, revenue: 0, marginGain:0, disscount:0, productId:"" });   
     };
       const generateUniqueProductId = (productName) => {
@@ -94,6 +96,7 @@ const SalesView = () => {
                         description: formData.description, 
                         id_user: user, 
                         productId: name,
+                        numberofUnitsPerBox: formData.numberofUnitsPerBox
                     }, {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -146,7 +149,7 @@ const SalesView = () => {
                                 <label className="text-left text-sm font-medium text-gray-900 mb-1">
                                     Descripción del producto
                                 </label>
-                            <textarea id="description" value={formData.description} onChange={handleChange}rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-2xl border border-gray-900" placeholder="Descripción del producto ..."></textarea>
+                            <textarea id="description" value={formData.description} onChange={handleChange}rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-2xl border border-gray-900" placeholder="Descripción del producto ..."></textarea>
                         </div>
                         </div>
                         <div className="mt-6 grid gap-6 sm:grid-cols-2">
@@ -179,7 +182,7 @@ const SalesView = () => {
                                 />
                             </div>
                         </div>
-                        <div className="mt-6 grid gap-6">
+                        <div className="mt-6 grid gap-6 sm:grid-cols-2">
                             <div className="flex flex-col">
                                 <label className="text-left text-sm font-medium text-gray-900 mb-1">
                                     Categoría
@@ -195,6 +198,20 @@ const SalesView = () => {
                                         <option key={category._id} value={category._id}>{category.categoryName}</option>
                                     ))}
                                 </select>
+                            </div>
+                            <div className="flex flex-col">
+                                <label
+                                    className="text-left text-sm font-medium text-gray-900 mb-1"
+                                >Número de unidades por caja
+                                </label>
+                                <input
+                                    type="number"
+                                    name="numberofUnitsPerBox"
+                                    value={formData.numberofUnitsPerBox} onChange={handleChange}
+                                    className="bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-2xl focus:ring-black focus:border-black block p-2.5"
+                                    placeholder="0"
+                                    required
+                                />
                             </div>
                           
                         </div>

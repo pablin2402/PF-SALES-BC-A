@@ -171,7 +171,7 @@ const DeliveryView = () => {
                     </div>
           </div>
           {salesData.length === 0 ? (
-            <div class="max-w-full max-h-full p-6 bg-white border mt-5 border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div className="max-w-full max-h-full p-6 bg-white border mt-5 border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
               <p className="text-center text-gray-900 font-bold text-lg mt-5">No existen repartidores.</p>
               </div>
             ) : (

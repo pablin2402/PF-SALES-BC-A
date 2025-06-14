@@ -246,7 +246,7 @@ export default function ShowRouteComponent() {
                     <div className="bg-white p-4 rounded-xl shadow-md w-full mb-4 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <select
-                                className="w-full p-2 text-sm text-gray-900 border border-gray-400 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                                 name="vendedor"
                                 value={selectedSaler}
                                 onChange={(e) => setSelectedSaler(e.target.value)}
@@ -262,7 +262,7 @@ export default function ShowRouteComponent() {
                             </select>
 
                             <select
-                                className="w-full p-2 text-sm text-gray-900 border border-gray-400 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                                 name="estado"
                                 value={selectedStatus}
                                 onChange={(e) => setSelectedStatus(e.target.value)}
@@ -281,13 +281,13 @@ export default function ShowRouteComponent() {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="flex-1 p-2 text-sm text-gray-900 border border-gray-400 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                             />
                             <input
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="flex-1 p-2 text-sm text-gray-900 border border-gray-400 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                             />
                              <button
                                 onClick={() => exportToExcel(listRoutes)}

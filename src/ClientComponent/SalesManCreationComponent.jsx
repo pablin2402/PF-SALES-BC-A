@@ -107,8 +107,8 @@ const SalesManCreationComponent = () => {
   
         if (addressResponse.status === 200) {
           const directionId = addressResponse.data._id;
-          const userId = userResponse.data._id;
-
+          const userId = userResponse.data.id;
+          console.log(userId, userResponse)
           await axios.post(API_URL + "/whatsapp/sales/salesman", {
             fullName: formData.nombre,
             lastName:formData.apellido,
@@ -117,7 +117,6 @@ const SalesManCreationComponent = () => {
             id_owner: user,
             phoneNumber: formData.telefono,
             client_location: directionId,
-            userId: userId
           }, {
             headers: {
               Authorization: `Bearer ${token}`

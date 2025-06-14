@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import axios from "axios";
 import { API_URL, GOOGLE_API_KEY } from "../config";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,11 @@ const containerStyle = {
 const ClientCreationComponent = () => {
   const [location, setLocation] = useState({ lat: -17.3835, lng: -66.1568 });
   const [address, setAddress] = useState({ road: "", state: "", house_number: "" });
-  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo:"", identificacion:"0" });
+  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo: "", identificacion: "0" });
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_API_KEY,
+    id: "google-map-script",
+  });
 
   const [vendedores, setVendedores] = useState([]);
   const [showToast, setShowToast] = useState(false);
@@ -79,12 +83,15 @@ const ClientCreationComponent = () => {
         setVendedores([]);
       }
     };
-  
+
     fetchVendedores();
   }, [token, user]);
-  
+
   const resetForm = () => {
-    setFormData({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", identificacion:"0" });
+    setFormData({
+      nombre: "", apellido: "", email: "", telefono: 0,
+      punto: "", vendedor: "", tipo: "", identificacion: "0"
+    });
     setAddress({ road: "", state: "", house_number: "" });
     setLocation({ lat: -17.3835, lng: -66.1568 });
   };
@@ -94,7 +101,7 @@ const ClientCreationComponent = () => {
       const addressPromise = axios.post(API_URL + "/whatsapp/maps/id",
         {
           sucursalName: formData.punto,
-          iconType:"https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
+          iconType: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
           longitud: location.lng,
           latitud: location.lat,
           logoColor: "",
@@ -105,10 +112,10 @@ const ClientCreationComponent = () => {
           house_number: address.house_number,
           city: address.state
         }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        headers: {
+          Authorization: `Bearer ${token}`
         }
+      }
       );
       const addressResponse = await Promise.race([addressPromise, new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))]);
       if (addressResponse.status === 200) {
@@ -132,10 +139,10 @@ const ClientCreationComponent = () => {
             sales_id: formData.vendedor,
             userCategory: formData.tipo
           }, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+          headers: {
+            Authorization: `Bearer ${token}`
           }
+        }
         );
         setShowToast(true);
         resetForm();
@@ -178,7 +185,7 @@ const ClientCreationComponent = () => {
                 <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de teléfono" required />
               </div>
               <div className="flex flex-col">
-              <label className="text-left text-sm font-medium text-gray-900 mb-1">Asignar Vendedor</label>
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Asignar Vendedor</label>
                 <select
                   className="text-gray-900 hover:text-red-700  hover:border-red-700 focus:border-red-700 rounded-2xl"
                   name="vendedor" value={formData.vendedor} onChange={handleChange} required>
@@ -189,7 +196,7 @@ const ClientCreationComponent = () => {
                 </select>
               </div>
               <div className="flex flex-col">
-              <label className="text-left text-sm font-medium text-gray-900 mb-1">TIpo de Punto</label>
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">TIpo de Punto</label>
                 <select
                   className="text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 rounded-2xl"
                   name="tipo"
@@ -206,11 +213,7 @@ const ClientCreationComponent = () => {
               </div>
               <div className="flex flex-col sm:col-span-2">
                 <h2 className="mt-2 mb-6 text-l text-left font-bold text-gray-900">Ubicación del Punto</h2>
-                <LoadScript
-                  googleMapsApiKey={GOOGLE_API_KEY}
-                  onLoad={() => setIsMapLoaded(true)}
-                >
-                {isMapLoaded && (
+                {isLoaded ? (
                   <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={location}
@@ -228,8 +231,10 @@ const ClientCreationComponent = () => {
                       }}
                     />
                   </GoogleMap>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
                 )}
-                </LoadScript>
+
               </div>
             </div>
           </form>
@@ -245,7 +250,7 @@ const ClientCreationComponent = () => {
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección</label>
-                <input name="road" value={address.road} onChange={handleChangeLocation} ytpe="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Dirección" required />
+                <input name="road" value={address.road} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Dirección" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1  ">Ciudad</label>
@@ -256,6 +261,7 @@ const ClientCreationComponent = () => {
                 <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de casa" required />
               </div>
               <button
+                type="submit"
                 onClick={handleSubmit}
                 className="mt-4 w-full px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-2xl hover:bg-white hover:text-red-600 transition"
               >

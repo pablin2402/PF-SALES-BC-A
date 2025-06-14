@@ -38,6 +38,7 @@ const OrderView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const MAX_ITEMS_PER_PAGE = 20;
 
   const handleNewOrderClick = () => {
     navigate("/order/creation");
@@ -58,15 +59,16 @@ const OrderView = () => {
       setVendedores([]);
     }
   };
-  useEffect(() => { 
+  useEffect(() => {
     fetchVendedores();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token]);
   const fetchOrders = async (pageNumber, customFilters) => {
     setLoading(true);
     try {
       const filters = {
         id_owner: user,
+        region: "TOTAL CBB",
         page: pageNumber,
         limit: itemsPerPage,
         fullName: inputValue,
@@ -88,7 +90,6 @@ const OrderView = () => {
       setLoading(false);
     }
   };
-
   const applyFilters = () => {
     const customFilters = {};
     if (inputValue) customFilters.fullName = inputValue;
@@ -103,10 +104,9 @@ const OrderView = () => {
     fetchOrders(1, customFilters);
     setPage(1);
   };
-
   useEffect(() => {
     fetchOrders(page);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, itemsPerPage]);
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, { state: { products: item.products, files: item, flag: true } });
@@ -198,7 +198,7 @@ const OrderView = () => {
     }
   };
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
+    <div className="bg-white min-h-screen p-5">
       <div className="relative overflow-x-auto">
         {loading ? (
           <Spinner />
@@ -496,6 +496,7 @@ const OrderView = () => {
               </div>
               {totalPages > 1 && (
                 <div className="flex justify-between items-center px-6 pb-4">
+
                   <div className="flex mb-4 justify-end items-center pt-4">
                     <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
                       Ítems por página:
@@ -504,19 +505,23 @@ const OrderView = () => {
                       id="itemsPerPage"
                       value={itemsPerPage}
                       onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
+                        const selectedValue = Number(e.target.value);
+                        setItemsPerPage(selectedValue);
                         setPage(1);
-                        fetchOrders(page);
+                        fetchOrders(1);
                       }}
                       className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                     >
-                      {[5, 10, 20, 50, 100].map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
+                      {[5, 10, 15, 20]
+                        .filter((option) => option < items && option <= MAX_ITEMS_PER_PAGE)
+                        .map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                     </select>
                   </div>
+
                   <nav className="flex items-center justify-center pt-4 space-x-2">
                     <button
                       onClick={() => setPage((prev) => Math.max(prev - 1, 1))}

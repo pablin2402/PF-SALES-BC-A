@@ -12,6 +12,8 @@ import LocalizacionView from './view/LocalizationView';
 import OrderPaymentView from './view/OrderPaymentView';
 import DeliveryView from "./view/DeliveryView";
 import StatisticsView from "./view/StatisticsView";
+import DeliveryRouteView from "./view/DeliveryRouteView";
+import ObjectiveRegionalsView from "./view/ObjectiveRegionalsView";
 
 import DeliveryCreationComponent from "./ClientComponent/DeliveryCreationComponent";
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
@@ -29,6 +31,8 @@ import OrderCreateComponent from "./OrderComponent/OrderCreateComponent";
 import CreateRouteComponent from "./locationComponent/CreateRouteComponent";
 import ShowRouteComponent from "./locationComponent/ShowRouteComponent";
 
+import ObjectiveDepartmentComponent from "./ObjectiveComponent/ObjectiveDepartmentComponent";
+
 import DashboardLayout from "./layouts/DashboardLayouts";
 import ClientsLayout from "./layouts/ClientsLayout";
 import LocationLayout from "./layouts/LocationLayout";
@@ -40,6 +44,10 @@ export default function AppRoutes() {
             <Route path="/" element={<HomeView />} />
             <Route path="/login" element={<LoginView />} />
             <Route path="/localization/activivty" element={<ActivityRouteComponent />}/>
+            <Route path="/delivery" element={<DeliveryRouteView />}/>
+            <Route path="/objective/sales" element={<ObjectiveRegionalsView />}/>
+            <Route path="/objective/department/:id" element={<ObjectiveDepartmentComponent />}/>
+
             <Route element={<DashboardLayout />}>
               <Route path="/product" element={<ProductView />} />
               <Route path="/order" element={<OrderView />} />
