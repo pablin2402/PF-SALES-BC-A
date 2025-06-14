@@ -67,14 +67,27 @@ export default function Sidebars() {
         </ul>
       </div>
 
-      <div className="px-4 pb-4">
-        <button
-          onClick={handleLogout}
-          className="w-full text-left flex items-center justify-start text-red-600 text-lg hover:font-bold hover:bg-white rounded-md px-4 py-2"
-        >
-          <FiLogOut className="text-xl mr-2" />
-          <span className="ml-3 flex-1 whitespace-nowrap font-bold m-0">Salir</span>
-        </button>
+      <div className="px-0 pb-4">
+        <ul className="mt-4 space-y-2 border-t border-gray-200 pt-4 first:mt-0 first:border-t-0 first:pt-0 text-white">
+
+          <li>
+            <Link to="/profile" className="flex mt-2 mb-2 items-center justify-start text-gray-900 text-lg hover:font-bold hover:bg-white rounded-md px-4 py-2">
+              <HiCurrencyDollar className="font-medium ml-4" />
+              <h1 className="ml-3 flex-1 whitespace-nowrap font-bold m-0">Perfil</h1>
+            </Link>
+          </li>
+          <li>
+
+            <button
+              onClick={handleLogout}
+              className="flex mt-2 mb-2 items-center font-bold justify-start text-[#D3423E] text-lg rounded-md px-4 py-2">
+              <FiLogOut className="text-xl ml-4 " />
+              <span className="flex-1 whitespace-nowrap font-bold ml-3 m-0">Salir</span>
+            </button>
+
+          </li>
+        </ul>
+
       </div>
     </div>
   );

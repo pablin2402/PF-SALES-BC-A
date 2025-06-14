@@ -361,6 +361,11 @@ const OrderView = () => {
                 )}
               </div>
             </div>
+
+
+
+
+            
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {selectedSaler && (
                 <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
@@ -574,7 +579,6 @@ const OrderView = () => {
                 </div>
               )}
             </div>
-
           </div>
         )}
       </div>

@@ -9,8 +9,7 @@ import { jsPDF } from "jspdf";
 
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
-export default function SalesManInformationComponent() {
-  const { id } = useParams();
+export default function ProfileView() {
 
   const [client, setClient] = useState();
   const [loading, setLoading] = useState(true);
@@ -27,6 +26,8 @@ export default function SalesManInformationComponent() {
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const id = localStorage.getItem("id_user");
+
   const fetchClientData = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/sales/id", {
@@ -322,6 +323,10 @@ export default function SalesManInformationComponent() {
                 <div className="flex items-center gap-2 text-gray-900">
                   <FaPhone color="#D3423E" />
                   <p>{client?.phoneNumber || "No disponible"}</p>
+                </div>
+                <div className="flex items-center gap-2 text-gray-900">
+                  <FaMapMarkerAlt color="#D3423E" />
+                  <p>{client.region || "No disponible"}</p>
                 </div>
               </div>
             </div>

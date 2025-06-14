@@ -41,7 +41,6 @@ const ClientCreationComponent = () => {
       setAddress(response.data.address);
 
     } catch (error) {
-      console.error("Error obteniendo la dirección", error);
       setAddress("Error al obtener la dirección");
     }
   };
@@ -146,10 +145,11 @@ const ClientCreationComponent = () => {
         );
         setShowToast(true);
         resetForm();
-        navigate("/client")
+        navigate("/client");
         setTimeout(() => setShowToast(false), 3000);
       } else {
         setShowToast(true);
+        resetForm();
         setTimeout(() => setShowToast(false), 3000);
       }
     } catch (error) {

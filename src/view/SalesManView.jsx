@@ -102,7 +102,7 @@ const ClientView = () => {
 
         <div className="mt-5 border border-gray-400 rounded-xl">
           <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-            <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
+          <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
               <tr>
                 <th className="px-6 py-3 uppercase">Nombre</th>
                 <th className="px-6 py-3 uppercase">Correo Electronico</th>

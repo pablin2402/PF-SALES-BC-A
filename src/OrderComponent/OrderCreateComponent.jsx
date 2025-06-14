@@ -259,7 +259,6 @@ const OrderCreateComponent = () => {
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
       ]);
-      console.log(orderResponse)
       if (orderResponse.status === 200) {
         alert("Orden guardada exitosamente.");
         setCart([]);

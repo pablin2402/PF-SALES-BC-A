@@ -14,6 +14,7 @@ import DeliveryView from "./view/DeliveryView";
 import StatisticsView from "./view/StatisticsView";
 import DeliveryRouteView from "./view/DeliveryRouteView";
 import ObjectiveRegionalsView from "./view/ObjectiveRegionalsView";
+import ProfileView from "./view/ProfileView";
 
 import DeliveryCreationComponent from "./ClientComponent/DeliveryCreationComponent";
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
@@ -47,6 +48,7 @@ export default function AppRoutes() {
             <Route path="/delivery" element={<DeliveryRouteView />}/>
             <Route path="/objective/sales" element={<ObjectiveRegionalsView />}/>
             <Route path="/objective/department/:id" element={<ObjectiveDepartmentComponent />}/>
+            <Route path="/profile" element={<ProfileView />}/>
 
             <Route element={<DashboardLayout />}>
               <Route path="/product" element={<ProductView />} />

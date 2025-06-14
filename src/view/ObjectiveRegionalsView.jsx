@@ -11,27 +11,19 @@ const ObjectiveRegionalsView = () => {
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
     const [categories, setCategories] = useState([]);
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [numberOfBoxes, setNumberOfBoxes] = useState('');
-    const [saleLastYear, setSaleLastYear] = useState('');
-    const [region, setRegion] = useState('TOTAL CBB');
-    const [id_owner, setIdOwner] = useState('CL-01');
 
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
 
-    const [vendedores, setVendedores] = useState([]);
-
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [selectedFilter, setSelectedFilter] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
 
-    const [formData, setFormData] = useState({ numberOfBoxes:0, saleLastYear1:0, region: "", startDate, endDate});
+    const [formData, setFormData] = useState({ numberOfBoxes: 0, saleLastYear1: 0, region: "", startDate, endDate, ciudad: "" });
 
     const navigate = useNavigate();
     const fetchCategories = async () => {
@@ -98,8 +90,9 @@ const ObjectiveRegionalsView = () => {
         const filters = {
             startDate: '2025-06-01',
             endDate: '2025-06-31',
-            region: "TOTAL CBB",
-            salesId: "674e31a22ec84c2b04dbacae"
+            region: formData.ciudad,
+            salesId: "674e31a22ec84c2b04dbacae",
+
         };
 
         try {
@@ -131,7 +124,6 @@ const ObjectiveRegionalsView = () => {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         fetchCategories();
         fetchObjectiveRegional();
@@ -152,26 +144,26 @@ const ObjectiveRegionalsView = () => {
     };
     const handleSubmit = async () => {
         try {
-            const response = await axios.post(API_URL +"/whatsapp/sales/objective/regional", 
+            const response = await axios.post(API_URL + "/whatsapp/sales/objective/regional",
                 {
-                    region: "TOTAL CBB",
+                    region: formData.ciudad,
                     lyne: "GENERAL",
                     objective: formData.numberOfBoxes,
                     saleLastYear: formData.saleLastYear1,
                     acumulateSales: 0,
-                    currentSaleVsSameMonthLastYear:0,
-                    saleVsEstablishedObjectiveMonth:0,
+                    currentSaleVsSameMonthLastYear: 0,
+                    saleVsEstablishedObjectiveMonth: 0,
                     date: null,
                     startDate: formData.startDate,
                     endDate: formData.endDate,
-                    id: formData.region+formData.numberOfBoxes,
+                    id: formData.region + formData.numberOfBoxes,
                     id_owner: "CL-01"
-                }, 
+                },
                 {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
             fetchProducts();
             setModalOpen(false);
         } catch (err) {
@@ -183,11 +175,12 @@ const ObjectiveRegionalsView = () => {
     };
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, 
-            [name]: name === "numberOfBoxes" ? Number(value) : value ,
-            [name]: name === "saleLastYear1" ? Number(value) : value 
+        setFormData({
+            ...formData,
+            [name]: name === "numberOfBoxes" ? Number(value) : value,
+            [name]: name === "saleLastYear1" ? Number(value) : value
         });
-      };
+    };
     return (
         <div className="bg-white min-h-screen rounded-lg p-5">
             {loading ? (
@@ -213,38 +206,38 @@ const ObjectiveRegionalsView = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                                <div className="flex gap-2">
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={startDate}
-                                            onChange={(e) => {
-                                                setStartDate(e.target.value);
-                                            }}
-                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            onChange={(e) => {
-                                                setEndDate(e.target.value);
-                                            }}
-                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            applyFilters();
-                                            setDateFilterActive(true);
+                            <div className="flex gap-2">
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => {
+                                            setStartDate(e.target.value);
                                         }}
-                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                    >
-                                        Filtrar
-                                    </button>
+                                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                                    />
                                 </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => {
+                                            setEndDate(e.target.value);
+                                        }}
+                                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        applyFilters();
+                                        setDateFilterActive(true);
+                                    }}
+                                    className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                                >
+                                    Filtrar
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 mt-4">
@@ -347,52 +340,95 @@ const ObjectiveRegionalsView = () => {
                                 </button>
 
                                 <h2 className="text-xl font-bold mb-4 text-gray-900">Insertar Objetivos de Venta</h2>
-                                <h2 className="text-lg font-bold mb-4 text-gray-900">Region: COCHABAMBA</h2>
 
-                                <label className="block mb-2 text-gray-900">Número de Cajas</label>
-                                <input
-                                    type="number"
-                                    name="numberOfBoxes"
-                                    value={formData.numberOfBoxes}
-                                    onChange={handleChange}
-                                    className="w-full text-gray-900 border p-2 rounded-3xl mb-4"
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
 
-                                <label className="block mb-2 text-gray-900">Venta Año Pasado</label>
-                                <input
-                                    type="number"
-                                    name="saleLastYear1"
-                                    value={formData.saleLastYear1}
-                                    onChange={handleChange}
-                                    className="w-full text-gray-900 border p-2 rounded-3xl mb-4"
-                                />
-                                 <label className="block mb-2 text-gray-900">Fecha Inicial</label>
-                                    <input
-                                        type="date"
-                                        name="startDate"
-                                        value={formData.startDate || ''}
-                                        onChange={handleChange}
-                                        className="w-full text-gray-900 border p-2 rounded-3xl mb-4"
-                                    />
+                                    <div className="flex flex-col">
+                                        <label className="block mb-2 text-gray-900 font-medium">Número de Cajas</label>
+                                        <input
+                                            type="number"
+                                            name="numberOfBoxes"
+                                            value={formData.numberOfBoxes}
+                                            onChange={handleChange}
+                                            className="text-gray-900 border p-2 rounded-3xl"
+                                        />
+                                    </div>
 
-                                    {/* Fecha final */}
-                                    <label className="block mb-2 text-gray-900">Fecha Final</label>
-                                    <input
-                                        type="date"
-                                        name="endDate"
-                                        value={formData.endDate || ''}
-                                        onChange={handleChange}
-                                        className="w-full text-gray-900 border p-2 rounded-3xl mb-4"
-                                    />
+                                    <div className="flex flex-col">
+                                        <label className="block mb-2 text-gray-900 font-medium">Venta Año Pasado</label>
+                                        <input
+                                            type="number"
+                                            name="saleLastYear1"
+                                            value={formData.saleLastYear1}
+                                            onChange={handleChange}
+                                            className="text-gray-900 border p-2 rounded-3xl"
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <label className="block mb-2 text-gray-900 font-medium">Fecha Inicial</label>
+                                        <input
+                                            type="date"
+                                            name="startDate"
+                                            value={formData.startDate || ''}
+                                            onChange={handleChange}
+                                            className="text-gray-900 border p-2 rounded-3xl"
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <label className="block mb-2 text-gray-900 font-medium">Fecha Final</label>
+                                        <input
+                                            type="date"
+                                            name="endDate"
+                                            value={formData.endDate || ''}
+                                            onChange={handleChange}
+                                            className="text-gray-900 border p-2 rounded-3xl"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-900 mb-1">Seleccionar Ciudad</label>
+                                        <select
+                                            className="text-gray-900 rounded-2xl p-2"
+                                            name="ciudad"
+                                            value={formData.ciudad}
+                                            onChange={handleChange}
+                                            required
+                                        >
+                                            <option value="">Seleccione una ciudad</option>
+                                            <option value="TOTAL CBB">Cochabamba</option>
+                                            <option value="TOTAL SC">Santa Cruz</option>
+                                            <option value="TOTAL LP">La Paz</option>
+                                            <option value="TOTAL OR">Oruro</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <button
                                     onClick={handleSubmit}
-                                    className=" bg-[#D3423E] w-full text-lg text-white px-4 py-2 rounded-3xl uppercase font-bold "
+                                    disabled={
+                                        !formData.ciudad ||
+                                        !formData.numberOfBoxes ||
+                                        !formData.saleLastYear1 ||
+                                        !formData.startDate ||
+                                        !formData.endDate
+                                    }
+                                    className={`mt-6 w-full text-lg px-4 py-2 rounded-3xl uppercase font-bold transition-colors duration-300 ${!formData.ciudad ||
+                                            !formData.numberOfBoxes ||
+                                            !formData.saleLastYear1 ||
+                                            !formData.startDate ||
+                                            !formData.endDate
+                                            ? "bg-gray-400 cursor-not-allowed text-white"
+                                            : "bg-[#D3423E] text-white hover:bg-red-700"
+                                        }`}
                                 >
                                     Insertar Objetivos
                                 </button>
                             </div>
                         </div>
                     )}
+
                 </div>
 
             )}
