@@ -222,6 +222,7 @@ const ClientView = () => {
                     <th className="px-6 py-3 uppercase">Dirección</th>
                     <th className="px-6 py-3 uppercase">Telefono Celular</th>
                     <th className="px-6 py-3 uppercase">Vendedor</th>
+                    <th className="px-6 py-3 uppercase">Ciudad</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -245,6 +246,7 @@ const ClientView = () => {
                         <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                       </tr>
                     ))
                   ) : (

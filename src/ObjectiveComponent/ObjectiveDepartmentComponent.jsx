@@ -14,6 +14,8 @@ const ObjectiveDepartmentComponent = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [formData, setFormData] = useState({ numberOfBoxes: 0, saleLastYear1: 0, startDate, endDate, categoria: "", ciudad: "" });
     const [salesData, setSalesData] = useState("");
+    const [selectedPayment, setSelectedPayment] = useState("");
+    const [paymentFilterActive, setPaymentActive] = useState(false);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -106,6 +108,8 @@ const ObjectiveDepartmentComponent = () => {
             customFilters.startDate = startDate;
             customFilters.endDate = endDate;
         }
+        if (selectedPayment) customFilters.payStatus = selectedPayment;
+
         fetchObjectiveDataRegion(customFilters);
     };
     useEffect(() => {
@@ -117,7 +121,9 @@ const ObjectiveDepartmentComponent = () => {
         if (type === "date") {
             setStartDate("");
             setEndDate("");
+            setSelectedPayment("")
             setDateFilterActive(false);
+            setPaymentActive(false);
         }
     };
 
@@ -189,12 +195,41 @@ const ObjectiveDepartmentComponent = () => {
                                     </button>
                                 </div>
                             )}
+                              {selectedFilter === "payment" && (
+                                <div className="flex gap-2">
+                                    <select
+                                        value={selectedPayment}
+                                        onChange={(e) => setSelectedPayment(e.target.value)}
+                                        className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                        >
+                                        <option value="">Selecciona un estado</option>
+                                        <option value="">Mostrar Todos</option>
+                                        <option value="Pagado">Pagado</option>
+                                        <option value="Pendiente">Pendiente</option>
+                                    </select>
+                                    <button
+                                        onClick={() => {
+                                            applyFilters();
+                                            setPaymentActive(true);
+                                        }}
+                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                                    >
+                                        Filtrar
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 mt-4">
                         {dateFilterActive && (
-                            <span className="bg-purple-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                            <span className="bg-green-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
                                 Fecha: {startDate} → {endDate}
+                                <button onClick={() => clearFilter("date")} className="font-bold">×</button>
+                            </span>
+                        )}
+                         {paymentFilterActive && (
+                            <span className="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                                Estado de pago: {selectedPayment}
                                 <button onClick={() => clearFilter("date")} className="font-bold">×</button>
                             </span>
                         )}

@@ -29,8 +29,11 @@ const OrderPaymentView = () => {
   const [dateFilterActive, setDateFilterActive] = useState(false);
   const [viewMode, setViewMode] = useState("table");
 
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const id_user = localStorage.getItem("id_user");
 
   const fetchProducts = async (pageNumber = 1) => {
     setLoading(true);
@@ -71,7 +74,6 @@ const OrderPaymentView = () => {
     setApplyFilter(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applyFilter, page, itemsPerPage]);
-
   const exportToExcel = async () => {
     try {
       const filters = {
@@ -128,7 +130,6 @@ const OrderPaymentView = () => {
 
   const handleFilterChange = (value) => {
     setSelectedFilter(value);
-
     setSearchTerm("");
     setSelectedCliente(null);
     setSelectedStatus("");
@@ -137,13 +138,36 @@ const OrderPaymentView = () => {
     setPage(1);
     setApplyFilter(true);
   };
-
   const clearFilter = (type) => {
     if (type === 'date') {
       setStartDate('');
       setEndDate('');
       setDateFilterActive(false);
     }
+  };
+  const uploadProducts = async (id) => {
+    try {
+      const response = await axios.put(
+        API_URL + "/whatsapp/order/pay/status/id",
+        {
+          _id: id,
+          paymentStatus: selectedItem.confirmed,
+          reviewer: id_user,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        fetchProducts(1);
+        setShowEditModal(false);
+      }
+    } catch (error) {
+      console.error("Error al actualizar el estado de pago:", error);
+    }
+    
   };
   return (
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
@@ -221,7 +245,7 @@ const OrderPaymentView = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
+                        className="px-3 py-2 text-gray-900 rounded-2xl focus:border-red-500 h-full"
                       />
                     </div>
 
@@ -230,7 +254,7 @@ const OrderPaymentView = () => {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="px-3 py-2 border text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500 h-full"
+                        className="px-3 py-2 border text-gray-900 rounded-2xl h-full"
                       />
                     </div>
 
@@ -283,7 +307,8 @@ const OrderPaymentView = () => {
                       <th className="px-6 py-3 uppercase">Monto</th>
                       <th className="px-6 py-3 uppercase">Total </th>
                       <th className="px-6 py-3 uppercase">Deuda a la Fecha</th>
-                      <th className="px-6 py-3 uppercase">Estado</th>
+                      <th className="px-6 py-3 uppercase">Estado de pago</th>
+                      <th className="px-6 py-3 uppercase"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -294,7 +319,6 @@ const OrderPaymentView = () => {
                           className="bg-white text-sm border-b border-gray-200 hover:bg-gray-50"
                           onClick={() => {
                             setSelectedItem(item);
-                            setShowModal(true);
                           }}
                         >
                           <td className="px-6 py-4 text-gray-900">{item.orderId.receiveNumber}</td>
@@ -321,15 +345,40 @@ const OrderPaymentView = () => {
                           </td>
                           <td className="px-6 py-4 font-medium text-gray-900">
                             {item.paymentStatus === "paid" && (
-                              <span className="bg-green-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
+                              <span className="bg-blue-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
                                 INGRESADO
                               </span>
                             )}
-                            {item.paymentStatus === "pagado" && (
-                              <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                                APROBADO
+                            {item.paymentStatus === "confirmado" && (
+                              <span className="bg-green-500 font-bold text-white px-4 py-1 rounded-full inline-block text-sm whitespace-nowrap">
+                                PAGO CONFIRMADO
                               </span>
                             )}
+                             {item.paymentStatus === "rechazado" && (
+                              <span className="bg-green-500 font-bold text-white px-2.5 py-0.5 rounded-full">
+                                PAGO RECHAZADO
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => {
+                                setShowEditModal(true);
+                              }}
+                              className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
+                              aria-label="Opciones"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <circle cx="10" cy="4" r="2" />
+                                <circle cx="10" cy="10" r="2" />
+                                <circle cx="10" cy="16" r="2" />
+                              </svg>
+                            </button>
                           </td>
 
                         </tr>
@@ -343,83 +392,83 @@ const OrderPaymentView = () => {
                     )}
                   </tbody>
                 </table>
-                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                <div className="flex justify-between px-6 py-4 text-m text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
                   <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
-                  </div>
-                  {totalPages > 1  && (
-                    <div className="flex justify-between items-center px-6 pb-4">
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-between items-center px-6 pb-4">
                     <div className="flex mb-4 justify-end items-center pt-4">
-                        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                          Ítems por página:
-                        </label>
-                        <select
-                          id="itemsPerPage"
-                          value={itemsPerPage}
-                          onChange={(e) => {
-                            setItemsPerPage(Number(e.target.value));
-                            setPage(1);
-                            fetchProducts(page);
-                          }}
-                          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
-                        >
-                          {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <nav className="flex items-center mb-4 justify-center pt-4 space-x-2">
-                        <button
-                          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                          disabled={page === 1}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 font-bold"}`}
-                        >
-                          ◀
-                        </button>
-
-                        <button
-                          onClick={() => setPage(1)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                        >
-                          1
-                        </button>
-
-                        {page > 3 && <span className="px-2 text-gray-900">…</span>}
-
-                        {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                          .filter((p) => p > 1 && p < totalPages)
-                          .map((p) => (
-                            <button
-                              key={p}
-                              onClick={() => setPage(p)}
-                              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-
-                        {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-                        {totalPages > 1 && (
-                          <button
-                            onClick={() => setPage(totalPages)}
-                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
-                          >
-                            {totalPages}
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                          disabled={page === totalPages}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] hover:bg-gray-200"}`}
-                        >
-                          ▶
-                        </button>
-                      </nav>
+                      <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                        Ítems por página:
+                      </label>
+                      <select
+                        id="itemsPerPage"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setPage(1);
+                          fetchProducts(page);
+                        }}
+                        className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                      >
+                        {[5, 10, 20, 50, 100].map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                  )}
+                    <nav className="flex items-center mb-4 justify-center pt-4 space-x-2">
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 font-bold"}`}
+                      >
+                        ◀
+                      </button>
+
+                      <button
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                      >
+                        1
+                      </button>
+
+                      {page > 3 && <span className="px-2 text-gray-900">…</span>}
+
+                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                        .filter((p) => p > 1 && p < totalPages)
+                        .map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+
+                      {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                      {totalPages > 1 && (
+                        <button
+                          onClick={() => setPage(totalPages)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={page === totalPages}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] hover:bg-gray-200"}`}
+                      >
+                        ▶
+                      </button>
+                    </nav>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -472,6 +521,129 @@ const OrderPaymentView = () => {
                     />
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+          {showEditModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-8 rounded-lg shadow-xl w-[700px]">
+              {selectedItem.paymentStatus === "paid" && (
+                <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Verificación de Pago</h2>
+              )}
+              {selectedItem.paymentStatus === "confirmado" && (
+                <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Detalles del pago</h2>
+              )}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Número de Nota:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.orderId?.receiveNumber}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Monto Pagado:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.total}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Cliente:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.id_client?.name + " " + selectedItem.id_client?.lastName}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Fecha de Pago:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.creationDate
+                        ? new Date(selectedItem.creationDate).toLocaleString("es-ES", {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false,
+                        }).toUpperCase()
+                        : ''}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Deuda a la fecha:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.debt !== undefined ? `Bs. ${selectedItem.debt.toFixed(2)}` : "N/A"}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Monto Total:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.orderId.totalAmount}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+                  {selectedItem.saleImage && (
+                    <div className="col-span-2 mt-4">
+                      <label className="block mb-1 text-sm font-medium text-gray-700">Imagen del Recibo:</label>
+                      <img
+                        src={selectedItem.saleImage}
+                        alt="Recibo"
+                        className="rounded-md border border-gray-300 max-h-40 w-full object-contain"
+                      />
+                    </div>
+                  )}
+                  {selectedItem.paymentStatus === "paid" && (
+                  <div className="col-span-2">
+                    <label className="block mb-1 text-sm font-medium text-gray-700">¿Confirmar Pago?</label>
+                    <select
+                      value={selectedItem.confirmed || ""}
+                      onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="confirmado">Confirmado</option>
+                      <option value="rechazado">Rechazado</option>
+                    </select>
+                  </div>
+                  )}
+                </div>
+
+                <div className="flex gap-4 mt-6">
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                      onClick={() => uploadProducts(selectedItem._id)}
+                      className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+                  >
+                    Guardar
+                  </button>
+                </div>
               </div>
             </div>
           )}
