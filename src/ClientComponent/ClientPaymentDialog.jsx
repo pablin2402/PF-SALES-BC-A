@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { API_URL, CONTRACT_DIRECTION } from '../config';
+import { API_URL } from '../config';
 //import PagoRegistroABI from "../contracts/PagoRegistro.json"
 //import { ethers } from 'ethers';
 
@@ -125,9 +125,6 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
   };
 
   if (!isOpen) return null;
-  const numericAmount = parseFloat((paymentData.amount || '').replace(',', '.').trim());
-  const isSaveDisabled =
-    numericAmount > total
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">

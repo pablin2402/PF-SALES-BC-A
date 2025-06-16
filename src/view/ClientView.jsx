@@ -246,7 +246,7 @@ const ClientView = () => {
                         <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{item.client_location.city}</td>
                       </tr>
                     ))
                   ) : (

@@ -122,6 +122,17 @@ const SalesView = () => {
             setImagePreview(imageUrl);
         }
     };
+const isFormValid = () => {
+    return (
+      formData.productName1?.trim() &&
+      formData.categoryId &&
+      formData.numberofUnitsPerBox > 0 &&
+      formDataPrice.price >= 0 &&
+      formDataPrice.disscount >= 0 &&
+      imagePreview
+    );
+  };
+  
     return (
         <div className="flex justify-center px-1 mt-10">
             <div className="flex w-full max-w-5xl gap-6">
@@ -144,14 +155,7 @@ const SalesView = () => {
                                 />
                             </div>
                         </div>
-                        <div className="grid gap-6 mt-6">
-                        <div className="flex flex-col">
-                                <label className="text-left text-sm font-medium text-gray-900 mb-1">
-                                    Descripción del producto
-                                </label>
-                            <textarea id="description" value={formData.description} onChange={handleChange}rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-2xl border border-gray-900" placeholder="Descripción del producto ..."></textarea>
-                        </div>
-                        </div>
+
                         <div className="mt-6 grid gap-6 sm:grid-cols-2">
                             <div className="flex flex-col">
                                 <label
@@ -217,13 +221,19 @@ const SalesView = () => {
                         </div>
 
                         <div className="flex justify-center mt-6">
-                            <button
-                                type="submit"
-                                onClick={handleSubmit}
-                                className="px-5 py-2.5 text-m font-bold uppercase text-white bg-[#D3423E] rounded-3xl hover:bg-[#FF9C99] transition"
-                            >
-                                Guardar datos
-                            </button>
+                        <button
+  type="submit"
+  onClick={handleSubmit}
+  disabled={!isFormValid()} 
+  className={`px-5 py-2.5 text-m font-bold uppercase rounded-3xl transition ${
+    isFormValid()
+      ? "bg-[#D3423E] text-white hover:bg-[#FF9C99]"
+      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+  }`}
+>
+  Guardar datos
+</button>
+
                         </div>
                     </form>
                 </div>

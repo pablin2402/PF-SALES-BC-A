@@ -56,7 +56,7 @@ const Login = ({ onLogin }) => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
             placeholder="nombre@correo.com"
             required="" />
         </div>
@@ -71,7 +71,7 @@ const Login = ({ onLogin }) => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
             required="" />
         </div>
 

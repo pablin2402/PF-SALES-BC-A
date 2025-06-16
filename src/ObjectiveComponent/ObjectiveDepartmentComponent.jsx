@@ -1,9 +1,8 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
 import { API_URL } from "../config";
 
-const ObjectiveDepartmentComponent = () => {
+const ObjectiveDepartmentComponent = ({ item }) => {
 
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
@@ -20,7 +19,6 @@ const ObjectiveDepartmentComponent = () => {
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
 
-    const location = useLocation();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -32,42 +30,48 @@ const ObjectiveDepartmentComponent = () => {
     };
     const handleSubmit = async () => {
         try {
-            const startDate = new Date(formData.startDate);
-
-            const endDate = new Date(formData.endDate);
-            endDate.setDate(endDate.getDate() + 1);
-            const response = await axios.post(API_URL + "/whatsapp/sales/objective/id",
-                {
-                    region: formData.ciudad,
-                    lyne: formData.categoria,
-                    numberOfBoxes: formData.numberOfBoxes,
-                    saleLastYear: formData.saleLastYear1,
-                    id: formData.ciudad + formData.numberOfBoxes,
-                    id_owner: user,
-                    startDate: startDate,
-                    endDate: endDate,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+          const startDate = new Date(formData.startDate);
+          const endDate = new Date(formData.endDate);
+          endDate.setDate(endDate.getDate() + 1);
+      
+          const response = await axios.post(
+            API_URL + "/whatsapp/sales/objective/id",
+            {
+              region: formData.ciudad,
+              lyne: formData.categoria,
+              numberOfBoxes: formData.numberOfBoxes,
+              saleLastYear: formData.saleLastYear1,
+              id: formData.ciudad + formData.numberOfBoxes,
+              id_owner: user,
+              startDate: startDate,
+              endDate: endDate,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+      
+          if (response.status === 200) {
             fetchObjectiveDataRegion();
             setModalOpen(false);
+          }
+      
         } catch (err) {
-            console.error(err);
-            alert("Error al insertar");
+          console.error(err);
+          alert("Error al insertar");
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
-    };
+      }; 
     const fetchObjectiveDataRegion = async (customFilters) => {
         setLoading(true);
         const filters = {
-            region: location.state.client.region,
+            region: item.region,
             salesId: "",
-            id_owner: "CL-01",
-            payStatus: "Pendiente",
+            id_owner: user,
+            payStatus: "",
             ...customFilters,
         };
 
@@ -170,7 +174,7 @@ const ObjectiveDepartmentComponent = () => {
                                             onChange={(e) => {
                                                 setStartDate(e.target.value);
                                             }}
-                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
 
@@ -181,7 +185,7 @@ const ObjectiveDepartmentComponent = () => {
                                             onChange={(e) => {
                                                 setEndDate(e.target.value);
                                             }}
-                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
                                     <button
@@ -328,14 +332,12 @@ const ObjectiveDepartmentComponent = () => {
                                 >
                                     &times;
                                 </button>
-
                                 <h2 className="text-xl font-bold mb-2 text-gray-900">Insertar Objetivos de Venta a nivel de Departamento</h2>
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex flex-col">
                                         <label className="text-sm font-medium text-gray-900 mb-1">Seleccionar Categoría</label>
                                         <select
-                                            className="text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 rounded-2xl p-2"
+                                            className="text-gray-900 hover:text-red-700focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl p-2"
                                             name="categoria"
                                             value={formData.categoria}
                                             onChange={handleChange}
@@ -353,7 +355,7 @@ const ObjectiveDepartmentComponent = () => {
                                     <div className="flex flex-col">
                                         <label className="text-sm font-medium text-gray-900 mb-1">Seleccionar Ciudad</label>
                                         <select
-                                            className="text-gray-900 rounded-2xl p-2"
+                                            className="text-gray-900 rounded-2xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
                                             name="ciudad"
                                             value={formData.ciudad}
                                             onChange={handleChange}
@@ -374,7 +376,7 @@ const ObjectiveDepartmentComponent = () => {
                                             name="numberOfBoxes"
                                             value={formData.numberOfBoxes}
                                             onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl"
+                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
 
@@ -385,7 +387,7 @@ const ObjectiveDepartmentComponent = () => {
                                             name="saleLastYear1"
                                             value={formData.saleLastYear1}
                                             onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl"
+                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
 
@@ -396,7 +398,7 @@ const ObjectiveDepartmentComponent = () => {
                                             name="startDate"
                                             value={formData.startDate || ''}
                                             onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl"
+                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
 
@@ -407,7 +409,7 @@ const ObjectiveDepartmentComponent = () => {
                                             name="endDate"
                                             value={formData.endDate || ''}
                                             onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl"
+                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
                                 </div>

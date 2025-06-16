@@ -215,13 +215,13 @@ const OrderPaymentView = () => {
                           fetchProducts(1);
                         }
                       }}
-                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
                   <select
                     value={selectedFilter}
                     onChange={(e) => handleFilterChange(e.target.value)}
-                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   >
                     <option value="none">Filtrar por: </option>
                     <option value="all">Mostrar todos</option>
@@ -245,7 +245,7 @@ const OrderPaymentView = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="px-3 py-2 text-gray-900 rounded-2xl focus:border-red-500 h-full"
+                        className="px-3 py-2 text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 h-full"
                       />
                     </div>
 
@@ -254,7 +254,7 @@ const OrderPaymentView = () => {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="px-3 py-2 border text-gray-900 rounded-2xl h-full"
+                        className="px-3 py-2 border text-gray-900 rounded-3xl h-full focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
 

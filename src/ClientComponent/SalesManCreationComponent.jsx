@@ -136,6 +136,22 @@ const SalesManCreationComponent = () => {
       alert("Error inesperado");
     }
   };
+  const isFormValid = () => {
+    const { nombre, apellido, email, telefono, password, role } = formData;
+    const { road, state, house_number } = address;
+  
+    return (
+      nombre.trim() &&
+      apellido.trim() &&
+      email.trim() &&
+      telefono &&
+      password.trim() &&
+      role.trim() &&
+      road.trim() &&
+      state.trim() &&
+      house_number.trim()
+    );
+  };
   
   return (
     <div className="flex items-center justify-center min-h-screen] px-6">
@@ -229,10 +245,16 @@ const SalesManCreationComponent = () => {
               </div>
               <button
                 onClick={handleSubmit}
-                className="mt-4 w-full px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-3xl hover:bg-white hover:text-red-600 transition"
+                disabled={!isFormValid()}
+                className={`mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-3xl transition ${
+                  isFormValid()
+                    ? "bg-[#D3423E] text-white hover:bg-white hover:text-red-600"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
               >
                 GUARDAR
               </button>
+
             </div>
           </form>
         </div>

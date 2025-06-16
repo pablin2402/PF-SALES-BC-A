@@ -19,7 +19,7 @@ export default function ClientInformationOrdenComponent() {
     const [totalPaid, setTotalPaid] = useState(0);
     const tabs = ["Año", "Mes"];
     const [orderData, setOrderData] = useState([]);
-console.log(state)
+    console.log(state)
     const [activeTab] = useState(0);
     const tabRefs = useRef(new Array(tabs.length).fill(null));
     const [setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -167,16 +167,16 @@ console.log(state)
     };
     const getInitials = (name = "", lastName = "") => {
         if (typeof name !== "string" || typeof lastName !== "string") return "";
-      
+
         const fullName = `${name} ${lastName}`.trim();
         const parts = fullName.split(" ");
         return parts
-          .filter(Boolean)
-          .map((p) => p[0].toUpperCase())
-          .slice(0, 2)
-          .join("");
-      };
-      
+            .filter(Boolean)
+            .map((p) => p[0].toUpperCase())
+            .slice(0, 2)
+            .join("");
+    };
+
     const colorClasses = [
         'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
         'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
@@ -308,7 +308,7 @@ console.log(state)
                             {paymentsData.length > 0 && (
                                 <li className="me-2">
                                     <button className="p-4 text-gray-900 rounded-lg" onClick={() => setShowPayments(true)}>
-                                    Pagos
+                                        Pagos
                                     </button>
                                 </li>
                             )}
@@ -457,7 +457,7 @@ console.log(state)
                                 {state.files.orderTrackId
                                     ? `${state.files.orderTrackId.fullName} ${state.files.orderTrackId.lastName}`
                                     : 'No asignado'}
-                                </span>
+                            </span>
 
                         </div>
                         <div className="flex justify-between border-b pb-2">
@@ -466,7 +466,7 @@ console.log(state)
                                 {formatAccountStatus(state.files.accountStatus)}
                             </span>
                         </div>
-                       
+
 
                         <div className="flex justify-between border-b pb-2">
                             <span className="text-xl font-bold text-gray-900">Vencimiento:</span>
@@ -481,72 +481,72 @@ console.log(state)
 
                 </div>
                 <div className="max-w-full mt-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                <ol className="relative border-s border-gray-300 dark:border-gray-700">
-  {Array.isArray(orderData) && orderData.length > 0 ? (
-    orderData.map((event, index) => (
-      <li key={index} className="mb-10 ms-6">
-        <span className="absolute flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
-          <div
-            className={`flex items-center justify-center w-10 h-10 rounded-full ${getColor(
-              event.triggeredBySalesman?.fullName,
-              event.triggeredBySalesman?.lastName
-            )}`}
-          >
-            <span className="font-medium text-white">
-              {getInitials(
-                event.triggeredBySalesman?.fullName,
-                event.triggeredBySalesman?.lastName
-              )}
-            </span>
-          </div>
-        </span>
+                    <ol className="relative border-s border-gray-300 dark:border-gray-700">
+                        {Array.isArray(orderData) && orderData.length > 0 ? (
+                            orderData.map((event, index) => (
+                                <li key={index} className="mb-10 ms-6">
+                                    <span className="absolute flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full -start-3 ring-8 ring-white">
+                                        <div
+                                            className={`flex items-center justify-center w-10 h-10 rounded-full ${getColor(
+                                                event.triggeredBySalesman?.fullName,
+                                                event.triggeredBySalesman?.lastName
+                                            )}`}
+                                        >
+                                            <span className="font-medium text-white">
+                                                {getInitials(
+                                                    event.triggeredBySalesman?.fullName,
+                                                    event.triggeredBySalesman?.lastName
+                                                )}
+                                            </span>
+                                        </div>
+                                    </span>
 
-        <div className="p-8 ml-4 bg-white border border-gray-200 rounded-lg shadow-xs dark:bg-gray-700 dark:border-gray-600">
-          <div className="items-center justify-between mb-3 sm:flex">
-            <time className="mb-1 text-xs font-normal text-gray-900 sm:order-last sm:mb-0">
-              {new Date(event.timestamp).toLocaleString()}
-            </time>
-            <div className="text-m font-normal text-gray-900 dark:text-gray-300">
-              {event.eventType === "Orden Creada" && (
-                <div>
-                  <strong>
-                    {event.triggeredBySalesman?.fullName
-                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
-                      : event.triggeredByUser?.fullName
-                      ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
-                      : event.triggeredByDelivery?.fullName
-                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                      : "Alguien"}
-                  </strong>{" "}
-                  ha creado el pedido
-                </div>
-              )}
+                                    <div className="p-8 ml-4 bg-white border border-gray-200 rounded-lg shadow-xs dark:bg-gray-700 dark:border-gray-600">
+                                        <div className="items-center justify-between mb-3 sm:flex">
+                                            <time className="mb-1 text-xs font-normal text-gray-900 sm:order-last sm:mb-0">
+                                                {new Date(event.timestamp).toLocaleString()}
+                                            </time>
+                                            <div className="text-m font-normal text-gray-900 dark:text-gray-300">
+                                                {event.eventType === "Orden Creada" && (
+                                                    <div>
+                                                        <strong>
+                                                            {event.triggeredBySalesman?.fullName
+                                                                ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                                                                : event.triggeredByUser?.fullName
+                                                                    ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
+                                                                    : event.triggeredByDelivery?.fullName
+                                                                        ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                                                                        : "Alguien"}
+                                                        </strong>{" "}
+                                                        ha creado el pedido
+                                                    </div>
+                                                )}
 
-              {event.eventType === "Pago Ingresado" && (
-                <div>
-                  <strong>
-                    {event.triggeredBySalesman?.fullName
-                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
-                      : event.triggeredByUser?.fullName
-                      ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
-                      : event.triggeredByDelivery?.fullName
-                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                      : "Alguien"}
-                  </strong>{" "}
-                  ha ingresado un pago
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </li>
-    ))
-  ) : (
-    <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-      No se tienen datos de registro de actividad.
-    </div>
-  )}
-</ol>
+                                                {event.eventType === "Pago Ingresado" && (
+                                                    <div>
+                                                        <strong>
+                                                            {event.triggeredBySalesman?.fullName
+                                                                ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                                                                : event.triggeredByUser?.fullName
+                                                                    ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
+                                                                    : event.triggeredByDelivery?.fullName
+                                                                        ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                                                                        : "Alguien"}
+                                                        </strong>{" "}
+                                                        ha ingresado un pago
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            ))
+                        ) : (
+                            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                                No se tienen datos de registro de actividad.
+                            </div>
+                        )}
+                    </ol>
 
                 </div>
             </div>

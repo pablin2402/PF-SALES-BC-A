@@ -270,7 +270,7 @@ export default function ClientInformationComponent() {
                   <li className="inline-flex items-center" onClick={() => navigate(-1)}>
                     <button
                       onClick={() => navigate(-2)}
-                      className="inline-flex items-center text-lg font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
+                      className="inline-flex items-center text-lg font-medium text-gray-900 "
                     >
                       <svg
                         className="w-3 h-3 me-2.5"
@@ -350,7 +350,7 @@ export default function ClientInformationComponent() {
                     onChange={(e) => {
                       setStartDate(e.target.value);
                     }}
-                    className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                    className="h-10 px-3 py-2 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
 
@@ -361,14 +361,14 @@ export default function ClientInformationComponent() {
                     onChange={(e) => {
                       setEndDate(e.target.value);
                     }}
-                    className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                    className="h-10 px-3 py-2 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
                 <div className="flex items-center space-x-2">
                   <select
                     value={selectedEstadoPago}
                     onChange={(e) => setSelectedEstadoPago(e.target.value)}
-                    className="h-10 px-3 py-2 text-sm text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    className="h-10 px-3 py-2 text-sm text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   >
                     <option value="">Mostrar Todos</option>
                     <option value="Pagado">Pagado</option>
@@ -378,7 +378,7 @@ export default function ClientInformationComponent() {
 
                 <button
                   onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold uppercase text-lg text-white rounded-2xl bg-[#D3423E] flex items-center gap-6"
+                  className="px-4 py-2 font-bold uppercase text-lg text-white rounded-3xl bg-[#D3423E] flex items-center gap-6"
                 >
                   Filtrar
                 </button>
@@ -388,14 +388,14 @@ export default function ClientInformationComponent() {
               <div className="flex justify-end items-center space-x-4">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-2xl hover:text-[#D3423E] flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl  flex items-center gap-2"
                 >
                   <FaFileExport color="##726E6E" />
                   EXCEL
                 </button>
                 <button
                   onClick={exportToPDF}
-                  className="px-4 py-2 font-bold text-lg text-white rounded-2xl bg-[#D3423E] flex items-center gap-6"
+                  className="px-4 py-2 font-bold text-lg text-white rounded-3xl bg-[#D3423E] flex items-center gap-6"
                 >
                   PDF
                 </button>

@@ -49,7 +49,6 @@ const OrderCreateComponent = () => {
   const token = localStorage.getItem("token");
   const id_user = localStorage.getItem("id_user");
 
-
   const fetchClients = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/list/id", {
@@ -59,7 +58,6 @@ const OrderCreateComponent = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      console.log(response)
       const clientesData = response.data.clients.map(cliente => ({
         value: cliente._id,
         label: `${cliente.name} ${cliente.lastName}`,
@@ -120,7 +118,6 @@ const OrderCreateComponent = () => {
       setSearchTerm(tempSearchTerm);
     }
   };
-
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
@@ -209,6 +206,7 @@ const OrderCreateComponent = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchProducts(page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -237,7 +235,7 @@ const OrderCreateComponent = () => {
             unidadesPorCaja: item.numberofUnitsPerBox,
             productImage: item.productImage,
             caja: item.quantity/item.numberofUnitsPerBox,
-            categoria: item.categoryId.categoryName
+            lyne: item.categoryId.categoryName
           })),
           disscount: calcularDescuentos(),
           tax: 0,
@@ -622,7 +620,7 @@ const OrderCreateComponent = () => {
                       <div className="flex flex-col">
                         <label className="text-left text-sm font-medium text-gray-900 mb-1">Tipo de pago</label>
                         <select
-                          className="p-2 text-gray-900 focus:border-red-700 rounded-2xl"
+                          className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 rounded-3xl"
                           name="tipoPago"
                           value={formData.tipoPago}
                           onChange={handleChange}
@@ -643,7 +641,7 @@ const OrderCreateComponent = () => {
                             onChange={(e) =>
                               setFormData({ ...formData, plazoCredito: e.target.value })
                             }
-                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-3xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500"
                           />
 
                         </div>
@@ -655,7 +653,7 @@ const OrderCreateComponent = () => {
                           <input
                             type="text"
                             value={formData.vendedor}
-                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 p-2.5"
                             readOnly
                           />
                         </div>
@@ -666,7 +664,7 @@ const OrderCreateComponent = () => {
                           <input
                             type="text"
                             value={formData.direccion}
-                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 p-2.5"
                             readOnly
                           />
                         </div>
@@ -677,7 +675,7 @@ const OrderCreateComponent = () => {
                           <input
                             type="text"
                             value={formData.telefono}
-                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 p-2.5"
                             readOnly
                           />
                         </div>
@@ -687,7 +685,7 @@ const OrderCreateComponent = () => {
                         <input
                           type="text"
                           value={formData.note}
-                          className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
+                          className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 p-2.5"
                           readOnly
                         />
                       </div>

@@ -334,7 +334,7 @@ const OrderView = () => {
                         onChange={(e) => {
                           setStartDate(e.target.value);
                         }}
-                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
 
@@ -345,7 +345,7 @@ const OrderView = () => {
                         onChange={(e) => {
                           setEndDate(e.target.value);
                         }}
-                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring focus:border-blue-500"
+                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
                     <button
@@ -353,7 +353,7 @@ const OrderView = () => {
                         applyFilters();
                         setDateFilterActive(true);
                       }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl  flex items-center gap-2"
                     >
                       Filtrar
                     </button>
@@ -361,11 +361,6 @@ const OrderView = () => {
                 )}
               </div>
             </div>
-
-
-
-
-            
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {selectedSaler && (
                 <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">

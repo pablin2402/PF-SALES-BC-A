@@ -207,23 +207,41 @@ const CategoryView = () => {
        
       </div>
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-2xl text-left text-gray-900 font-bold mb-4">Crear Nueva Categoría</h2>
-            <input
-              type="text"
-              placeholder="Nombre de la categoría"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-            />
-            <div className="flex justify-end gap-2 mt-4">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 font-bold border-2 border-[#D3423E] bg-white text-red-500 uppercase text-bold rounded-2xl">Cancelar</button>
-              <button onClick={handleCreateCategory} className="px-4 py-2 bg-[#D3423E] rounded-2xl font-bold text-white gap-4 uppercase">Crear</button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h2 className="text-2xl text-left text-gray-900 font-bold mb-4">Crear Nueva Categoría</h2>
+      <input
+        type="text"
+        placeholder="Nombre de la categoría"
+        value={newCategory}
+        onChange={(e) => setNewCategory(e.target.value)}
+        className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-2xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+      />
+      
+      <div className="flex gap-2 mt-6">
+        <button
+          onClick={() => setShowModal(false)}
+          className="w-1/2 px-4 py-2 font-bold border-2 border-[#D3423E] bg-white text-red-500 uppercase rounded-2xl"
+        >
+          Cancelar
+        </button>
+
+        <button
+          onClick={handleCreateCategory}
+          disabled={newCategory.trim() === ""}
+          className={`w-1/2 px-4 py-2 font-bold text-white uppercase rounded-2xl ${
+            newCategory.trim() === ""
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-[#D3423E] hover:bg-[#FF9C99]"
+          }`}
+        >
+          Crear
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

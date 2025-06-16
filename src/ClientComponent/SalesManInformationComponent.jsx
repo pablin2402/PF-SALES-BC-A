@@ -337,7 +337,7 @@ export default function SalesManInformationComponent() {
                     onChange={(e) => {
                       setStartDate(e.target.value);
                     }}
-                    className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
+                    className="h-10 px-3 py-2 border text-lg text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
 
@@ -348,12 +348,12 @@ export default function SalesManInformationComponent() {
                     onChange={(e) => {
                       setEndDate(e.target.value);
                     }}
-                    className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
+                    className="h-10 px-3 py-2 border text-lg text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
                 <button
                   onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] rounded-2xl flex items-center gap-2"
+                  className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] rounded-3xl flex items-center gap-2"
                 >
                   Filtrar
                 </button>
@@ -362,14 +362,14 @@ export default function SalesManInformationComponent() {
               <div className="flex justify-end items-center space-x-4">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-2xl hover:text-[#D3423E] flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl flex items-center gap-2"
                 >
                   <FaFileExport color="##726E6E" />
                   EXCEL
                 </button>
                 <button
                   onClick={exportToPDF}
-                  className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white rounded-2xl flex items-center gap-2"
+                  className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white rounded-3xl flex items-center gap-2"
                 >
                   PDF
                 </button>

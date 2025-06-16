@@ -1,4 +1,4 @@
-import { HiLocationMarker, HiOutlineUserGroup, HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineChartBar, HiOutlineMap, HiOutlineUser } from 'react-icons/hi';
+import {HiOutlineUserGroup, HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineChartBar, HiOutlineMap, HiOutlineUser } from 'react-icons/hi';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogOut } from "react-icons/fi";
 

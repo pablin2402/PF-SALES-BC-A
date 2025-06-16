@@ -116,7 +116,7 @@ const DeliveryView = () => {
             {salesData.length > 0 && (
                 <button
                     onClick={exportToExcel}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
                 >
                     <FaFileExport />
                     Exportar
