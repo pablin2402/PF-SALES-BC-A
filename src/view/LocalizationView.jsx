@@ -123,7 +123,7 @@ export default function LocalizationView() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  loadMarkersFromAPI(); 
+                  loadMarkersFromAPI();
                 }
               }}
               className="block p-2 pl-10 text-sm text-gray-900 border border-gray-900 rounded-2xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
@@ -157,7 +157,7 @@ export default function LocalizationView() {
               }}
               className="flex-1 block p-2 text-sm text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             >
-             <option value="">Canal de ventas</option>
+              <option value="">Canal de ventas</option>
               {canalesData.map((canal, index) => (
                 <option key={index} value={canal.canal}>
                   {canal.canal}
@@ -167,49 +167,49 @@ export default function LocalizationView() {
           </div>
         </div>
         <div className="px-4 py-4 w-full">
-  {markers.map((client, index) => (
-    <div
-      key={client._id}
-      onClick={() => findLocation(client)}
-      className={`flex flex-col items-center bg-white md:flex-row gap-x-2 min-w-[250px] max-w-xl w-full border-2 border-gray-300 rounded-lg mb-2`}
-      role="button"
-      tabIndex={0}
-      aria-label={`Ver detalles de ${client.name} ${client.lastName}`}
-      style={{ minHeight: "180px" }} 
-    >
-      <img
-        className="w-full md:w-48 h-[180px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
-        src={
-          client.profilePicture ||
-          "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
-        }
-        alt={client.name}
-      />
-      <div className="flex flex-col justify-between p-4 leading-normal w-full">
-        <h5
-          onClick={(e) => {
-            e.stopPropagation();
-            goToClientDetails(client);
-          }}
-          className="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white cursor-pointer"
-        >
-          {client.name} {client.lastName}
-        </h5>
-        <h5 className="text-l font-normal tracking-tight text-gray-900 flex items-center">
-          {client.company}
-        </h5>
-        <p className="text-m font-normal text-gray-700 flex items-center">
-          <FaMapMarkerAlt className="text-red-500 mr-2" />
-          {client.client_location?.direction || "No disponible"}
-        </p>
-      </div>
-    </div>
-  ))}
-</div>
+          {markers.map((client, index) => (
+            <div
+              key={client._id}
+              onClick={() => findLocation(client)}
+              className={`flex flex-col items-center bg-white md:flex-row gap-x-2 min-w-[250px] max-w-xl w-full border-2 border-gray-300 rounded-lg mb-2`}
+              role="button"
+              tabIndex={0}
+              aria-label={`Ver detalles de ${client.name} ${client.lastName}`}
+              style={{ minHeight: "180px" }}
+            >
+              <img
+                className="w-full md:w-48 h-[180px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
+                src={
+                  client.profilePicture ||
+                  "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
+                }
+                alt={client.name}
+              />
+              <div className="flex flex-col justify-between p-4 leading-normal w-full">
+                <h5
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToClientDetails(client);
+                  }}
+                  className="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white cursor-pointer"
+                >
+                  {client.name} {client.lastName}
+                </h5>
+                <h5 className="text-l font-normal tracking-tight text-gray-900 flex items-center">
+                  {client.company}
+                </h5>
+                <p className="text-m font-normal text-gray-700 flex items-center">
+                  <FaMapMarkerAlt className="text-red-500 mr-2" />
+                  {client.client_location?.direction || "No disponible"}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
 
       </div>
       <div className="w-4/6 bg-white overflow-y-auto">
-      {isLoaded ? (
+        {isLoaded ? (
 
           <GoogleMap
             mapContainerStyle={containerStyle}
@@ -235,9 +235,9 @@ export default function LocalizationView() {
               ))}
 
           </GoogleMap>
-           ) : (
-            <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
-          )}
+        ) : (
+          <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
+        )}
       </div>
     </div>
   );

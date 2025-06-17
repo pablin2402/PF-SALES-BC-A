@@ -75,10 +75,10 @@ const DeliveryView = () => {
       searchTerm: searchTerm
     };
     const response = await axios.post(API_URL + "/whatsapp/delivery/list", filters, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
     const allData = response.data.data;
     const ws = XLSX.utils.json_to_sheet(
@@ -113,15 +113,15 @@ const DeliveryView = () => {
         <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
           <div className="flex flex-col w-full space-y-4">
             <div className="flex justify-end items-center space-x-4">
-            {salesData.length > 0 && (
+              {salesData.length > 0 && (
                 <button
-                    onClick={exportToExcel}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
                 >
-                    <FaFileExport />
-                    Exportar
+                  <FaFileExport />
+                  Exportar
                 </button>
-                )}
+              )}
 
               <button
                 onClick={() => navigate("/delivery/creation")}
@@ -132,172 +132,172 @@ const DeliveryView = () => {
               </button>
             </div>
             <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                        <svg
-                            className="w-5 h-5 text-red-500"
-                            aria-hidden="true"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                            fillRule="evenodd"
-                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                            clipRule="evenodd"
-                            ></path>
-                        </svg>
-                        </div>
-                        <input
-                        type="text"
-                        placeholder="Buscar por Nombre, apellido, teléfono..."
-                        value={searchTerm}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                            fetchProducts(1);
-                            }
-                        }}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-200 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                        />
-                    </div>
-                    
-                    <button
-                        onClick={() => fetchProducts(1)}
-                        className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
-                    >
-                        FILTRAR
-                    </button>
-                    </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-red-500"
+                    aria-hidden="true"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    ></path>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Buscar por Nombre, apellido, teléfono..."
+                  value={searchTerm}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      fetchProducts(1);
+                    }
+                  }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-200 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                />
+              </div>
+
+              <button
+                onClick={() => fetchProducts(1)}
+                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+              >
+                FILTRAR
+              </button>
+            </div>
           </div>
           {salesData.length === 0 ? (
             <div className="max-w-full max-h-full p-6 bg-white border mt-5 border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
               <p className="text-center text-gray-900 font-bold text-lg mt-5">No existen repartidores.</p>
-              </div>
-            ) : (
+            </div>
+          ) : (
             <div>
-                <div className="mt-5 border border-gray-400 rounded-xl">
-                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
-                        <tr>
-                        <th className="px-6 py-3"></th>
-                        <th className="px-6 py-3 uppercase">Nombre</th>
-                        <th className="px-6 py-3 uppercase">Correo Electrónico</th>
-                        <th className="px-6 py-3 uppercase">Dirección</th>
-                        <th className="px-6 py-3 uppercase">Telefono Celular</th>
+              <div className="mt-5 border border-gray-400 rounded-xl">
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                  <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3"></th>
+                      <th className="px-6 py-3 uppercase">Nombre</th>
+                      <th className="px-6 py-3 uppercase">Correo Electrónico</th>
+                      <th className="px-6 py-3 uppercase">Dirección</th>
+                      <th className="px-6 py-3 uppercase">Telefono Celular</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.length > 0 ? (
+                      salesData.map((item) => (
+                        <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            <div
+                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
+                            >
+                              <span className="font-medium text-white">
+                                {getInitials(item.fullName, item.lastName)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {item.fullName + " " + item.lastName}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">{item.email}</td>
+                          <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.phoneNumber}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {salesData.length > 0 ? (
-                        salesData.map((item) => (
-                            <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                            <td className="px-6 py-4 font-medium text-gray-900">
-                                <div
-                                className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
-                                >
-                                <span className="font-medium text-white">
-                                    {getInitials(item.fullName, item.lastName)}
-                                </span>
-                                </div>
-                            </td>
-                            <td className="px-6 py-4 font-medium text-gray-900">
-                                {item.fullName + " " + item.lastName}
-                            </td>
-                            <td className="px-6 py-4 text-gray-900">{item.email}</td>
-                            <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
-                            <td className="px-6 py-4 font-medium text-gray-900">{item.phoneNumber}</td>
-                            </tr>
-                        ))
-                        ) : (
-                        <tr>
-                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                            No se encontraron clientes.
-                            </td>
-                        </tr>
-                        )}
-                    </tbody>
-                    </table>
-                    <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
-                        <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
-                    </div>
-                    {totalPages > 1 && searchTerm === "" && (
-                    <div className="flex justify-between items-center px-6 pb-4">
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          No se encontraron clientes.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                  <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
+                </div>
+                {totalPages > 1 && searchTerm === "" && (
+                  <div className="flex justify-between items-center px-6 pb-4">
                     <div className="flex mb-4 justify-end items-center pt-4">
-                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                      <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
                         Ítems por página:
-                    </label>
-                    <select
+                      </label>
+                      <select
                         id="itemsPerPage"
                         value={itemsPerPage}
                         onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setPage(1);
-                        fetchProducts(page);
+                          setItemsPerPage(Number(e.target.value));
+                          setPage(1);
+                          fetchProducts(page);
                         }}
                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
-                    >
+                      >
                         {[5, 10, 20, 50, 100].map((option) => (
-                        <option key={option} value={option}>
+                          <option key={option} value={option}>
                             {option}
-                        </option>
+                          </option>
                         ))}
-                    </select>
+                      </select>
                     </div>
                     <nav className="flex items-center justify-center pt-4 space-x-2">
-                    <button
+                      <button
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
                         className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                    >
+                      >
                         ◀
-                    </button>
+                      </button>
 
-                    <button
+                      <button
                         onClick={() => setPage(1)}
                         className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                    >
+                      >
                         1
-                    </button>
+                      </button>
 
-                    {page > 3 && <span className="px-2 text-gray-900">…</span>}
+                      {page > 3 && <span className="px-2 text-gray-900">…</span>}
 
-                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
                         .filter((p) => p > 1 && p < totalPages)
                         .map((p) => (
-                        <button
+                          <button
                             key={p}
                             onClick={() => setPage(p)}
                             className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                        >
+                          >
                             {p}
-                        </button>
+                          </button>
                         ))}
 
-                    {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+                      {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
 
-                    {totalPages > 1 && (
+                      {totalPages > 1 && (
                         <button
-                        onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "}`}
+                          onClick={() => setPage(totalPages)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "}`}
                         >
-                        {totalPages}
+                          {totalPages}
                         </button>
-                    )}
+                      )}
 
-                    <button
+                      <button
                         onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                         disabled={page === totalPages}
                         className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                    >
+                      >
                         ▶
-                    </button>
+                      </button>
                     </nav>
-                    </div>
-                    )}
-                </div>
+                  </div>
+                )}
+              </div>
             </div>
-            )}
-          </div>  
+          )}
+        </div>
       )}
     </div>
   );

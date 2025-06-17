@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import {
-  LoadScript, GoogleMap, Marker, OverlayView,
+  useJsApiLoader, GoogleMap, Marker, OverlayView,
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../config";
@@ -22,28 +22,19 @@ export default function DeliveryRouteView() {
 
   const [center, setCenter] = useState({ lat: -17.3835, lng: -66.1568 });
   const [mapZoom, setMapZoom] = useState(13);
-  const [mapInstance, setMapInstance] = useState(null);
 
   const [selectedCategories, setSelectedCategories] = useState("");
-  const [selectedSalesmen, setSelectedSalesmen] = useState("");
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
-  const [selectedStatus] = useState("");
-  const [selectedPaymentType, setSelectedPaymentType] = useState("");
   const [selectedSaler, setSelectedSaler] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState("");
-  const [salesData, setSalesData] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
 
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+ 
   const [items, setItems] = useState();
-  const [page, setPage] = useState(1);
 
-  const [selectedDistributor, setSelectedDistributor] = useState("");
   const [selecting, setSelecting] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [activeMarker, setActiveMarker] = useState(null);
@@ -74,7 +65,10 @@ export default function DeliveryRouteView() {
     ];
     setCanalesData(canales);
   };
-
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_API_KEY,
+    id: "google-map-script",
+  });
   useEffect(() => {
     fetchCanales();
   }, []);
@@ -155,10 +149,8 @@ export default function DeliveryRouteView() {
   };
   useEffect(() => {
     if (
-      selectedMarkers.length > 1 &&
-      window.google
+      selectedMarkers.length > 1 
     ) {
-      // Filtramos clientes con client_location definido
       const routePoints = selectedMarkers.filter(
         (client) => client.id_client?.client_location
       );
@@ -371,68 +363,74 @@ export default function DeliveryRouteView() {
 
       </div>
       <div className="w-4/6 h-[calc(105vh-4rem)] bg-white relative">
-        <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={mapZoom}
-            onLoad={(map) => setMapInstance(map)}
-          >
-            {markers.map((location, index) => (
-              <Marker
-                key={index}
-                position={{
-                  lat: location.id_client.client_location.latitud,
-                  lng: location.id_client.client_location.longitud,
-                }}
-                icon={{
-                  url: selectedMarkers.includes(location)
-                    ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-                    : tiendaIcon,
-                  scaledSize: new window.google.maps.Size(40, 40),
-                }}
+      {isLoaded ? (
+
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={center}
+                zoom={mapZoom}
               >
-                {selecting && (
-                  <OverlayView
+                {markers.length > 0 && markers.map((location, index) => (
+                  <Marker
+                    key={index}
                     position={{
                       lat: location.id_client.client_location.latitud,
                       lng: location.id_client.client_location.longitud,
                     }}
-                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                    icon={{
+                      url: selectedMarkers.includes(location)
+                        ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                        : tiendaIcon,
+                      scaledSize: new window.google.maps.Size(40, 40),
+                    }}
                   >
-                    <div
-                      className="flex items-center gap-2 p-1 rounded-2xl "
-                      style={{ position: "relative", top: "-50px", left: "-12px" }}
-                    >
-                      <input
-                        id={`checkbox-${index}`}
-                        type="checkbox"
-                        className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-900 rounded-2xl"
-                        checked={selectedMarkers.includes(location)}
-                        onChange={() => toggleLocationSelection(location)}
-                      />
-                      <label htmlFor={`checkbox-${index}`} className="text-sm">
-                        Seleccionar
-                      </label>
-                    </div>
-                  </OverlayView>
-                )}
-              </Marker>
-            ))}
+                    {selecting && (
+                      <OverlayView
+                        position={{
+                          lat: location.id_client.client_location.latitud,
+                          lng: location.id_client.client_location.longitud,
+                        }}
+                        mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                      >
+                        <div
+                          className="flex items-center gap-2 p-1 rounded-2xl"
+                          style={{ position: "relative", top: "-50px", left: "-12px" }}
+                        >
+                          <input
+                            id={`checkbox-${index}`}
+                            type="checkbox"
+                            className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-900 rounded-2xl"
+                            checked={selectedMarkers.includes(location)}
+                            onChange={() => toggleLocationSelection(location)}
+                          />
+                          <label htmlFor={`checkbox-${index}`} className="text-sm">
+                            Seleccionar
+                          </label>
+                        </div>
+                      </OverlayView>
+                    )}
+                  </Marker>
+                ))}
 
-            {directionsResponse && (
-              <DirectionsRenderer directions={directionsResponse} 
-              options={{
-                polylineOptions: {
-                    strokeColor: "#000000",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 3,
-                },
-                suppressMarkers: true,
-            }} />
-            )}
-          </GoogleMap>
-        </LoadScript>
+                {directionsResponse && (
+                  <DirectionsRenderer
+                    directions={directionsResponse}
+                    options={{
+                      polylineOptions: {
+                        strokeColor: "#000000",
+                        strokeOpacity: 0.8,
+                        strokeWeight: 3,
+                      },
+                      suppressMarkers: true,
+                    }}
+                  />
+                )}
+
+
+              </GoogleMap>
+      ) : (
+        <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
+      )}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-6">
           <div className="w-1/2">
             <select

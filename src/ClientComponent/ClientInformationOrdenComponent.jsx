@@ -320,11 +320,11 @@ export default function ClientInformationOrdenComponent() {
                                 <table className="w-full text-sm text-left border border-black shadow-xl rounded-2xl overflow-hidden">
                                     <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                         <tr>
-                                            <th className="px-6 py-3">Foto del Recibo</th>
-                                            <th className="px-6 py-3">Fecha de Pago</th>
-                                            <th className="px-6 py-3">Vendedor</th>
-                                            <th className="px-6 py-3">Nota</th>
-                                            <th className="px-6 py-3">Monto</th>
+                                            <th className="px-6 py-3 uppercase">Foto del Recibo</th>
+                                            <th className="px-6 py-3 uppercase">Fecha de Pago</th>
+                                            <th className="px-6 py-3 uppercase">Vendedor</th>
+                                            <th className="px-6 py-3 uppercase">Nota</th>
+                                            <th className="px-6 py-3 uppercase">Monto</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -353,7 +353,6 @@ export default function ClientInformationOrdenComponent() {
                                         ))}
                                     </tbody>
                                 </table>
-
                             </div>
                             {selectedImage && (
                                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={closeModal}>
@@ -393,11 +392,11 @@ export default function ClientInformationOrdenComponent() {
                                 <table className="w-full text-sm text-left border border-black rounded-2xl overflow-hidden">
                                     <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                         <tr>
-                                            <th className="px-6 py-3">Nombre del Producto</th>
-                                            <th className="px-6 py-3">Cantidad</th>
-                                            <th className="px-6 py-3">Precio Unitario</th>
-                                            <th className="px-6 py-3">Descuento</th>
-                                            <th className="px-6 py-3">Total</th>
+                                            <th className="px-6 py-3 uppercase">Nombre del Producto</th>
+                                            <th className="px-6 py-3 uppercase">Cantidad</th>
+                                            <th className="px-6 py-3 uppercase">Precio Unitario</th>
+                                            <th className="px-6 py-3 uppercase">Descuento</th>
+                                            <th className="px-6 py-3 uppercase">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>

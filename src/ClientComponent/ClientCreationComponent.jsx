@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
 import { API_URL, GOOGLE_API_KEY } from "../config";
 import { useNavigate } from "react-router-dom";
@@ -17,10 +17,6 @@ const ClientCreationComponent = () => {
   const [addressNumber, setAddressNumber] = useState({ house_number: "" });
 
   const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo: "", identificacion: "0" });
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_API_KEY,
-    id: "google-map-script",
-  });
 
   const [vendedores, setVendedores] = useState([]);
   const [showToast, setShowToast] = useState(false);
@@ -250,8 +246,8 @@ const ClientCreationComponent = () => {
 
             <div className="flex flex-col sm:col-span-2">
               <h2 className="mt-6 mb-6 text-lg text-left font-bold text-gray-900">Ubicación del Punto</h2>
-              {isLoaded ? (
-                <GoogleMap
+              <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
+              <GoogleMap
                   mapContainerStyle={containerStyle}
                   center={location}
                   zoom={15}
@@ -268,10 +264,7 @@ const ClientCreationComponent = () => {
                     }}
                   />
                 </GoogleMap>
-              ) : (
-                <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
-              )}
-
+                </LoadScript>
             </div>
             <button
               onClick={handleSubmit}

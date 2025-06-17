@@ -38,7 +38,7 @@ import DashboardLayout from "./layouts/DashboardLayouts";
 import ClientsLayout from "./layouts/ClientsLayout";
 import LocationLayout from "./layouts/LocationLayout";
 
-import ActivityRouteComponent from "./locationComponent/ActivityRouteComponent";
+import ActivityRouteComponent from "./view/ActivityRouteComponent";
 export default function AppRoutes() {
   return (
         <Routes>

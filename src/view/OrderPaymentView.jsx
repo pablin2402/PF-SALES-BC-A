@@ -25,7 +25,6 @@ const OrderPaymentView = () => {
   const [items, setItems] = useState();
 
   const [selectedItem, setSelectedItem] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const [dateFilterActive, setDateFilterActive] = useState(false);
   const [viewMode, setViewMode] = useState("table");
 
@@ -491,39 +490,6 @@ const OrderPaymentView = () => {
               <OrderCalendarView></OrderCalendarView>
             </div>
           )}
-          {showModal && selectedItem && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
-                <button
-                  className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-4xl"
-                  onClick={() => setShowModal(false)}
-                >
-                  &times;
-                </button>
-                <h2 className="text-xl font-bold mb-4 text-gray-800">Detalle del Pago</h2>
-                <div className="text-left space-y-2 text-gray-900">
-
-                  <p className="text-gray-900"><strong>Número de Nota:</strong> {selectedItem.orderId?.receiveNumber}</p>
-                  <p className="text-gray-900"><strong>Cliente:</strong> {selectedItem.id_client?.name} {selectedItem.id_client?.lastName}</p>
-                  <p className="text-gray-900"><strong>Monto Pagado:</strong> Bs. {selectedItem.total}</p>
-                  <p className="text-gray-900">
-                    <strong>Estado:</strong> {selectedItem.paymentStatus === "paid" ? "Pagado" : selectedItem.paymentStatus}
-                  </p>
-                  <p className="font-medium text-gray-700 mb-1">Recibo:</p>
-
-                </div>
-                {selectedItem.saleImage && (
-                  <div className="mt-4">
-                    <img
-                      src={selectedItem.saleImage}
-                      alt="Recibo"
-                      className="rounded-md border border-gray-300 max-h-80"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
           {showEditModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-8 rounded-lg shadow-xl w-[700px]">
@@ -620,7 +586,7 @@ const OrderPaymentView = () => {
                     <select
                       value={selectedItem.confirmed || ""}
                       onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Seleccione una opción</option>
                       <option value="confirmado">Confirmado</option>
@@ -629,6 +595,7 @@ const OrderPaymentView = () => {
                   </div>
                   )}
                 </div>
+                {selectedItem.paymentStatus === "paid" && (
 
                 <div className="flex gap-4 mt-6">
                   <button
@@ -644,6 +611,18 @@ const OrderPaymentView = () => {
                     Guardar
                   </button>
                 </div>
+                )}
+                 {selectedItem.paymentStatus === "confirmado" && (
+
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="w-full px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                  )}
               </div>
             </div>
           )}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api";
+import { useJsApiLoader, GoogleMap, Marker } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../config";
 
 import tiendaIcon2 from "../icons/tienda.png";
@@ -26,6 +26,7 @@ export default function ActivityRouteComponent() {
     const [directionsResponse, setDirectionsResponse] = useState(null);
     const [totalPages, setTotalPages] = useState(1);
     const [page, setPage] = useState(1);
+    const [isMapLoaded, setIsMapLoaded] = useState(false);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -61,23 +62,10 @@ export default function ActivityRouteComponent() {
             setFilteredData(filtered);
         }
     }, [searchTerm, salesData]);
-
-    const findLocation = (client) => {
-        if (client) {
-            const lat = parseFloat(client.latitude);
-            const lng = parseFloat(client.longitude);
-            setMapZoom(18);
-
-            if (!isNaN(lat) && !isNaN(lng)) {
-                setCenter({ lat, lng });
-                setSelectedMarkers([{ route: [client] }]);
-            } else {
-                console.error("Error: Ubicación inválida", client);
-            }
-        } else {
-            console.error("Error: Cliente sin ubicación", client);
-        }
-    };
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: GOOGLE_API_KEY,
+        id: "google-map-script",
+      });
     const containerStyle = {
         width: "100%",
         height: "107%",
@@ -98,7 +86,6 @@ export default function ActivityRouteComponent() {
             setSalesData(response.data.data || []);
             setFilteredData(response.data.data || []);
             setTotalPages(response.data.pages);
-            setDirectionsResponse(null);
         } catch (error) {
         } finally {
         }
@@ -107,8 +94,24 @@ export default function ActivityRouteComponent() {
     useEffect(() => {
         fetchActivities(selectedSaler, page);
     }, [fetchActivities, selectedSaler, page]);
+    const findLocation = (client) => {
+        if (client) {
+            const lat = parseFloat(client.latitude);
+            const lng = parseFloat(client.longitude);
+            setMapZoom(18);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                setCenter({ lat, lng });
+                setSelectedMarkers([{ route: [client] }]);
+            } else {
+                console.error("Error: Ubicación inválida", client);
+            }
+        } else {
+            console.error("Error: Cliente sin ubicación", client);
+        }
+    };
     useEffect(() => {
-        if (salesData.length > 1 && window.google) {
+        if (salesData.length > 1 ) {
             const origin = {
                 lat: salesData[0].latitude,
                 lng: salesData[0].longitude,
@@ -300,8 +303,8 @@ export default function ActivityRouteComponent() {
                 </div>
             </div>
             <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">
-                <LoadScript googleMapsApiKey={GOOGLE_API_KEY} >
-                    <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={mapZoom}>
+            {isLoaded ? (                   
+                 <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={mapZoom}>
                         {salesData.length > 0 &&
                             salesData.map((client, index) => {
                                 const latReal = client.latitude;
@@ -355,7 +358,9 @@ export default function ActivityRouteComponent() {
                             />
                         )}
                     </GoogleMap>
-                </LoadScript>
+                 ) : (
+                    <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
+                  )}
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-4">
                     <div className="relative">
                         <input

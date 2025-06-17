@@ -553,7 +553,7 @@ const ObjectiveRegionalsView = () => {
                                                     setSelectedItem(item); 
                                                     setViewMode("form");
                                                 }}
-                                               key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                                               key={item._id+item.saleLastYear} className="bg-white border-b border-gray-200 hover:bg-gray-50">
 
                                                 <td className="px-6 py-4 text-gray-900">{item.lyne}</td>
                                                 <td className="px-6 py-4 text-gray-900">{item.objetivo}</td>

@@ -65,7 +65,7 @@ export default function ClientInformationComponent() {
 
       }
       if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
+        payload.payStatus = selectedEstadoPago;
       }
       const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload,
         {
@@ -372,7 +372,7 @@ export default function ClientInformationComponent() {
                   >
                     <option value="">Mostrar Todos</option>
                     <option value="Pagado">Pagado</option>
-                    <option value="Falta pagar">Falta pagar</option>
+                    <option value="Pendiente">Falta pagar</option>
                   </select>
                 </div>
 
@@ -467,12 +467,12 @@ export default function ClientInformationComponent() {
                         {calculateDaysRemaining(item.dueDate, item.creationDate)}
                       </td>
                       <td className="px-6 py-4 text-m text-gray-900 font-bold">
-                        {item.estadoPago === "Falta pagar" && (
+                        {item.payStatus === "Pendiente" && (
                           <span className="bg-red-700 text-m text-white px-3.5 py-0.5 rounded-full">
                             DEUDA
                           </span>
                         )}
-                        {item.estadoPago === "Pagado" && (
+                        {item.payStatus === "Pagado" && (
                           <span className="bg-green-600 text-white px-2.5 py-0.5 rounded-full">
                             PAGADO
                           </span>
