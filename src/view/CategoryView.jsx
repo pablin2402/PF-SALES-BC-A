@@ -109,7 +109,7 @@ const CategoryView = () => {
                   placeholder="Buscar por categoría"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block p-2 ps-10 text-lg text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
               <div className="flex justify-end gap-4">

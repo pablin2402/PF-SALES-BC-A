@@ -4,6 +4,7 @@ import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 import { FaFileExport } from "react-icons/fa6";
 import { HiOutlineTrash } from "react-icons/hi";
+import { HiFilter } from "react-icons/hi";
 
 import Spinner from "../Components/Spinner";
 import OrderButton from "../Components/OrderButton";
@@ -18,8 +19,7 @@ const OrderView = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [inputValue, setInputValue] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
-
-
+  const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedStatus] = useState("");
   const [selectedPaymentType, setSelectedPaymentType] = useState("");
   const [selectedSaler, setSelectedSaler] = useState("");
@@ -97,6 +97,7 @@ const OrderView = () => {
     if (selectedPaymentType) customFilters.paymentType = selectedPaymentType;
     if (selectedSaler) customFilters.salesId = selectedSaler;
     if (selectedPayment) customFilters.payStatus = selectedPayment;
+    if (selectedRegion) customFilters.region = selectedRegion;
     if (startDate && endDate) {
       customFilters.startDate = startDate;
       customFilters.endDate = endDate;
@@ -161,12 +162,14 @@ const OrderView = () => {
     saveAs(data, "Order_List.xlsx");
   };
   const clearFilter = (type) => {
-    if (type === "seller") setSelectedSaler(null);
-    if (type === "paymentType") setSelectedPaymentType(null);
-    if (type === "payment") setSelectedPayment(null);
+    if (type === "seller") setSelectedSaler("");
+    if (type === "paymentType") setSelectedPaymentType("");
+    if (type === "payment") setSelectedPayment("");
+    if (type === "region") setSelectedRegion("");
     if (type === "date") {
       setStartDate("");
       setEndDate("");
+
       setDateFilterActive(false);
     }
     fetchOrders(1);
@@ -176,6 +179,7 @@ const OrderView = () => {
     setSelectedSaler("");
     setSelectedPaymentType("");
     setSelectedPayment("");
+    setSelectedRegion("");
   };
   const handleDelete = async (id) => {
     try {
@@ -233,7 +237,7 @@ const OrderView = () => {
                           fetchOrders(1);
                         }
                       }}
-                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
                 </div>
@@ -252,18 +256,19 @@ const OrderView = () => {
                 <select
                   value={selectedFilter}
                   onChange={(e) => setSelectedFilter(e.target.value)}
-                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 >
                   <option value="">Filtrar por: </option>
                   <option value="payment">Filtrar por estado de pago:</option>
                   <option value="date">Filtrar por fecha:</option>
                   <option value="seller">Filtrar por vendedores: </option>
                   <option value="paymentType">Filtrar por tipo de pago:</option>
+                  <option value="region">Filtrar por region:</option>
                 </select>
                 {selectedFilter === "seller" && (
                   <div className="flex gap-2">
                     <select
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                       name="vendedor" value={selectedSaler} onChange={(e) => setSelectedSaler(e.target.value)} required>
                       <option value="">Seleccione un vendedor</option>
                       <option value="">Mostrar Todos</option>
@@ -275,8 +280,10 @@ const OrderView = () => {
                       onClick={() => {
                         applyFilters();
                       }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl flex items-center gap-2"
-                    >
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                    >                                
+                    <HiFilter className="text-white text-lg" />
+
                       Filtrar
                     </button>
                   </div>
@@ -285,7 +292,7 @@ const OrderView = () => {
                   <div className="flex gap-2">
                     <select
                       value={selectedPaymentType} onChange={(e) => setSelectedPaymentType(e.target.value)}
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Selecciona tipo de pago</option>
                       <option value="">Mostrar Todos</option>
@@ -297,8 +304,10 @@ const OrderView = () => {
                       onClick={() => {
                         applyFilters();
                       }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
                     >
+                      <HiFilter className="text-white text-lg" />
+
                       Filtrar
                     </button>
                   </div>
@@ -308,7 +317,7 @@ const OrderView = () => {
                     <select
                       value={selectedPayment}
                       onChange={(e) => setSelectedPayment(e.target.value)}
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Selecciona un estado</option>
                       <option value="">Mostrar Todos</option>
@@ -319,8 +328,10 @@ const OrderView = () => {
                       onClick={() => {
                         applyFilters();
                       }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl flex items-center gap-2"
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl flex items-center gap-2"
                     >
+                      <HiFilter className="text-white text-lg" />
+
                       Filtrar
                     </button>
                   </div>
@@ -334,18 +345,24 @@ const OrderView = () => {
                         onChange={(e) => {
                           setStartDate(e.target.value);
                         }}
-                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                        className="h-full px-3 py-2 border border-gray-900  text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <input
+                    <input
                         type="date"
                         value={endDate}
+                        min={startDate}
                         onChange={(e) => {
-                          setEndDate(e.target.value);
+                          const newEndDate = e.target.value;
+                          if (newEndDate >= startDate) {
+                            setEndDate(newEndDate);
+                          } else {
+                            alert("La fecha final debe ser mayor o igual a la fecha de inicio");
+                          }
                         }}
-                        className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                        className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
                     <button
@@ -353,12 +370,42 @@ const OrderView = () => {
                         applyFilters();
                         setDateFilterActive(true);
                       }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl  flex items-center gap-2"
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl  flex items-center gap-2"
                     >
+                      <HiFilter className="text-white text-lg" />
+
                       Filtrar
                     </button>
                   </div>
                 )}
+                {selectedFilter === "region" && (
+                  <div className="flex gap-2">
+                    <select
+                      className="text-gray-900 rounded-3xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
+                      name="ciudad"
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
+                      required
+                    >
+                      <option value="">Seleccione una ciudad</option>
+                      <option value="TOTAL CBB">Cochabamba</option>
+                      <option value="TOTAL SC">Santa Cruz</option>
+                      <option value="TOTAL LP">La Paz</option>
+                      <option value="TOTAL OR">Oruro</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        applyFilters();
+                      }}
+                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl flex items-center gap-2"
+                    >
+                      <HiFilter className="text-white text-lg" />
+
+                      Filtrar
+                    </button>
+                  </div>
+                )}
+
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4">
@@ -386,8 +433,13 @@ const OrderView = () => {
                   <button onClick={() => clearFilter("date")} className="font-bold">×</button>
                 </span>
               )}
-
-              {(selectedSaler || selectedStatus || selectedPaymentType || selectedPayment) && (
+              {selectedRegion && (
+                <span className="bg-purple-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Region: {selectedRegion}
+                  <button onClick={() => clearFilter("region")} className="font-bold">×</button>
+                </span>
+              )}
+              {(selectedSaler || selectedStatus || selectedPaymentType || selectedPayment || selectedRegion) && (
                 <button
                   onClick={clearAllFilters}
                   className="ml-2 text-sm underline font-bold text-gray-900 hover:text-[#D3423E]"
@@ -395,7 +447,6 @@ const OrderView = () => {
                   Limpiar todos
                 </button>
               )}
-
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
               <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">

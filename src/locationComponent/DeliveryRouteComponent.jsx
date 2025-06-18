@@ -40,27 +40,27 @@ export default function DeliveryRouteComponent() {
     useEffect(() => {
         const fetchVendedores = async () => {
             const filters = {
-              id_owner: user,
-              page: 1,
-              limit: 1000,
-              searchTerm: ""
+                id_owner: user,
+                page: 1,
+                limit: 1000,
+                searchTerm: ""
             };
             try {
-              const response = await axios.post(API_URL + "/whatsapp/delivery/list", filters, {
-                headers: {
-                  Authorization: `Bearer ${token}`
-                }
-              });
-              setVendedores(response.data.data);
+                const response = await axios.post(API_URL + "/whatsapp/delivery/list", filters, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setVendedores(response.data.data);
             } catch (error) {
-              console.error("Error fetching products:", error);
+                console.error("Error fetching products:", error);
             } finally {
             }
         };
-    
+
         fetchVendedores();
-    }, [user, token]);  
-    
+    }, [user, token]);
+
     const loadRoute = useCallback(async (startDate, endDate, selectedSaler2) => {
         try {
             const response = await axios.post(API_URL + "/whatsapp/delivery/list/route", {
@@ -71,9 +71,9 @@ export default function DeliveryRouteComponent() {
                 page,
             }, {
                 headers: {
-                  Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
-              });
+            });
             setTotalPages(response.data.totalPages);
             setSelectedMarkers(response.data.data);
             setListRoutes(response.data.data);
@@ -83,11 +83,11 @@ export default function DeliveryRouteComponent() {
             console.error("Error al cargar los marcadores: ", error);
         }
     }, [page, selectedStatus, user, token]);
-    
+
     useEffect(() => {
         loadRoute(null, null, "todos");
     }, [page, selectedSaler, selectedStatus, loadRoute]);
-    
+
     const findLocation = (client) => {
         if (client && client.client_location) {
             const lat = parseFloat(client.client_location.latitud);
@@ -142,9 +142,9 @@ export default function DeliveryRouteComponent() {
                 }
             }, {
                 headers: {
-                  Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
-              });
+            });
             loadRoute(null, null, "todos");
         } catch (error) {
             console.error("Error al eliminar la ruta:", error);
@@ -292,7 +292,7 @@ export default function DeliveryRouteComponent() {
                                 onChange={(e) => setEndDate(e.target.value)}
                                 className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                             />
-                             <button
+                            <button
                                 onClick={() => exportToExcel(listRoutes)}
                                 className="w-10 h-10 flex items-center justify-center text-green-600 hover:text-green-600 transition rounded-md"
                             >
@@ -317,7 +317,7 @@ export default function DeliveryRouteComponent() {
                                         <h2 id={`accordion-flush-heading-${idx}`}>
                                             <button
                                                 type="button"
-                                                className="flex items-center justify-between w-full py-5 font-medium text-left text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 gap-3"
+                                                className="flex items-center justify-between w-full py-5 font-medium text-left text-gray-500 border-b border-gray-400 dark:border-gray-700 dark:text-gray-400 gap-3"
                                                 data-accordion-target={`#accordion-flush-body-${idx}`}
                                                 aria-expanded={expandedIndex === idx ? "true" : "false"}
                                                 onClick={(e) => {
@@ -328,13 +328,13 @@ export default function DeliveryRouteComponent() {
                                                 }}
 
                                             >
-                                                <span>
+                                                <span className="font-bold text-gray-900">
                                                     {client.delivery.fullName} {client.delivery.lastName} - {""}{formatDateToLocal(client.startDate)} - {""}
                                                     <span
                                                         className={`
-                                                        ${client.status === "En progreso" ? "bg-green-200 text-green-800" : ""}
-                                                        ${client.status === "Finalizado" ? "bg-blue-600 text-white" : ""}
-                                                        ${client.status === "Por iniciar" ? "bg-yellow-100 text-yellow-800" : ""}
+                                                        ${client.status === "En progreso" ? "bg-green-200 font-bold text-green-800" : ""}
+                                                        ${client.status === "Finalizado" ? "bg-blue-600 font-bold text-white" : ""}
+                                                        ${client.status === "Por iniciar" ? "bg-yellow-100 font-bold text-yellow-800" : ""}
                                                         px-2.5 py-0.5 rounded-full text-sm font-medium
                                                     `}
                                                     >
@@ -365,14 +365,14 @@ export default function DeliveryRouteComponent() {
                                             className={expandedIndex === idx ? "block" : "hidden"}
                                             aria-labelledby={`accordion-flush-heading-${idx}`}
                                         >
-                                            <div className="py-5 px-4 border-b border-gray-200 dark:border-gray-700 text-sm space-y-2">
+                                            <div className="py-5 px-4 border-b border-gray-600 text-sm space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="font-semibold text-gray-500">Nombre:</span>
-                                                    <span className="text-gray-900">{client.details}</span>
+                                                    <span className="text-gray-900 font-bold ">{client.details}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="font-semibold text-gray-500">Fecha de creación:</span>
-                                                    <span className="text-gray-900">
+                                                    <span className="text-gray-900 font-bold">
                                                         {new Date(client.creationDate).toLocaleString("es-ES", {
                                                             timeZone: "America/La_Paz",
                                                             day: "2-digit",
@@ -387,15 +387,15 @@ export default function DeliveryRouteComponent() {
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="font-semibold text-gray-500">Fecha de inicio:</span>
-                                                    <span className="text-gray-900">{formatDateToLocal(client.startDate)}</span>
+                                                    <span className="text-gray-900 font-bold">{formatDateToLocal(client.startDate)}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="font-semibold text-gray-500">Fecha programada de fin:</span>
-                                                    <span className="text-gray-900">{formatDateToLocal(client.endDate)}</span>
+                                                    <span className="text-gray-900 font-bold">{formatDateToLocal(client.endDate)}</span>
                                                 </div>
                                                 <div className="flex justify-between">
-                                                    <span className="font-semibold text-gray-500">Fecha de inicio vendedor:</span>
-                                                    <span className="text-gray-900">{formatDateToLocalHour(client.startDateRouteSales)}</span>
+                                                    <span className="font-semibold text-gray-500">Fecha de inicio repartidor:</span>
+                                                    <span className="text-gray-900 font-bold">{formatDateToLocalHour(client.startDateRouteSales)}</span>
                                                 </div>
 
                                                 <div className="flex justify-between items-center mt-3">
@@ -412,10 +412,10 @@ export default function DeliveryRouteComponent() {
                                                 <div className="pt-4 space-y-4">
                                                     {client.route && client.route.length > 0 ? (
                                                         client.route.map((route, routeIdx) => (
-                                                            <div key={routeIdx} className="p-4 bg-gray-100 rounded-lg border border-gray-200">
+                                                            <div key={routeIdx} className="p-4 bg-gray-100 rounded-lg border border-gray-400">
                                                                 <div className="flex justify-between">
                                                                     <span className="font-semibold text-gray-500">Nombre:</span>
-                                                                    <span className="text-gray-900">{route.name}{route.lastName}</span>
+                                                                    <span className="text-gray-900 font-bold ">{route.name}{route.lastName}</span>
                                                                 </div>
                                                                 <div className="flex justify-between">
                                                                     <span className="font-semibold text-gray-500">Fecha de visita:</span>
@@ -423,15 +423,15 @@ export default function DeliveryRouteComponent() {
                                                                 </div>
                                                                 <div className="flex justify-between">
                                                                     <span className="font-semibold text-gray-500">Tiempo:</span>
-                                                                    <span className="text-gray-900">{route.visitTime}</span>
+                                                                    <span className="text-gray-900 font-bold ">{route.visitTime}</span>
                                                                 </div>
                                                                 <div className="flex justify-between">
                                                                     <span className="font-semibold text-gray-500">Estado:</span>
                                                                     <span
                                                                         className={`
-                                                                        ${route.visitStatus === true ? "bg-green-500 text-white" : ""}
-                                                                        ${route.visitStatus === false ? "bg-red-600 text-white" : ""}
-                                                                        px-2.5 py-0.5 rounded-full text-sm font-medium
+                                                                        ${route.visitStatus === true ? "bg-green-500 uppercase font-bold text-white" : ""}
+                                                                        ${route.visitStatus === false ? "bg-red-600 uppercase font-bold text-white" : ""}
+                                                                        px-2.5 py-0.5 rounded-full font-bold text-sm font-medium
                                                                         `}
                                                                     >
                                                                         {route.visitStatus === true ? "Visitado" : "Sin visitar"}
@@ -448,7 +448,7 @@ export default function DeliveryRouteComponent() {
                                                 <div className="flex justify-between pt-4">
                                                     <button
                                                         onClick={() => handleSelectRoute(client)}
-                                                        className="text-blue-600 hover:underline"
+                                                        className="text-blue-600 font-bold text-m"
                                                     >
                                                         Ver ruta
                                                     </button>
@@ -457,7 +457,7 @@ export default function DeliveryRouteComponent() {
                                                             const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta ruta?");
                                                             if (confirmDelete) deleteRoutes(client._id);
                                                         }}
-                                                        className="text-red-600 hover:underline flex items-center gap-1"
+                                                        className="text-red-600 font-bold text-m flex items-center gap-1"
                                                     >
                                                         <MdDelete className="h-4 w-4" />
                                                         Eliminar
@@ -610,7 +610,7 @@ export default function DeliveryRouteComponent() {
                         )}
                     </GoogleMap>
                 </LoadScript>
-                
+
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-11/12 z-10">
                     <div className="flex overflow-x-auto space-x-4 p-2 rounded-2xl">
                         {selectedMarkers.length > 0 &&
@@ -621,7 +621,7 @@ export default function DeliveryRouteComponent() {
                                         role="button"
                                         tabIndex={0}
                                         onClick={() => findLocation(client)}
-                                         onKeyDown={(e) => {
+                                        onKeyDown={(e) => {
                                             if (e.key === "Enter" || e.key === " ") {
                                                 findLocation(client);
                                             }

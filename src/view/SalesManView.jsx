@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { IoPersonAdd } from "react-icons/io5";
+import { HiFilter } from "react-icons/hi";
 
 const ClientView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -59,36 +60,47 @@ const ClientView = () => {
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
       <div className="ml-10 mr-10 mt-10 relative overflow-x-auto">
         <div className="flex items-center justify-between w-full">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-              <svg
-                className="w-5 h-5 text-red-500"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                <svg
+                  className="w-5 h-5 text-red-500"
+                  aria-hidden="true"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar por Nombre, apellido"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    fetchProducts(1);
+                  }
+                }}
+                className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500 h-[42px]"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Buscar por Nombre, apellido"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  fetchProducts(1);
-                }
-              }}
-              className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-            />
 
+            <button
+              onClick={() => fetchProducts(1)}
+              className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2 h-[42px]"
+            >
+                                  <HiFilter className="text-white text-lg" />
+
+              FILTRAR
+            </button>
           </div>
+
 
 
           <button
@@ -101,8 +113,8 @@ const ClientView = () => {
         </div>
 
         <div className="mt-5 border border-gray-400 rounded-xl">
-          <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-          <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+          <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
+            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
               <tr>
                 <th className="px-6 py-3 uppercase">Nombre</th>
                 <th className="px-6 py-3 uppercase">Correo Electronico</th>
@@ -144,7 +156,7 @@ const ClientView = () => {
                     setPage(1);
                     fetchProducts(page);
                   }}
-                  className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                  className="border-2 border-gray-900 rounded-3xl px-2 py-1 text-m text-gray-700"
                 >
                   {[5, 10, 20, 50, 100].map((option) => (
                     <option key={option} value={option}>

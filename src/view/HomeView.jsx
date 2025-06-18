@@ -142,7 +142,7 @@ const HomeView = () => {
         <div className="flex items-center justify-between w-full mb-4">
           <div className="flex gap-2">
             <select
-              className="p-2  text-gray-900 hover:text-red-700 hover:border-red-700 focus:border-red-700 font-bold rounded-lg"
+              className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
@@ -154,7 +154,7 @@ const HomeView = () => {
           {filterType === "monthYear" ? (
             <div className="flex gap-2">
               <select
-                className="p-2 font-bold text-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black focus:text-black focus:border-black"
+                className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
               >
@@ -164,7 +164,7 @@ const HomeView = () => {
               </select>
 
               <select
-                className="p-2 font-bold text-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black focus:text-black focus:border-black"
+                className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
               >
@@ -219,10 +219,10 @@ const HomeView = () => {
               <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
               <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
               <tr>
-                    <th className="px-6 py-3 font-bold">Vendedor</th>
-                    <th className="px-6 py-3 font-bold">Número de Pedidos</th>
-                    <th className="px-6 py-3 font-bold">Monto Total Vendido</th>
-                    <th className="px-6 py-3 font-bold"></th>
+                    <th className="px-6 py-3 font-bold uppercase">Vendedor</th>
+                    <th className="px-6 py-3 font-bold uppercase">Número de Pedidos</th>
+                    <th className="px-6 py-3 font-bold uppercase">Monto Total Vendido</th>
+                    <th className="px-6 py-3 font-bold uppercase"></th>
 
                   </tr>
                 </thead>

@@ -4,6 +4,7 @@ import { FiGrid, FiList } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { MdEdit } from "react-icons/md";
+import { HiFilter } from "react-icons/hi";
 
 const ProductView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -132,56 +133,58 @@ const ProductView = () => {
                 </button>
               </div>
               <div className="flex items-center justify-between w-full">
-              <div className="relative flex items-center space-x-4">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-red-500"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clipRule="evenodd"
-                      ></path>
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Buscar venta..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        fetchProducts(1);
-                      }
-                    }}
-                    className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
-                </div>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                >
-                  <option value="">Todas las categorías</option>
-                  {categoriesList.map((category) => (
-                    <option key={category._id} value={category._id}>{category.categoryName}</option>
-                  ))}
-                </select>
-                <button
-                      onClick={() => {
-                        fetchProducts(1);
+                <div className="relative flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-red-500"
+                        aria-hidden="true"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Buscar venta..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          fetchProducts(1);
+                        }
                       }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl flex items-center gap-2"
-                    >
-                      Filtrar
-                    </button>
+                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    />
+                  </div>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {categoriesList.map((category) => (
+                      <option key={category._id} value={category._id}>{category.categoryName}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => {
+                      fetchProducts(1);
+                    }}
+                    className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl flex items-center gap-2"
+                  >
+                    <HiFilter className="text-white text-lg" />
+
+                    Filtrar
+                  </button>
+                </div>
               </div>
-            </div>
             </div>
             <div className="flex mt-4 justify-end space-x-2">
               <button
@@ -202,8 +205,8 @@ const ProductView = () => {
               <p className="text-center text-gray-500 mt-5">No hay productos disponibles.</p>
             ) : viewMode === "table" ? (
               <div className="mt-5 border border-gray-400 rounded-xl">
-                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
+                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                     <tr>
                       <th className="px-6 py-3 uppercase">Producto</th>
                       <th className="px-6 py-3 uppercase">Precio</th>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
+import { HiFilter } from "react-icons/hi";
 
 const ObjectiveDepartmentComponent = ({ item }) => {
 
@@ -174,27 +175,35 @@ const ObjectiveDepartmentComponent = ({ item }) => {
                                             onChange={(e) => {
                                                 setStartDate(e.target.value);
                                             }}
-                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
+                                            className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                            />
                                     </div>
 
                                     <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            onChange={(e) => {
-                                                setEndDate(e.target.value);
-                                            }}
-                                            className="h-10 px-3 py-2 border text-m text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
+                                    <input
+                                                    type="date"
+                                                    value={endDate}
+                                                    min={startDate}
+                                                    onChange={(e) => {
+                                                        const newEndDate = e.target.value;
+                                                        if (newEndDate >= startDate) {
+                                                            setEndDate(newEndDate);
+                                                        } else {
+                                                            alert("La fecha final debe ser mayor o igual a la fecha de inicio");
+                                                        }
+                                                    }}
+                                                    className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                />
                                     </div>
                                     <button
                                         onClick={() => {
                                             applyFilters();
                                             setDateFilterActive(true);
                                         }}
-                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                    >
+                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                                        >
+                                                                                        <HiFilter className="text-white text-lg" />
+
                                         Filtrar
                                     </button>
                                 </div>

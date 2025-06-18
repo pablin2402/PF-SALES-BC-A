@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
+import { HiFilter } from "react-icons/hi";
+import { FaFileExport } from "react-icons/fa6";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -166,7 +168,7 @@ const OrderPaymentView = () => {
     } catch (error) {
       console.error("Error al actualizar el estado de pago:", error);
     }
-    
+
   };
   return (
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
@@ -230,8 +232,10 @@ const OrderPaymentView = () => {
                 <div className="flex justify-end items-center space-x-10">
                   <button
                     onClick={exportToExcel}
-                    className="px-4 py-2 bg-[#D3423E] rounded-2xl uppercase font-bold text-lg text-white rounded-lgflex items-center gap-4"
+                    className="px-4 py-2 text-white font-bold text-lg bg-[#D3423E] uppercase rounded-3xl flex items-center gap-5"
                   >
+                    <FaFileExport className="text-white" />
+
                     Exportar
                   </button>
                 </div>
@@ -244,7 +248,7 @@ const OrderPaymentView = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="px-3 py-2 text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 h-full"
+                        className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
 
@@ -252,17 +256,27 @@ const OrderPaymentView = () => {
                       <input
                         type="date"
                         value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="px-3 py-2 border text-gray-900 rounded-3xl h-full focus:outline-none focus:ring-0 focus:border-red-500"
+                        min={startDate}
+                        onChange={(e) => {
+                          const newEndDate = e.target.value;
+                          if (newEndDate >= startDate) {
+                            setEndDate(newEndDate);
+                          } else {
+                            alert("La fecha final debe ser mayor o igual a la fecha de inicio");
+                          }
+                        }}
+                        className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
 
                     <div className="flex items-center">
                       <button
-                        className="px-4 py-2 border text-white bg-[#D3423E] font-bold rounded-3xl uppercase h-full"
+                        className="px-3 py-2 h-full text-white text-lg bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
                         onClick={() => setApplyFilter(true)}
                       >
-                        Aplicar Filtro
+                        <HiFilter className="text-white text-lg" />
+
+                        Filtrar
                       </button>
                     </div>
                   </div>
@@ -353,7 +367,7 @@ const OrderPaymentView = () => {
                                 PAGO CONFIRMADO
                               </span>
                             )}
-                             {item.paymentStatus === "rechazado" && (
+                            {item.paymentStatus === "rechazado" && (
                               <span className="bg-green-500 font-bold text-white px-2.5 py-0.5 rounded-full">
                                 PAGO RECHAZADO
                               </span>
@@ -493,12 +507,12 @@ const OrderPaymentView = () => {
           {showEditModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-8 rounded-lg shadow-xl w-[700px]">
-              {selectedItem.paymentStatus === "paid" && (
-                <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Verificación de Pago</h2>
-              )}
-              {selectedItem.paymentStatus === "confirmado" && (
-                <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Detalles del pago</h2>
-              )}
+                {selectedItem.paymentStatus === "paid" && (
+                  <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Verificación de Pago</h2>
+                )}
+                {selectedItem.paymentStatus === "confirmado" && (
+                  <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Detalles del pago</h2>
+                )}
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Número de Nota:</label>
@@ -581,38 +595,38 @@ const OrderPaymentView = () => {
                     </div>
                   )}
                   {selectedItem.paymentStatus === "paid" && (
-                  <div className="col-span-2">
-                    <label className="block mb-1 text-sm font-medium text-gray-700">¿Confirmar Pago?</label>
-                    <select
-                      value={selectedItem.confirmed || ""}
-                      onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="confirmado">Confirmado</option>
-                      <option value="rechazado">Rechazado</option>
-                    </select>
-                  </div>
+                    <div className="col-span-2">
+                      <label className="block mb-1 text-sm font-medium text-gray-700">¿Confirmar Pago?</label>
+                      <select
+                        value={selectedItem.confirmed || ""}
+                        onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                      >
+                        <option value="">Seleccione una opción</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="rechazado">Rechazado</option>
+                      </select>
+                    </div>
                   )}
                 </div>
                 {selectedItem.paymentStatus === "paid" && (
 
-                <div className="flex gap-4 mt-6">
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
-                  >
-                    Cancelar
-                  </button>
-                  <button
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                    >
+                      Cancelar
+                    </button>
+                    <button
                       onClick={() => uploadProducts(selectedItem._id)}
                       className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
-                  >
-                    Guardar
-                  </button>
-                </div>
+                    >
+                      Guardar
+                    </button>
+                  </div>
                 )}
-                 {selectedItem.paymentStatus === "confirmado" && (
+                {selectedItem.paymentStatus === "confirmado" && (
 
                   <div className="flex gap-4 mt-6">
                     <button
@@ -622,7 +636,7 @@ const OrderPaymentView = () => {
                       Cerrar
                     </button>
                   </div>
-                  )}
+                )}
               </div>
             </div>
           )}

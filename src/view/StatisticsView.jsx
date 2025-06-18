@@ -207,7 +207,7 @@ const StatisticsView = () => {
                                         <div className="relative">
                                             <div className="flex inset-y-0 left-0 flex items-center ps-3 ">
                                                 <select
-                                                    className="block p-2 mr-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                                    className="block p-2 mr-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                                     value={selectedYear}
                                                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                                                 >
@@ -218,7 +218,7 @@ const StatisticsView = () => {
                                                     ))}
                                                 </select>
                                                 <select
-                                                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                                     value={selectedMonth || ""}
                                                     onChange={(e) => {
                                                         const month = e.target.value ? parseInt(e.target.value) : null;
@@ -273,7 +273,7 @@ const StatisticsView = () => {
                             <div className="w-full overflow-x-auto">
                                 <div className="border border-gray-400 rounded-xl">
 
-                                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
                                         <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                             <tr>
                                                 <th className="px-6 py-3 uppercase">Nombre</th>
@@ -315,7 +315,7 @@ const StatisticsView = () => {
                                                         setPage(1);
                                                         fetchOrders(page);
                                                     }}
-                                                    className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                                                    className="border-2 border-gray-900 rounded-3xl px-2 py-1 text-m text-gray-700"
                                                 >
                                                     {[5, 10].map((option) => (
                                                         <option key={option} value={option}>

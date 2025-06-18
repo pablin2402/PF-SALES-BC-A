@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
+import { HiFilter } from "react-icons/hi";
+
 import { IoPersonAdd } from "react-icons/io5";
 import Spinner from "../Components/Spinner";
 
@@ -14,6 +16,8 @@ const ClientView = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
 
   const [selectedSaler, setSelectedSaler] = useState("");
   const [vendedores, setVendedores] = useState([]);
@@ -74,7 +78,8 @@ const ClientView = () => {
       clientName: searchTerm
     };
     if (selectedSaler) filters.sales_id = selectedSaler;
-
+    if (selectedRegion) filters.region = selectedRegion;
+    console.log(filters)
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/list/id", filters, {
         headers: {
@@ -89,7 +94,7 @@ const ClientView = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, searchTerm, selectedSaler, itemsPerPage, token]);
+  }, [user, searchTerm, selectedSaler, selectedRegion, itemsPerPage, token]);
   useEffect(() => {
     fetchProducts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,6 +110,8 @@ const ClientView = () => {
       clientName: searchTerm
     };
     if (selectedSaler) filters.sales_id = selectedSaler;
+    if (selectedRegion) filters.region = selectedRegion;
+
     const response = await axios.post(API_URL + "/whatsapp/client/list/id", filters, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -129,8 +136,19 @@ const ClientView = () => {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Lista_Clientes.xlsx");
   };
+  const clearFilter = (type) => {
+    if (type === "seller") setSelectedSaler("");
+    if (type === "region") setSelectedRegion("");
+    fetchProducts(1);
+  };
+
+  const clearAllFilters = () => {
+    setSelectedFilter("");
+    setSelectedSaler("");
+    setSelectedRegion("");
+  };
   return (
-    
+
     <div className="bg-white max-h-screen rounded-lg p-5">
       <div className="relative overflow-x-auto">
         {loading ? (
@@ -140,55 +158,91 @@ const ClientView = () => {
             <div className="flex flex-col w-full">
               <div className="flex items-center justify-between w-full mb-4">
                 <div className="relative flex items-center space-x-4">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                        <svg
-                          className="w-5 h-5 text-red-500"
-                          aria-hidden="true"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                            clipRule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Buscar por Nombre, apellido, teléfono..."
-                        value={searchTerm}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            fetchProducts(1);
-                          }
-                        }}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-red-500"
+                        aria-hidden="true"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
                     </div>
+                    <input
+                      type="text"
+                      placeholder="Buscar por Nombre, apellido, teléfono..."
+                      value={searchTerm}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          fetchProducts(1);
+                        }
+                      }}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    />
                   </div>
-                  <div className="flex justify-end items-center space-x-4">
-                    <button
-                      onClick={exportToExcel}
-                      className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
-                    >
-                      <FaFileExport />
-                      Exportar
-                    </button>
-                    <button
-                      onClick={() => navigate("/client/creation")}
-                      className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] flex items-center gap-2"
-                    >
-                      <IoPersonAdd />
-                      Nuevo Cliente
-                    </button>
-                  </div>
+                </div>
+                <div className="flex justify-end items-center space-x-4">
+                  <button
+                    onClick={exportToExcel}
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
+                  >
+                    <FaFileExport />
+                    Exportar
+                  </button>
+                  <button
+                    onClick={() => navigate("/client/creation")}
+                    className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] flex items-center gap-2"
+                  >
+                    <IoPersonAdd />
+                    Nuevo Cliente
+                  </button>
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
+                <select
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                >
+                  <option value="">Filtrar por: </option>
+                  <option value="seller">Filtrar por vendedores: </option>
+                  <option value="region">Filtrar por region:</option>
+                </select>
+                {selectedFilter === "region" && (
+                  <div className="flex gap-2">
+                    <select
+                      className="text-gray-900 rounded-3xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
+                      name="ciudad"
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
+                      required
+                    >
+                      <option value="">Seleccione una ciudad</option>
+                      <option value="Cochabamba">Cochabamba</option>
+                      <option value="Santa Cruz">Santa Cruz</option>
+                      <option value="La Paz">La Paz</option>
+                      <option value="Oruro">Oruro</option>
+                    </select>
+                    <button
+                      onClick={() => fetchProducts(1)}
+                      className="px-3 py-2 h-full text-white text-lg bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
+                    >
+                      <HiFilter className="text-white text-lg" />
+
+                      FILTRAR
+                    </button>
+                  </div>
+                )}
+                {selectedFilter === "seller" && (
+                  <div className="flex gap-2">
+
                     <select
                       className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                       name="vendedor"
@@ -206,12 +260,38 @@ const ClientView = () => {
                     </select>
                     <button
                       onClick={() => fetchProducts(1)}
-                      className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+                      className="px-3 py-2 h-full text-white text-lg bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
                     >
+                      <HiFilter className="text-white text-lg" />
+
                       FILTRAR
                     </button>
                   </div>
-                </div>
+                )}
+
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              {selectedSaler && (
+                <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Vendedor: {vendedores.find(v => v._id === selectedSaler)?.fullName}
+                  <button onClick={() => clearFilter("seller")} className="font-bold">×</button>
+                </span>
+              )}
+              {selectedRegion && (
+                <span className="bg-purple-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                  Region: {selectedRegion}
+                  <button onClick={() => clearFilter("region")} className="font-bold">×</button>
+                </span>
+              )}
+              {(selectedSaler || selectedRegion) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="ml-2 text-sm underline font-bold text-gray-900 hover:text-[#D3423E]"
+                >
+                  Limpiar todos
+                </button>
+              )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
               <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 import { IoPersonAdd } from "react-icons/io5";
+import { HiFilter } from "react-icons/hi";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -166,6 +167,8 @@ const DeliveryView = () => {
                 onClick={() => fetchProducts(1)}
                 className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
               >
+                <HiFilter className="text-white text-lg" />
+
                 FILTRAR
               </button>
             </div>

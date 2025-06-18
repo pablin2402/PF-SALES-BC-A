@@ -41,7 +41,7 @@ const CategoryCreation = ({ onClose }) => {
                                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Nombre de categoría</label>
                                 <input
                                     type="text"
-                                    className="bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-2xl focus:ring-black focus:border-black block p-2.5"
+                                    className="bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-3xl focus:ring-black focus:border-black block p-2.5"
                                     placeholder="Categoría"
                                     value={categoryName}
                                     onChange={(e) => setCategoryName(e.target.value)}
@@ -52,7 +52,7 @@ const CategoryCreation = ({ onClose }) => {
                             <button
                                 onClick={handleSubmit}
                                 type="submit"
-                                className="px-5 py-2.5 text-lg font-medium text-white bg-[#D3423E] rounded-2xl hover:bg-[#FF9C99] transition"
+                                className="px-5 py-2.5 text-lg font-medium text-white bg-[#D3423E] rounded-3xl hover:bg-[#FF9C99] transition"
                             >
                                 Guardar
                             </button>

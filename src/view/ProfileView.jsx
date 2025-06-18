@@ -394,7 +394,7 @@ export default function ProfileView() {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
                 <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-6 py-3 uppercase">Referencia</th>
@@ -470,7 +470,7 @@ export default function ProfileView() {
                         setPage(1);
                         fetchProducts(page);
                       }}
-                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                      className="border-2 border-gray-900 rounded-3xl px-2 py-1 text-m text-gray-700"
                     >
                       {[5, 10, 20, 50, 100].map((option) => (
                         <option key={option} value={option}>

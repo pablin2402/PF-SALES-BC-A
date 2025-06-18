@@ -8,7 +8,7 @@ import { API_URL } from "../config";
 
 import { MdDelete } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
-import { FaSearch } from 'react-icons/fa';
+import { HiFilter } from "react-icons/hi";
 
 import OrderDetailsComponent from "./OrderDetailsComponent";
 
@@ -480,13 +480,13 @@ const OrderCreateComponent = () => {
                         value={searchTerm}
                         onChange={handleSearchChange}
                         onKeyDown={handleSearchKeyDown}
-                        className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                        className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Todas las categorías</option>
                       {categoriesList.map((category) => (
@@ -497,8 +497,8 @@ const OrderCreateComponent = () => {
                       onClick={() => fetchProducts(1)}                       
                       className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-lg text-white font-bold rounded-3xl transition duration-200"
                     >
-                      <FaSearch className="h-5 w-5" /> 
-                      Filtrar
+                    <HiFilter className="text-white text-lg" />
+                    Filtrar
                     </button>
                   </div>
                 </div>

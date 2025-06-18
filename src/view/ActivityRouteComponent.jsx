@@ -65,7 +65,7 @@ export default function ActivityRouteComponent() {
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: GOOGLE_API_KEY,
         id: "google-map-script",
-      });
+    });
     const containerStyle = {
         width: "100%",
         height: "107%",
@@ -111,7 +111,7 @@ export default function ActivityRouteComponent() {
         }
     };
     useEffect(() => {
-        if (salesData.length > 1 ) {
+        if (salesData.length > 1) {
             const origin = {
                 lat: salesData[0].latitude,
                 lng: salesData[0].longitude,
@@ -155,7 +155,7 @@ export default function ActivityRouteComponent() {
                 <div className="px-4 py-4">
                     <div className="flex flex-col w-full mb-4 space-y-2">
                         <select
-                            className="block w-full p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                            className="block w-full p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                             name="vendedor"
                             value={selectedSaler}
                             onChange={(e) => {
@@ -171,21 +171,23 @@ export default function ActivityRouteComponent() {
                                 </option>
                             ))}
                         </select>
-                        <div className="flex flex-row gap-2">
+                        <div className="flex flex-row gap-2 w-full">
                             <input
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-2/5 p-2 border text-sm border-gray-900 rounded-lg text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
+                                className="w-1/2 h-12 border text-m border-gray-900 rounded-3xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
 
                             <button
                                 onClick={() => fetchActivities(selectedSaler)}
-                                className="flex items-center justify-center px-4 py-2 bg-white rounded-lg transition duration-200 w-1/5 h-12"
+                                className="w-1/2 h-12 px-4 text-white text-lg bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
                             >
-                                <HiFilter className="text-black text-2xl hover:text-red-700 transition duration-200" />
+                                <HiFilter className="text-white text-lg" />
+                                Filtrar
                             </button>
                         </div>
+
                     </div>
                     <div className="space-y-4 mt-4">
                         {filteredData.length > 0 ? (
@@ -295,7 +297,7 @@ export default function ActivityRouteComponent() {
                                 )}
                             </>
                         ) : (
-                            <div className="flex flex-1 h-[calc(100vh-150px)] items-center justify-center border border-gray-400 rounded-lg text-gray-700 text-sm font-semibold">
+                            <div className="flex flex-1 h-[calc(100vh-150px)] items-center justify-center border border-gray-400 rounded-lg text-gray-700 text-lg font-semibold">
                                 Ningún item seleccionado
                             </div>
                         )}
@@ -303,8 +305,8 @@ export default function ActivityRouteComponent() {
                 </div>
             </div>
             <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">
-            {isLoaded ? (                   
-                 <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={mapZoom}>
+                {isLoaded ? (
+                    <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={mapZoom}>
                         {salesData.length > 0 &&
                             salesData.map((client, index) => {
                                 const latReal = client.latitude;
@@ -358,9 +360,9 @@ export default function ActivityRouteComponent() {
                             />
                         )}
                     </GoogleMap>
-                 ) : (
+                ) : (
                     <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
-                  )}
+                )}
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-4">
                     <div className="relative">
                         <input

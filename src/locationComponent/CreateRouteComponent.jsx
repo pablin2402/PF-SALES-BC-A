@@ -274,7 +274,7 @@ export default function CreateRouteComponent() {
               placeholder="Buscar por nombre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block p-2 pl-10 text-sm text-gray-900 border border-gray-900 rounded-2xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block p-2 pl-10 text-lg text-gray-900 border border-gray-900 rounded-3xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <svg
@@ -295,7 +295,7 @@ export default function CreateRouteComponent() {
 
           <div className="w-1/2">
             <select
-              className="block w-full p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block w-full p-2 text-lg text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
               name="vendedor"
               value={selectedSaler}
               onChange={(e) => {

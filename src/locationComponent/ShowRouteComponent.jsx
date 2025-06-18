@@ -247,7 +247,7 @@ export default function ShowRouteComponent() {
                     <div className="bg-white p-4 rounded-xl shadow-md w-full mb-4 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <select
-                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 name="vendedor"
                                 value={selectedSaler}
                                 onChange={(e) => setSelectedSaler(e.target.value)}
@@ -263,7 +263,7 @@ export default function ShowRouteComponent() {
                             </select>
 
                             <select
-                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 name="estado"
                                 value={selectedStatus}
                                 onChange={(e) => setSelectedStatus(e.target.value)}
@@ -282,13 +282,13 @@ export default function ShowRouteComponent() {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
                             <input
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
                              <button
                                 onClick={() => exportToExcel(listRoutes)}
@@ -446,7 +446,7 @@ export default function ShowRouteComponent() {
                                                 <div className="flex justify-between pt-4">
                                                     <button
                                                         onClick={() => handleSelectRoute(client)}
-                                                        className="text-blue-600 hover:underline"
+                                                        className="text-blue-600 font-bold text-m"
                                                     >
                                                         Ver ruta
                                                     </button>
@@ -455,7 +455,7 @@ export default function ShowRouteComponent() {
                                                             const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta ruta?");
                                                             if (confirmDelete) deleteRoutes(client._id);
                                                         }}
-                                                        className="text-red-600 hover:underline flex items-center gap-1"
+                                                        className="text-red-600 font-bold text-m  flex items-center gap-1"
                                                     >
                                                         <MdDelete className="h-4 w-4" />
                                                         Eliminar

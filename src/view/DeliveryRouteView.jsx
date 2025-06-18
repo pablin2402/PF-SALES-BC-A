@@ -306,7 +306,7 @@ export default function DeliveryRouteView() {
                   loadMarkersFromAPI();
                 }
               }}
-              className="block p-2 pl-10 text-sm text-gray-900 border border-gray-900 rounded-2xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block p-2 pl-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <svg className="w-5 h-5 text-red-500" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -321,7 +321,7 @@ export default function DeliveryRouteView() {
               onChange={(e) => {
                 setSelectedCategories(e.target.value);
               }}
-              className="flex-1 block p-2 text-sm text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="flex-1 block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
             >
               <option value="">Canal de ventas</option>
               {canalesData.map((canal, index) => (
@@ -621,7 +621,7 @@ export default function DeliveryRouteView() {
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-6">
           <div className="w-1/2">
             <select
-              className="block w-full p-2 text-sm text-gray-900 border border-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block w-full p-2 text-lg text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
               name="vendedor"
               value={selectedSaler}
               onChange={(e) => {
@@ -642,7 +642,7 @@ export default function DeliveryRouteView() {
           <div className="w-1/2">
             <button onClick={() => setIsOpen(true)}
 
-              type="button" className="px-5 py-2.5 text-white text-lg rounded-3xl font-bold bg-red-700">CREAR RUTA</button>
+              type="button" className="p-2 w-full text-white text-lg rounded-3xl font-bold bg-red-700">CREAR RUTA</button>
 
           </div>
         </div>
