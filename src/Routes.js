@@ -20,6 +20,7 @@ import DeliveryCreationComponent from "./ClientComponent/DeliveryCreationCompone
 import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
 import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
 import ClientInformationOrdenComponent from "./ClientComponent/ClientInformationOrdenComponent";
+import DeliveryRouteComponent from "./locationComponent/DeliveryRouteComponent";
 
 import SalesManCreationComponent from "./ClientComponent/SalesManCreationComponent";
 import SalesManInformationComponent from "./ClientComponent/SalesManInformationComponent";
@@ -37,6 +38,7 @@ import ObjectiveDepartmentComponent from "./ObjectiveComponent/ObjectiveDepartme
 import DashboardLayout from "./layouts/DashboardLayouts";
 import ClientsLayout from "./layouts/ClientsLayout";
 import LocationLayout from "./layouts/LocationLayout";
+import DeliveryLayout from "./layouts/DeliveryLayout";
 
 import ActivityRouteComponent from "./view/ActivityRouteComponent";
 export default function AppRoutes() {
@@ -45,11 +47,10 @@ export default function AppRoutes() {
             <Route path="/" element={<HomeView />} />
             <Route path="/login" element={<LoginView />} />
             <Route path="/localization/activivty" element={<ActivityRouteComponent />}/>
-            <Route path="/delivery" element={<DeliveryRouteView />}/>
             <Route path="/objective/sales" element={<ObjectiveRegionalsView />}/>
             <Route path="/objective/department/:id" element={<ObjectiveDepartmentComponent />}/>
             <Route path="/profile" element={<ProfileView />}/>
-
+        
             <Route element={<DashboardLayout />}>
               <Route path="/product" element={<ProductView />} />
               <Route path="/order" element={<OrderView />} />
@@ -78,6 +79,10 @@ export default function AppRoutes() {
             <Route path="/localization/route" element={<CreateRouteComponent />} />
             <Route path="/localization/list/route" element={<ShowRouteComponent />} />
 
+            </Route>
+            <Route element={<DeliveryLayout />}>
+              <Route path="/delivery" element={<DeliveryRouteView />}/>
+              <Route path="/delivery/route" element={<DeliveryRouteComponent />}/>
             </Route>
         </Routes>
   );

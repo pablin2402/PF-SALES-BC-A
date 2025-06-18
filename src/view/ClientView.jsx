@@ -130,7 +130,8 @@ const ClientView = () => {
     saveAs(data, "Lista_Clientes.xlsx");
   };
   return (
-    <div className="bg-white min-h-screen rounded-lg p-5">
+    
+    <div className="bg-white max-h-screen rounded-lg p-5">
       <div className="relative overflow-x-auto">
         {loading ? (
           <Spinner />

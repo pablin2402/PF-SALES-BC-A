@@ -11,7 +11,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { FaFileExport } from "react-icons/fa6";
 
-export default function ShowRouteComponent() {
+export default function DeliveryRouteComponent() {
 
     const [center, setCenter] = useState({ lat: -17.3835, lng: -66.1568 });
     const [mapZoom, setMapZoom] = useState(10);
@@ -39,19 +39,22 @@ export default function ShowRouteComponent() {
     };
     useEffect(() => {
         const fetchVendedores = async () => {
+            const filters = {
+              id_owner: user,
+              page: 1,
+              limit: 1000,
+              searchTerm: ""
+            };
             try {
-                const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
-                    {
-                        id_owner: user
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
-                setVendedores(response.data.data);
+              const response = await axios.post(API_URL + "/whatsapp/delivery/list", filters, {
+                headers: {
+                  Authorization: `Bearer ${token}`
+                }
+              });
+              setVendedores(response.data.data);
             } catch (error) {
-                console.error("Obteniendo vendedores", error);
-                setVendedores([]);
+              console.error("Error fetching products:", error);
+            } finally {
             }
         };
     
@@ -60,12 +63,11 @@ export default function ShowRouteComponent() {
     
     const loadRoute = useCallback(async (startDate, endDate, selectedSaler2) => {
         try {
-            const response = await axios.post(API_URL + "/whatsapp/salesman/list/route", {
+            const response = await axios.post(API_URL + "/whatsapp/delivery/list/route", {
                 id_owner: user,
                 startDate,
-                salesMan: selectedSaler2,
+                delivery: selectedSaler2,
                 endDate,
-                status: selectedStatus,
                 page,
             }, {
                 headers: {
@@ -247,13 +249,13 @@ export default function ShowRouteComponent() {
                     <div className="bg-white p-4 rounded-xl shadow-md w-full mb-4 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <select
-                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 name="vendedor"
                                 value={selectedSaler}
                                 onChange={(e) => setSelectedSaler(e.target.value)}
                                 required
                             >
-                                <option value="">Vendedor</option>
+                                <option value="">Repartidor</option>
                                 <option value="">Mostrar Todos</option>
                                 {vendedores.map((vendedor) => (
                                     <option key={vendedor._id} value={vendedor._id}>
@@ -263,7 +265,7 @@ export default function ShowRouteComponent() {
                             </select>
 
                             <select
-                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 name="estado"
                                 value={selectedStatus}
                                 onChange={(e) => setSelectedStatus(e.target.value)}
@@ -327,7 +329,7 @@ export default function ShowRouteComponent() {
 
                                             >
                                                 <span>
-                                                    {client.salesMan.fullName} {client.salesMan.LAS} - {""}{formatDateToLocal(client.startDate)} - {""}
+                                                    {client.delivery.fullName} {client.delivery.lastName} - {""}{formatDateToLocal(client.startDate)} - {""}
                                                     <span
                                                         className={`
                                                         ${client.status === "En progreso" ? "bg-green-200 text-green-800" : ""}

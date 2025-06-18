@@ -30,7 +30,7 @@ export default function LocalizationView() {
     id: "google-map-script",
   });
 
-  const fetSalesMan = useCallback(async () => {
+  const fetchSalesMan = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
         { id_owner: user },
@@ -60,8 +60,8 @@ export default function LocalizationView() {
   }, []);
 
   useEffect(() => {
-    fetSalesMan();
-  }, [fetSalesMan]);
+    fetchSalesMan();
+  }, [fetchSalesMan]);
 
   const loadMarkersFromAPI = async () => {
     try {
@@ -171,14 +171,14 @@ export default function LocalizationView() {
             <div
               key={client._id}
               onClick={() => findLocation(client)}
-              className={`flex flex-col items-center bg-white md:flex-row gap-x-2 min-w-[250px] max-w-xl w-full border-2 border-gray-300 rounded-lg mb-2`}
+              className="flex flex-col items-center bg-white md:flex-row gap-x-4 w-full max-w-screen-lg h-auto border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative"
               role="button"
               tabIndex={0}
               aria-label={`Ver detalles de ${client.name} ${client.lastName}`}
-              style={{ minHeight: "180px" }}
+              style={{ minHeight: "280px" }}
             >
               <img
-                className="w-full md:w-48 h-[180px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
+                className="w-[150px] h-[280px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
                 src={
                   client.profilePicture ||
                   "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
@@ -195,10 +195,10 @@ export default function LocalizationView() {
                 >
                   {client.name} {client.lastName}
                 </h5>
-                <h5 className="text-l font-normal tracking-tight text-gray-900 flex items-center">
+                <h5 className="text-l mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
                   {client.company}
                 </h5>
-                <p className="text-m font-normal text-gray-700 flex items-center">
+                <p className="text-m mt-2 mb-2 font-normal text-gray-700 flex items-center">
                   <FaMapMarkerAlt className="text-red-500 mr-2" />
                   {client.client_location?.direction || "No disponible"}
                 </p>

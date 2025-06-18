@@ -459,6 +459,11 @@ export default function ClientInformationComponent() {
                             CONTADO
                           </span>
                         )}
+                         {item.accountStatus === "Cheque" && (
+                          <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
+                            CHEQUE
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-gray-900">Bs. {item.totalAmount}</td>
                       <td className="px-6 py-4 text-gray-900">Bs. {item.totalPagado}</td>

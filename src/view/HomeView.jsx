@@ -134,7 +134,7 @@ const HomeView = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
+    <div className="bg-white max-w-screen shadow-lg rounded-lg p-5">
       <div className="ml-10 mr-10 relative overflow-x-auto">
         <div className="flex items-center justify-between w-full mt-5 mb-10">
           <h2 className="text-2xl font-bold text-gray-900">Reporte</h2>

@@ -22,7 +22,7 @@ export default function CreateRouteComponent() {
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  
+
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -70,51 +70,51 @@ export default function CreateRouteComponent() {
   }
   useEffect(() => {
     const fetchVendedores = async () => {
-        try {
-            const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
-                {
-                    id_owner: user
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-            setVendedores(response.data.data);
-        } catch (error) {
-            console.error("Obteniendo vendedores", error);
-            setVendedores([]);
-        }
+      try {
+        const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+          {
+            id_owner: user
+          }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setVendedores(response.data.data);
+      } catch (error) {
+        console.error("Obteniendo vendedores", error);
+        setVendedores([]);
+      }
     };
 
-    if (user && token) { 
-        fetchVendedores();
+    if (user && token) {
+      fetchVendedores();
     }
-}, [user, token]); 
+  }, [user, token]);
 
-const loadMarkersFromAPI = useCallback(async (sales_id) => {
-  try {
+  const loadMarkersFromAPI = useCallback(async (sales_id) => {
+    try {
       const response = await axios.post(API_URL + "/whatsapp/maps/list/id", {
-          id_owner: user,
-          sales_id: sales_id
+        id_owner: user,
+        sales_id: sales_id
       }, {
-          headers: {
-              Authorization: `Bearer ${token}`
-          }
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       setMarkers(response.data.users);
       setFilteredData(response.data.users);
       console.log(response)
 
-  } catch (error) {
+    } catch (error) {
       console.error("Error al cargar los marcadores: ", error);
-  }
-}, [user, token]);  
+    }
+  }, [user, token]);
 
-useEffect(() => {
-  loadMarkersFromAPI("todos");
-}, [loadMarkersFromAPI]);  
+  useEffect(() => {
+    loadMarkersFromAPI("todos");
+  }, [loadMarkersFromAPI]);
 
-  
+
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredData(markers);
@@ -166,7 +166,7 @@ useEffect(() => {
           visitTime: null,
           orderTaken: false,
           visitStartTime: null,
-          visitEndTime: null 
+          visitEndTime: null
         };
         return [...prev, newLocation];
       }
@@ -199,39 +199,39 @@ useEffect(() => {
                   </button>
                 </div>
                 {selectedMarkers.map((client, index) => (
-                 <div
+                  <div
                     key={client._id}
                     onClick={() => findLocation(client)}
                     className="flex flex-col items-center bg-white md:flex-row gap-x-4 w-full max-w-screen-lg h-auto border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative"
                     style={{ minHeight: "120px" }}
 
                   >
-                 <img
-                className="w-[120px] h-[120px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
-                src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
-                   alt={client.name || "Cliente"}
-                 />
-                 <div className="flex flex-col justify-between leading-normal">
-                   <h5
-                     onClick={() => goToClientDetails(client)}
-                     className="text-l font-bold tracking-tight text-gray-900 flex items-center"
-                   >
-                     {client.name} {client.lastName}
-                   </h5>
-                   <p className="text-m font-normal text-gray-700 flex items-center">
-                     <FaMapMarkerAlt className="text-red-500 mr-2" />
-                     {client.client_location?.direction || "No disponible"}
-                   </p>
-                 </div>
-                 <button onClick={(e) => {
-                  e.stopPropagation();
-                    e.preventDefault();
-                    handleDelete(client._id);
-                  }} className="text-red-500 hover:text-red-700 ml-auto">
-                   <MdDelete className="h-7 w-7" />
-                 </button>
-               </div>
-               
+                    <img
+                      className="w-[120px] h-[120px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
+                      src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
+                      alt={client.name || "Cliente"}
+                    />
+                    <div className="flex flex-col justify-between leading-normal">
+                      <h5
+                        onClick={() => goToClientDetails(client)}
+                        className="text-l font-bold tracking-tight text-gray-900 flex items-center"
+                      >
+                        {client.name} {client.lastName}
+                      </h5>
+                      <p className="text-m font-normal text-gray-700 flex items-center">
+                        <FaMapMarkerAlt className="text-red-500 mr-2" />
+                        {client.client_location?.direction || "No disponible"}
+                      </p>
+                    </div>
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleDelete(client._id);
+                    }} className="text-red-500 hover:text-red-700 ml-auto">
+                      <MdDelete className="h-7 w-7" />
+                    </button>
+                  </div>
+
                 ))}
               </>
 
@@ -333,9 +333,9 @@ useEffect(() => {
                 <div className="flex flex-col justify-between leading-normal">
                   <h5
                     onClick={(e) => {
-                      e.stopPropagation(); 
+                      e.stopPropagation();
                       goToClientDetails(client);
-                    }}                    
+                    }}
                     className="text-l font-bold tracking-tight text-gray-900 flex items-center"
                   >
                     {client.name} {client.lastName}
@@ -355,64 +355,63 @@ useEffect(() => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative p-4 w-full max-w-md max-h-full">
             <div className="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
-            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Crear Ruta
-              </h3>
-              <button type="button" onClick={() => setIsOpen(false)} className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
-                <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                  <path stroke="currentColor"  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                </svg>
-                <span className="sr-only">Close modal</span>
-              </button>
-            </div>
-            <div className="p-4 md:p-5">
-            <form className="space-y-4" action="#">
-            <div className="text-left">
-              <label htmlFor="routeName" className="block mb-2 text-m font-medium text-gray-900">Nombre de la ruta</label>
-              <input
-                id="routeName"
-                type="text"
-                placeholder="Nombre de la ruta"
-                value={routeName}
-                onChange={(e) => setRouteName(e.target.value)}
-                className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
-              />
-            </div>
-            <div className="text-left">
-                <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de inicio</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
-                />
-            </div>
-            <div className="text-left">
-              <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de fin</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full p-2 border text-gray-900 rounded-2xl mb-4"
-                />
-            </div>
-            <div className="flex justify-end gap-2">
-                <button 
-                  type="button" 
-                  onClick={() => handleCreateRoute()} 
-                  disabled={!routeName || !startDate || !endDate}
-                  className={`px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${
-                    !routeName || !startDate || !endDate
-                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
-                  }`}                  >
-                  Crear
-                  </button>
-            </div>
-            </form>
-            </div>
-        
+              <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Crear Ruta
+                </h3>
+                <button type="button" onClick={() => setIsOpen(false)} className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
+                  <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                  </svg>
+                  <span className="sr-only">Close modal</span>
+                </button>
+              </div>
+              <div className="p-4 md:p-5">
+                <form className="space-y-4" action="#">
+                  <div className="text-left">
+                    <label htmlFor="routeName" className="block mb-2 text-m font-medium text-gray-900">Nombre de la ruta</label>
+                    <input
+                      id="routeName"
+                      type="text"
+                      placeholder="Nombre de la ruta"
+                      value={routeName}
+                      onChange={(e) => setRouteName(e.target.value)}
+                      className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de inicio</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de fin</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full p-2 border text-gray-900 rounded-2xl mb-4"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCreateRoute()}
+                      disabled={!routeName || !startDate || !endDate}
+                      className={`px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${!routeName || !startDate || !endDate
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
+                        }`}                  >
+                      Crear
+                    </button>
+                  </div>
+                </form>
+              </div>
+
             </div>
           </div>
         </div>

@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
 
-const LocationLayout = () => {
+const DeliveryLayout = () => {
     return (
         <div>
-      <nav className="bg-white border-gray-200 dark:bg-gray-900 h-16">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between border-b-2 border-black-400 mx-auto p-4">
+            <nav className="bg-white border-gray-200 dark:bg-gray-900 h-16">
+                <div className="max-w-screen-xl flex flex-wrap items-center justify-between border-b-2 border-black-400 mx-auto p-4">
                     <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
                     </a>
                     <button data-collapse-toggle="navbar-default" type="button" className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-default" aria-expanded="false">
@@ -13,22 +13,17 @@ const LocationLayout = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" d="M1 1h15M1 7h15M1 13h15" />
                         </svg>
                     </button>
-                    
+
                     <div className="hidden w-full md:block md:w-auto" id="navbar-default">
                         <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
                             <li>
-                                <a href="/localization" className="block py-2 px-3 font-bold text-[#3A3737] text-m md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
-                                    Clientes
+                                <a href="/delivery/route" className="block py-2 px-3 text-[#3A3737] text-m md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">
+                                    Mis rutas de entrega
                                 </a>
                             </li>
                             <li>
-                                <a href="/localization/list/route" className="block py-2 px-3 text-[#3A3737] text-m md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">
-                                    Mis rutas
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/localization/route" className="block py-2 px-3 text-[#3A3737] text-m md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">
-                                    Crear ruta
+                                <a href="/delivery" className="block py-2 px-3 text-[#3A3737] text-m md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">
+                                    Crear ruta de entrega
                                 </a>
                             </li>
                         </ul>
@@ -36,10 +31,10 @@ const LocationLayout = () => {
                 </div>
             </nav>
             <div className="flex-1 overflow-hidden">
-            <Outlet />
+                <Outlet />
             </div>
         </div>
-    );  
+    );
 };
 
-export default LocationLayout;
+export default DeliveryLayout;
