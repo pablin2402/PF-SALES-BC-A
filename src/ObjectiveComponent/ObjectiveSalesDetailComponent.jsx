@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
 
-const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, setSelectedLyne }) => {
+const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
 
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
@@ -12,13 +12,18 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
     const [endDate, setEndDate] = useState("");
     const [selectedFilter, setSelectedFilter] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ numberOfBoxes: 0, saleLastYear1: 0, startDate, endDate, categoria: "", ciudad: "" });
+    const [formData, setFormData] = useState({ numberOfBoxes: 0, saleLastYear1: 0, startDate, endDate, categoria: "", ciudad: "", salesMan: "" });
     const [salesData, setSalesData] = useState("");
     const [selectedPayment, setSelectedPayment] = useState("");
     const [paymentFilterActive, setPaymentActive] = useState(false);
-
+    const [vendedores, setVendedores] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const MAX_ITEMS_PER_PAGE = 20;
+    const [items, setItems] = useState();
 
 
     const handleChange = (e) => {
@@ -36,7 +41,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
             endDate.setDate(endDate.getDate() + 1);
 
             const response = await axios.post(
-                API_URL + "/whatsapp/sales/objective/id",
+                API_URL + "/whatsapp//sales/objective/sales",
                 {
                     region: formData.ciudad,
                     lyne: formData.categoria,
@@ -46,6 +51,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
                     id_owner: user,
                     startDate: startDate,
                     endDate: endDate,
+                    salesManId: formData.salesMan
                 },
                 {
                     headers: {
@@ -66,19 +72,25 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
             setLoading(false);
         }
     };
-    const fetchObjectiveDataRegion = async (customFilters) => {
+    const fetchObjectiveDataRegion = async (pageNumber, customFilters) => {
         setLoading(true);
         const filters = {
-            region: item.region,
-            salesId: "",
-            id_owner: user,
-            payStatus: "",
+            region: region,
+            startDate: "2025-06-01",
+            endDate: "2025-06-31",
+            id_owner: "CL-01",
+            lyne: lyne,
+            page: pageNumber,
+            limit: itemsPerPage,
             ...customFilters,
         };
-
         try {
-            const response = await axios.post(API_URL + "/whatsapp/order/objective/region/id", filters);
-            setObjectiveData(response.data);
+            const response = await axios.post(API_URL + "/whatsapp/order/objective/region/product", filters);
+            console.log(response.data)
+            setObjectiveData(response.data.data);
+            setTotalPages(response.data.pages);
+            setItems(response.data.total);
+
         } catch (error) {
             console.error("Error fetching products:", error);
         } finally {
@@ -117,11 +129,28 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
 
         fetchObjectiveDataRegion(customFilters);
     };
+    const fetchVendedores = async () => {
+        try {
+            const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+                {
+                    id_owner: user
+                }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setVendedores(response.data.data);
+        } catch (error) {
+            console.error("Error obteniendo vendedores", error);
+            setVendedores([]);
+        }
+    };
     useEffect(() => {
         fetchCategories();
-        fetchObjectiveDataRegion();
+        fetchObjectiveDataRegion(page);
+        fetchVendedores();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [page,itemsPerPage]);
     const clearFilter = (type) => {
         if (type === "date") {
             setStartDate("");
@@ -129,9 +158,9 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
             setSelectedPayment("")
             setDateFilterActive(false);
             setPaymentActive(false);
+
         }
     };
-
     return (
         <div className="bg-white min-h-screen rounded-lg p-5">
             {loading ? (
@@ -247,41 +276,43 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
                             </span>
                         )}
                     </div>
-
                     <div className="mt-5 border border-gray-400 rounded-xl">
                         <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                             <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                 <tr>
                                     <th className="px-6 py-3 uppercase">Region</th>
                                     <th className="px-6 py-3 uppercase">Linea</th>
-                                    <th className="px-6 py-3 uppercase">Objectivo</th>
-                                    <th className="px-6 py-3 uppercase">VTA AA</th>
-                                    <th className="px-6 py-3 uppercase">VTA ACUM</th>
-                                    <th className="px-6 py-3 uppercase">VS AA</th>
-                                    <th className="px-6 py-3 uppercase">VS OBJECTIVO</th>
-                                    <th className="px-6 py-3 uppercase">TENDENCIA</th>
-                                    <th className="px-6 py-3 uppercase">POR VENDER</th>
+                                    <th className="px-6 py-3 uppercase">Producto</th>
+                                    <th className="px-6 py-3 uppercase">Número de pedido</th>
+                                    <th className="px-6 py-3 uppercase">Vendedor</th>
+                                    <th className="px-6 py-3 uppercase">Fecha de creación</th>
+                                    <th className="px-6 py-3 uppercase">Botellas</th>
+                                    <th className="px-6 py-3 uppercase">Caja</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {objectiveData.length > 0 ? (
                                     objectiveData.map((item) => (
-                                        <tr onClick={() => {
-                                            setSelectedRegion(item.region);
-                                            setSelectedLyne(item.categoria)
-                                            setViewMode("sales");
-                                        }}   
-                                            key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+                                        <tr key={item.receiveNumber+item.categoria+item.productName} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-medium text-gray-900">{region}</td>
                                             <td className="px-6 py-4 text-gray-900">{item.categoria}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.objective}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.totalCajas}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.objective) * 100).toFixed(2) + "%"}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{(item.totalCajas / 14) * 31}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{(item.objective - item.totalCajas).toFixed(2)}</td>
-
+                                            <td className="px-6 py-4 font-medium text-gray-900">{item.productName}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{item.receiveNumber}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{item.salesFullName + " " + item.salesLastName}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900"> {item.creationDate
+                                                ? new Date(item.creationDate).toLocaleString("es-ES", {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    second: "2-digit",
+                                                    hour12: false,
+                                                }).toUpperCase(): ''}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{item.totalBotellas}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{item.cantidadVendida.toFixed(3)}</td>
                                         </tr>
                                     ))
                                 ) : (
@@ -294,48 +325,105 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
                             </tbody>
                             <tfoot>
                                 <tr className="bg-gray-200 font-semibold text-gray-900">
-                                    <td className="px-6 py-3" ></td>
+                                    <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.objective || 0), 0).toFixed(2)}
                                     </td>
                                     <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0).toFixed(2)}
                                     </td>
                                     <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.totalCajas || 0), 0).toFixed(2)}
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                            (
-                                                objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.saleLastYear) * 100), 0) /
-                                                objectiveData.length
-                                            ).toFixed(2) + "%"
-                                        }
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                            (
-                                                objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.objective) * 100), 0) /
-                                                objectiveData.length
-                                            ).toFixed(2) + "%"
-                                        }
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                            (
-                                                objectiveData.reduce((sum, item) => sum + ((item.totalCajas / 14) * 31), 0) /
-                                                objectiveData.length
-                                            ).toFixed(2)
-                                        }
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + ((item.objective - item.totalCajas) || 0), 0).toFixed(2)}
-                                    </td>
 
+                                    </td>
+                                    <td className="px-6 py-3">
+                                    </td>
+                                    <td className="px-6 py-3">
+                                        {objectiveData.reduce((sum, item) => sum + (item.totalBotellas || 0), 0).toFixed(3)}
+                                    </td>
+                                    <td className="px-6 py-3">
+                                        {objectiveData.reduce((sum, item) => sum + (item.cantidadVendida || 0), 0).toFixed(3)}
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
+                        {totalPages > 1 && (
+                <div className="flex justify-between items-center px-6 pb-4">
+
+                  <div className="flex mb-4 justify-end items-center pt-4">
+                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                      Ítems por página:
+                    </label>
+                    <select
+                      id="itemsPerPage"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        const selectedValue = Number(e.target.value);
+                        setItemsPerPage(selectedValue);
+                        setPage(1);
+                        fetchObjectiveDataRegion(1);
+                      }}
+                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                    >
+                      {[5, 10, 15, 20]
+                        .filter((option) => option < items && option <= MAX_ITEMS_PER_PAGE)
+                        .map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <nav className="flex items-center justify-center pt-4 space-x-2">
+                    <button
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
+                    >
+                      ◀
+                    </button>
+
+                    <button
+                      onClick={() => setPage(1)}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                    >
+                      1
+                    </button>
+
+                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                      .filter((p) => p > 1 && p < totalPages)
+                      .map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+
+                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                    {totalPages > 1 && (
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                      >
+                        {totalPages}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={page === totalPages}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                    >
+                      ▶
+                    </button>
+                  </nav>
+                </div>
+              )}
                     </div>
                     {modalOpen && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -426,6 +514,23 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
                                             className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                                         />
                                     </div>
+                                    <div className="flex flex-col">
+                                        <label className="text-sm font-medium text-gray-900 mb-1">Seleccionar Vendedor</label>
+                                        <select
+                                            className="text-gray-900 rounded-2xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
+                                            name="salesMan"
+                                            value={formData.salesMan}
+                                            onChange={handleChange}
+                                            required
+                                        >
+                                            <option value="">Seleccione un vendedor</option>
+                                            <option value="">Mostrar Todos</option>
+                                            <option value="">Mostrar Todos</option>
+                                            {vendedores.map((vendedor) => (
+                                                <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <button
@@ -462,4 +567,4 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
     );
 };
 
-export default ObjectiveDepartmentComponent;
+export default ObjectiveSalesDetailComponent;

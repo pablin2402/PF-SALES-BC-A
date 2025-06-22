@@ -297,8 +297,8 @@ export default function ActivityRouteComponent() {
                                 )}
                             </>
                         ) : (
-                            <div className="flex flex-1 h-[calc(100vh-150px)] items-center justify-center border border-gray-400 rounded-lg text-gray-700 text-lg font-semibold">
-                                Ningún item seleccionado
+                            <div className="flex flex-1 h-[calc(100vh-150px)] items-center uppercase justify-center border border-gray-400 rounded-lg text-gray-700 text-lg font-semibold">
+                                No tienes rutas para hoy
                             </div>
                         )}
                     </div>

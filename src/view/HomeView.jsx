@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 import {
@@ -13,6 +13,7 @@ import { FaFilter } from "react-icons/fa";
 import { FaFileExport } from "react-icons/fa6";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import ObjectiveSalesManComponent from "../ObjectiveComponent/ObjectiveSalesManComponent";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -57,18 +58,19 @@ const HomeView = () => {
         filterType === "monthYear"
           ? { id_owner: user, year: selectedYear, month: selectedMonth }
           : { id_owner: user, startDate, endDate };
-  
-      const response = await axios.post(API_URL+"/whatsapp/order/id/statistics", requestData, 
+
+      const response = await axios.post(API_URL + "/whatsapp/order/id/statistics", requestData,
         {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }});
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       setSalesData(response.data.orders);
-  
+
       const groupedSales = response.data.orders.reduce((acc, order) => {
         const sellerId = order.salesId?._id || "Desconocido";
         const sellerName = `${order.salesId?.fullName || "Desconocido"} ${order.salesId?.lastName || ""}`.trim();
-  
+
         if (!acc[sellerId]) {
           acc[sellerId] = { sellerName, totalAmount: 0, totalOrders: 0 };
         }
@@ -76,7 +78,7 @@ const HomeView = () => {
         acc[sellerId].totalOrders += 1;
         return acc;
       }, {});
-  
+
       setSalesBySeller(Object.values(groupedSales));
     } catch (error) {
       setError("Error al cargar los datos.");
@@ -84,14 +86,10 @@ const HomeView = () => {
       setLoading(false);
     }
   }, [filterType, selectedYear, selectedMonth, startDate, endDate]);
-  
+
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-  
-
-
-  
   const exportOrdersToExcel = () => {
     const formattedOrders = salesData.map((order) => {
       const productos = order.products
@@ -100,12 +98,12 @@ const HomeView = () => {
             `${p.nombre} (Cant: ${p.cantidad}, Precio: Bs ${p.precio})`
         )
         .join(" | ");
-        const creationDateUTC = new Date(order.creationDate);
-        creationDateUTC.setHours(creationDateUTC.getHours() - 4);
-        const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
+      const creationDateUTC = new Date(order.creationDate);
+      creationDateUTC.setHours(creationDateUTC.getHours() - 4);
+      const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
       return {
         "Número / Recibo": order.receiveNumber || "—",
-        "Fecha de creación":formattedDate,
+        "Fecha de creación": formattedDate,
         "Vencimiento": new Date(order.dueDate).toLocaleDateString(),
         "Vendedor": `${order.salesId?.fullName || "—"} ${order.salesId?.lastName || ""}`.trim(),
         "Productos": productos,
@@ -120,85 +118,22 @@ const HomeView = () => {
         "Estado de cuenta": order.accountStatus || "—",
       };
     });
-  
+
     const worksheet = XLSX.utils.json_to_sheet(formattedOrders);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sales_By_Sales");
-  
+
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const dataBlob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-  
+
     saveAs(dataBlob, `ordenes_ventas_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   return (
-    <div className="bg-white max-w-screen shadow-lg rounded-lg p-5">
+    <div className="bg-white max-w-screen p-5">
       <div className="ml-10 mr-10 relative overflow-x-auto">
-        <div className="flex items-center justify-between w-full mt-5 mb-10">
-          <h2 className="text-2xl font-bold text-gray-900">Reporte</h2>
-        </div>
-        <div className="flex items-center justify-between w-full mb-4">
-          <div className="flex gap-2">
-            <select
-              className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-            >
-              <option value="monthYear">Filtrar por Mes y Año</option>
-              <option value="dateRange">Filtrar por Rango de Fechas</option>
-            </select>
-          </div>
-
-          {filterType === "monthYear" ? (
-            <div className="flex gap-2">
-              <select
-                className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-              >
-                {years.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-
-              <select
-                className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-              >
-                {months.map((month) => (
-                  <option key={month.value} value={month.value}>{month.label}</option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="date"
-                className="p-2 font-bold text-gray-700  rounded-lg"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <input
-                type="date"
-                className="p-2 font-bold text-gray-700 rounded-lg"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-              <button
-            className="px-5 py-2.5 bg-white font-bold text-lg text-[#D3423E] rounded-lg hover:bg-gray-100 rounded-2xl hover:text-[#D3423E] flex items-center gap-2 "
-            onClick={fetchOrders}
-          >
-            <FaFilter />
-            Filtrar
-          </button>
-            </div>
-          )}
-
-        </div>
-
         {loading ? (
           <p className="text-center text-gray-500">
             <div className="flex justify-center items-center h-64">
@@ -215,10 +150,72 @@ const HomeView = () => {
           <p className="text-center text-red-500">{error}</p>
         ) : (
           <div>
+            <div className="flex items-center justify-between w-full mt-5 mb-10">
+              <h2 className="text-2xl font-bold text-gray-900">Reporte de ventas</h2>
+            </div>
+            <div className="flex items-center justify-between w-full mb-4">
+              <div className="flex gap-2">
+                <select
+                  className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                >
+                  <option value="monthYear">Filtrar por Mes y Año</option>
+                  <option value="dateRange">Filtrar por Rango de Fechas</option>
+                </select>
+              </div>
+
+              {filterType === "monthYear" ? (
+                <div className="flex gap-2">
+                  <select
+                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                  >
+                    {years.map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                  >
+                    {months.map((month) => (
+                      <option key={month.value} value={month.value}>{month.label}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    className="p-2 font-bold text-gray-700  rounded-lg"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className="p-2 font-bold text-gray-700 rounded-lg"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                  <button
+                    className="px-5 py-2.5 bg-white font-bold text-lg text-[#D3423E] rounded-lg hover:bg-gray-100 rounded-2xl hover:text-[#D3423E] flex items-center gap-2 "
+                    onClick={fetchOrders}
+                  >
+                    <FaFilter />
+                    Filtrar
+                  </button>
+                </div>
+              )}
+
+            </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
               <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-              <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-              <tr>
+                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                  <tr>
                     <th className="px-6 py-3 font-bold uppercase">Vendedor</th>
                     <th className="px-6 py-3 font-bold uppercase">Número de Pedidos</th>
                     <th className="px-6 py-3 font-bold uppercase">Monto Total Vendido</th>
@@ -235,12 +232,12 @@ const HomeView = () => {
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">${seller.totalAmount.toFixed(2)}</td>
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">
                           <button
-                              onClick={exportOrdersToExcel}
-                              className="px-4 py-2 bg-white font-bold text-lg text-[#3A3737] rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
-                            >
-                              <FaFileExport color="##726E6E" />
-                              Exportar
-                            </button>
+                            onClick={exportOrdersToExcel}
+                            className="px-4 py-2 bg-white font-bold text-lg text-[#3A3737] rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
+                          >
+                            <FaFileExport color="##726E6E" />
+                            Exportar
+                          </button>
                         </td>
 
                       </tr>
@@ -255,7 +252,8 @@ const HomeView = () => {
                 </tbody>
               </table>
             </div>
-            
+            <ObjectiveSalesManComponent region="TOTAL CBB" />
+
           </div>
         )}
       </div>

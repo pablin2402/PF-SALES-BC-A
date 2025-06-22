@@ -15,7 +15,7 @@ const DeliveryView = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [items, setItems] = useState();
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(1);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -39,11 +39,10 @@ const DeliveryView = () => {
   };
   const fetchProducts = useCallback(async (pageNumber) => {
     setLoading(true);
-    console.log(searchTerm)
     const filters = {
       id_owner: user,
       page: pageNumber,
-      limit: 1000,
+      limit: itemsPerPage,
       searchTerm: searchTerm
     };
     try {
@@ -60,7 +59,7 @@ const DeliveryView = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, searchTerm, token]);
+  }, [user, searchTerm, token, itemsPerPage]);
   useEffect(() => {
     fetchProducts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,29 +110,11 @@ const DeliveryView = () => {
           </div>
         </div>
       ) : (
-        <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
-          <div className="flex flex-col w-full space-y-4">
-            <div className="flex justify-end items-center space-x-4">
-              {salesData.length > 0 && (
-                <button
-                  onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
-                >
-                  <FaFileExport />
-                  Exportar
-                </button>
-              )}
+        <div className="flex flex-col w-full">
+          <div className="flex items-center justify-between w-full mb-4">
 
-              <button
-                onClick={() => navigate("/delivery/creation")}
-                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
-              >
-                <IoPersonAdd />
-                Nuevo Repartidor
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
+            <div className="flex items-center w-full max-w-2xl gap-2">
+              <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
                   <svg
                     className="w-5 h-5 text-red-500"
@@ -159,17 +140,36 @@ const DeliveryView = () => {
                     }
                   }}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-200 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block w-full p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
-
               <button
                 onClick={() => fetchProducts(1)}
-                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+                className="px-3 py-2 h-full text-white text-lg bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
               >
                 <HiFilter className="text-white text-lg" />
 
                 FILTRAR
+              </button>
+
+            </div>
+            <div className="flex justify-end items-center space-x-4">
+              {salesData.length > 0 && (
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
+                >
+                  <FaFileExport />
+                  Exportar
+                </button>
+              )}
+
+              <button
+                onClick={() => navigate("/delivery/creation")}
+                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
+              >
+                <IoPersonAdd />
+                Nuevo Repartidor
               </button>
             </div>
           </div>
@@ -223,7 +223,7 @@ const DeliveryView = () => {
                 <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
                   <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
                 </div>
-                {totalPages > 1 && searchTerm === "" && (
+                {searchTerm === "" && (
                   <div className="flex justify-between items-center px-6 pb-4">
                     <div className="flex mb-4 justify-end items-center pt-4">
                       <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
@@ -235,11 +235,11 @@ const DeliveryView = () => {
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
-                          fetchProducts(page);
+                          fetchProducts(1);
                         }}
                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                       >
-                        {[5, 10, 20, 50, 100].map((option) => (
+                        {[5, 10, 20].map((option) => (
                           <option key={option} value={option}>
                             {option}
                           </option>

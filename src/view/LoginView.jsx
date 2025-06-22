@@ -75,7 +75,7 @@ const Login = ({ onLogin }) => {
             required="" />
         </div>
 
-        <button type="submit" className="w-full text-white bg-[#D3423E] hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-2xl text-lg px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">INICIAR SESIÓN</button>
+        <button type="submit" className="w-full font-bold text-white bg-[#D3423E] hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-2xl text-lg px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">INICIAR SESIÓN</button>
 
       </form>
     </div>

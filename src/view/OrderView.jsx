@@ -210,10 +210,10 @@ const OrderView = () => {
           <div>
             <div className="flex flex-col w-full">
               <div className="flex items-center justify-between w-full mb-4">
-                <div className="relative flex items-center space-x-4">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                      <svg
+                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+                <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                  <svg
                         className="w-5 h-5 text-red-500"
                         aria-hidden="true"
                         fill="currentColor"
@@ -234,17 +234,27 @@ const OrderView = () => {
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          fetchOrders(1);
+                          applyFilters();
                         }
                       }}
-                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                    />
+                      className="block w-full p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      />
                   </div>
+                  <button
+                        onClick={() => {
+                          applyFilters();
+                        }}
+                        className="px-3 py-2 h-full text-white text-lg bg-[#D3423E] uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
+                      >
+                        <HiFilter className="text-white text-lg" />
+
+                        FILTRAR
+                      </button>
                 </div>
                 <div className="flex justify-end items-center space-x-4">
                   <button
                     onClick={exportToExcel}
-                    className="px-4 py-2 bg-white font-bold text-m text-[#D3423E] uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
                   >
                     <FaFileExport color="##726E6E" />
                     Exportar
@@ -276,16 +286,6 @@ const OrderView = () => {
                         <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
                       ))}
                     </select>
-                    <button
-                      onClick={() => {
-                        applyFilters();
-                      }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                    >                                
-                    <HiFilter className="text-white text-lg" />
-
-                      Filtrar
-                    </button>
                   </div>
                 )}
                 {selectedFilter === "paymentType" && (
@@ -300,16 +300,6 @@ const OrderView = () => {
                       <option value="Crédito">Crédito</option>
                       <option value="Contado">Contado</option>
                     </select>
-                    <button
-                      onClick={() => {
-                        applyFilters();
-                      }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                    >
-                      <HiFilter className="text-white text-lg" />
-
-                      Filtrar
-                    </button>
                   </div>
                 )}
                 {selectedFilter === "payment" && (
@@ -324,16 +314,6 @@ const OrderView = () => {
                       <option value="Pagado">Pagado</option>
                       <option value="Pendiente">Pendiente</option>
                     </select>
-                    <button
-                      onClick={() => {
-                        applyFilters();
-                      }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl flex items-center gap-2"
-                    >
-                      <HiFilter className="text-white text-lg" />
-
-                      Filtrar
-                    </button>
                   </div>
                 )}
                 {selectedFilter === "date" && (
@@ -365,17 +345,7 @@ const OrderView = () => {
                         className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                       />
                     </div>
-                    <button
-                      onClick={() => {
-                        applyFilters();
-                        setDateFilterActive(true);
-                      }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl  flex items-center gap-2"
-                    >
-                      <HiFilter className="text-white text-lg" />
-
-                      Filtrar
-                    </button>
+                   
                   </div>
                 )}
                 {selectedFilter === "region" && (
@@ -393,16 +363,7 @@ const OrderView = () => {
                       <option value="TOTAL LP">La Paz</option>
                       <option value="TOTAL OR">Oruro</option>
                     </select>
-                    <button
-                      onClick={() => {
-                        applyFilters();
-                      }}
-                      className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl flex items-center gap-2"
-                    >
-                      <HiFilter className="text-white text-lg" />
-
-                      Filtrar
-                    </button>
+                    
                   </div>
                 )}
 
@@ -543,7 +504,6 @@ const OrderView = () => {
               </table>
               <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
                 <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
-
               </div>
               {totalPages > 1 && (
                 <div className="flex justify-between items-center px-6 pb-4">

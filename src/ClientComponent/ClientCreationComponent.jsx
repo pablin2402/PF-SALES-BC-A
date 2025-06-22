@@ -15,6 +15,7 @@ const ClientCreationComponent = () => {
   const [location, setLocation] = useState({ lat: -17.3835, lng: -66.1568 });
   const [address, setAddress] = useState({ road: "", state: "" });
   const [addressNumber, setAddressNumber] = useState({ house_number: "" });
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo: "", identificacion: "0" });
 
@@ -100,8 +101,6 @@ const ClientCreationComponent = () => {
     e.preventDefault();
 
     try {
-      console.log(formData.punto)
-
       const userResponse =  await Promise.race([ await axios.post(API_URL + "/whatsapp/maps/id",
         {
           sucursalName: formData.punto,
@@ -122,9 +121,7 @@ const ClientCreationComponent = () => {
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
       ]);
-      console.log(userResponse)
       if (userResponse.status === 200) {
-        console.log(userResponse)
         const directionId = userResponse.data._id;
         const postResponse = await axios.post(API_URL + "/whatsapp/client",
           {
@@ -246,7 +243,11 @@ const ClientCreationComponent = () => {
 
             <div className="flex flex-col sm:col-span-2">
               <h2 className="mt-6 mb-6 text-lg text-left font-bold text-gray-900">Ubicación del Punto</h2>
-              <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
+              <LoadScript googleMapsApiKey={GOOGLE_API_KEY}
+                                  onLoad={() => setIsMapLoaded(true)}
+>
+{isMapLoaded && (
+
               <GoogleMap
                   mapContainerStyle={containerStyle}
                   center={location}
@@ -264,6 +265,7 @@ const ClientCreationComponent = () => {
                     }}
                   />
                 </GoogleMap>
+                  )}
                 </LoadScript>
             </div>
             <button

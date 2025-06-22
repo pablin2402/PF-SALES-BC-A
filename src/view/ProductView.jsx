@@ -27,7 +27,7 @@ const ProductView = () => {
   const [editedPriceId, setEditedPriceId] = useState("");
 
   const [items, setItems] = useState();
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(1);
 
 
   const user = localStorage.getItem("id_owner");
@@ -107,7 +107,6 @@ const ProductView = () => {
       alert("Hubo un problema al actualizar el producto.");
     }
   };
-
   return (
     <div className="bg-white min-h-screenrounded-lg p-5">
       <div className="relative overflow-x-auto">
@@ -160,13 +159,13 @@ const ProductView = () => {
                           fetchProducts(1);
                         }
                       }}
-                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   >
                     <option value="">Todas las categorías</option>
                     {categoriesList.map((category) => (
@@ -363,7 +362,7 @@ const ProductView = () => {
                     </div>
                   ))}
                 </div>
-                {totalPages > 1 && searchTerm === "" && (
+                {searchTerm === "" && (
 
                   <nav className="flex items-center justify-center pt-4 space-x-2">
                     <button
@@ -467,7 +466,6 @@ const ProductView = () => {
         </div>
 
       )}
-
     </div>
   );
 };

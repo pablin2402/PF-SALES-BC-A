@@ -34,6 +34,8 @@ import CreateRouteComponent from "./locationComponent/CreateRouteComponent";
 import ShowRouteComponent from "./locationComponent/ShowRouteComponent";
 
 import ObjectiveDepartmentComponent from "./ObjectiveComponent/ObjectiveDepartmentComponent";
+import ObjectiveSalesManComponent from "./ObjectiveComponent/ObjectiveSalesManComponent";
+import ObjectiveSalesDetailComponent from "./ObjectiveComponent/ObjectiveSalesDetailComponent";
 
 import DashboardLayout from "./layouts/DashboardLayouts";
 import ClientsLayout from "./layouts/ClientsLayout";
@@ -49,6 +51,9 @@ export default function AppRoutes() {
             <Route path="/localization/activivty" element={<ActivityRouteComponent />}/>
             <Route path="/objective/sales" element={<ObjectiveRegionalsView />}/>
             <Route path="/objective/department/:id" element={<ObjectiveDepartmentComponent />}/>
+            <Route path="/objective/sales" element={<ObjectiveSalesManComponent />}/>
+            <Route path="/objective/sales/product" element={<ObjectiveSalesDetailComponent />}/>
+
             <Route path="/profile" element={<ProfileView />}/>
         
             <Route element={<DashboardLayout />}>
