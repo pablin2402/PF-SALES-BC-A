@@ -5,7 +5,7 @@ import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/PrincipalButton";
 import DateInput from "../Components/DateInput";
 
-const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, setSelectedLyne }) => {
+const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, setSelectedLyne, date1, date2 }) => {
 
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
@@ -46,8 +46,8 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                     saleLastYear: formData.saleLastYear1,
                     id: formData.ciudad + formData.numberOfBoxes,
                     id_owner: user,
-                    startDate: startDate,
-                    endDate: endDate,
+                    startDate: formData.startDate,
+                    endDate: formData.endDate,
                 },
                 {
                     headers: {
@@ -69,15 +69,22 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
         }
     };
     const fetchObjectiveDataRegion = async (customFilters) => {
+        if (!item?.region) {
+            return;
+        }
+    
         setLoading(true);
+    
         const filters = {
             region: item.region,
             salesId: "",
             id_owner: user,
             payStatus: "",
+            startDate: date1,
+            endDate: date2,
             ...customFilters,
         };
-
+    
         try {
             const response = await axios.post(API_URL + "/whatsapp/order/objective/region/id", filters);
             setObjectiveData(response.data);
@@ -87,6 +94,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
             setLoading(false);
         }
     };
+    
     const fetchCategories = async () => {
         setLoading(true);
         try {
@@ -110,11 +118,6 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
     };
     const applyFilters = () => {
         const customFilters = {};
-
-        if (startDate && endDate) {
-            customFilters.startDate = startDate;
-            customFilters.endDate = endDate;
-        }
         if (selectedPayment) customFilters.payStatus = selectedPayment;
 
         fetchObjectiveDataRegion(customFilters);
@@ -232,13 +235,14 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                         <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                             <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                 <tr>
+                               
                                     <th className="px-6 py-3 uppercase">Region</th>
                                     <th className="px-6 py-3 uppercase">Linea</th>
-                                    <th className="px-6 py-3 uppercase">Objectivo</th>
+                                    <th className="px-6 py-3 uppercase">Objetivo</th>
                                     <th className="px-6 py-3 uppercase">VTA AA</th>
                                     <th className="px-6 py-3 uppercase">VTA ACUM</th>
                                     <th className="px-6 py-3 uppercase">VS AA</th>
-                                    <th className="px-6 py-3 uppercase">VS OBJECTIVO</th>
+                                    <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
                                     <th className="px-6 py-3 uppercase">TENDENCIA</th>
                                     <th className="px-6 py-3 uppercase">POR VENDER</th>
                                 </tr>
@@ -252,6 +256,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                                             setViewMode("sales");
                                         }}
                                             key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                                                                                         
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                                             <td className="px-6 py-4 text-gray-900">{item.categoria}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.objective}</td>
@@ -274,6 +279,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                             </tbody>
                             <tfoot>
                                 <tr className="bg-gray-200 font-semibold text-gray-900">
+                                 
                                     <td className="px-6 py-3" ></td>
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3">

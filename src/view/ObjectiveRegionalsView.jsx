@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
+import { FiTrash2, FiEdit2 } from "react-icons/fi";
 
 import ObjectiveDepartmentComponent from "../ObjectiveComponent/ObjectiveDepartmentComponent";
 import ObjectiveSalesDetailComponent from "../ObjectiveComponent/ObjectiveSalesDetailComponent";
@@ -11,24 +12,24 @@ import DateInput from "../Components/DateInput";
 const ObjectiveRegionalsView = () => {
     const [salesData, setSalesData] = useState([]);
     const [salesNationalData, setSalesNationaData] = useState([]);
-
     const [dateFilterActive, setDateFilterActive] = useState(false);
-
     const [loading, setLoading] = useState(true);
-
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showEditModal1, setShowEditModal1] = useState(false);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState("card");
     const [selectedItem, setSelectedItem] = useState(null);
-
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
-
     const [formData, setFormData] = useState({ numberOfBoxes: 0, saleLastYear1: 0, region: "", startDate, endDate, ciudad: "" });
-
     const [selectedRegion, setSelectedRegion] = useState(null);
     const [selectedLyne, setSelectedLyne] = useState(null);
+    const [objective, setObjective] = useState(0);
+    const [saleLastYear, setSaleLastYear] = useState(0);
+    const [id, setId] = useState("");
+
     const applyFilters = () => {
         const customFilters = {};
 
@@ -68,6 +69,7 @@ const ObjectiveRegionalsView = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
+            console.log(response.data)
             setSalesNationaData(response.data || []);
         } catch (error) {
         } finally {
@@ -132,6 +134,112 @@ const ObjectiveRegionalsView = () => {
             [name]: name === "saleLastYear1" ? Number(value) : value
         });
     };
+    const uploadProducts = async () => {
+        try {
+            const response = await axios.put(
+                API_URL + "/whatsapp/order/objective/region/product",
+                {
+                    _id: id,
+                    id_owner: user,
+                    saleLastYear: saleLastYear,
+                    objective: objective
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.status === 200) {
+                fetchProducts(1);
+                setShowEditModal(false);
+                setSaleLastYear(0);
+                setObjective(0);
+            }
+        } catch (error) {
+            console.error("Error al actualizar el estado de pago:", error);
+        }
+
+    };
+    const deleteObjective = async (id2) => {
+        try {
+            const response = await axios.delete(
+                API_URL + "/whatsapp/order/objective/region/product",
+                {
+                    data: {
+                        _id: id2,
+                        id_owner: user,
+                    }
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.status === 200) {
+                fetchProducts(1);
+                setShowEditModal(false);
+            }
+        } catch (error) {
+            console.error("Error al actualizar el estado de pago:", error);
+        }
+
+    };
+    const uploadProducts1 = async () => {
+        try {
+            const response = await axios.put(
+                API_URL + "/whatsapp/order/objective/product",
+                {
+                    _id: id,
+                    id_owner: user,
+                    saleLastYear: saleLastYear,
+                    numberOfBoxes: objective
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.status === 200) {
+                fetchSalesNational();
+                setShowEditModal(false);
+                showEditModal1(false);
+                setSaleLastYear(0);
+                setObjective(0);
+            }
+        } catch (error) {
+            console.error("Error al actualizar el estado de pago:", error);
+        }
+
+    };
+    const deleteObjective1 = async (id2) => {
+        try {
+            const response = await axios.delete(
+                API_URL + "/whatsapp/order/objective/product",
+                {
+                    data: {
+                        _id: id2,
+                        id_owner: user,
+                    }
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.status === 200) {
+                fetchProducts(1);
+                setShowEditModal(false);
+            }
+        } catch (error) {
+            console.error("Error al actualizar el estado de pago:", error);
+        }
+
+    };
+
     return (
         <div className="bg-white min-h-screen rounded-lg p-5">
             {loading ? (
@@ -281,12 +389,11 @@ const ObjectiveRegionalsView = () => {
                                 <div className="flex flex-col w-full space-y-4">
                                     <div className="flex justify-end items-center space-x-4">
 
-                                        <PrincipalBUtton onClick={() => setModalOpen(true)}
-                                        >                                            Nuevo Objetivo
+                                        <PrincipalBUtton onClick={() => setModalOpen(true)}>
+                                            Nuevo Objetivo
                                         </PrincipalBUtton>
 
                                     </div>
-
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-2">
                                             <div className="flex items-center space-x-2">
@@ -315,41 +422,84 @@ const ObjectiveRegionalsView = () => {
                                     <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                                         <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
                                             <tr>
+                                                <th className="px-6 py-3 uppercase">Fecha de Inicio</th>
+                                                <th className="px-6 py-3 uppercase">Fecha de Fin</th>
                                                 <th className="px-6 py-3 uppercase">Region</th>
                                                 <th className="px-6 py-3 uppercase">Linea</th>
-                                                <th className="px-6 py-3 uppercase">Objectivo</th>
+                                                <th className="px-6 py-3 uppercase">Objetivo</th>
                                                 <th className="px-6 py-3 uppercase">VTA AA</th>
                                                 <th className="px-6 py-3 uppercase">VTA ACUM</th>
                                                 <th className="px-6 py-3 uppercase">VS AA</th>
-                                                <th className="px-6 py-3 uppercase">VS OBJECTIVO</th>
+                                                <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
                                                 <th className="px-6 py-3 uppercase">TENDENCIA</th>
                                                 <th className="px-6 py-3 uppercase">POR VENDER</th>
                                                 <th className="px-6 py-3 uppercase">%AVANCE</th>
                                                 <th className="px-6 py-3 uppercase">PROYECCIÓN</th>
+                                                <th className="px-6 py-3 uppercase"></th>
+                                                <th className="px-6 py-3 uppercase"></th>
 
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {salesData.length > 0 ? (
                                                 salesData.map((item) => (
-                                                    <tr
-                                                        onClick={() => {
-                                                            setSelectedItem(item);
-                                                            setViewMode("form");
-                                                        }}
+                                                    <tr onClick={() => {
+                                                        setViewMode("form");
+                                                        setSelectedItem(item)
+                                                    }}
                                                         key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                                            {item.startDate
+                                                                ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                                : "-"}
+                                                        </td>
+                                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                                            {item.endDate
+                                                                ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                                : "-"}
+                                                        </td>
 
                                                         <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                                                         <td className="px-6 py-4 text-gray-900">{item.lyne}</td>
                                                         <td className="px-6 py-4 text-gray-900">{item.objetivo}</td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{item.cajasVendidas}</td>
+                                                        <td className="px-6 py-4 font-medium text-gray-900">{item.cajasVendidas.toFixed(2)}</td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31)}</td>
+                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{(item.cajasVendidas / item.saleLastYear) * 100}</td>
+                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2)}</td>
+                                                        <td className="px-6 py-4">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    deleteObjective(item._id || "");
+                                                                }}
+                                                                className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                                aria-label="Opciones"
+                                                            >
+                                                                <FiTrash2 size={20} />
+
+                                                            </button>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setShowEditModal(true);
+                                                                    setId(item._id || "");
+                                                                    setObjective(item.objetivo || "");
+                                                                    setSaleLastYear(item.saleLastYear || "");
+
+                                                                }}
+                                                                className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                                aria-label="Opciones"
+                                                            >
+                                                                <FiEdit2 size={20} />
+
+                                                            </button>
+                                                        </td>
 
                                                     </tr>
                                                 ))
@@ -363,7 +513,10 @@ const ObjectiveRegionalsView = () => {
                                         </tbody>
                                         <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-xl">
                                             <tr className="bg-gray-200 font-semibold text-gray-900">
-                                                <td className="px-6 py-3">Totales</td>
+                                                <td className="px-6 py-3"></td>
+                                                <td className="px-6 py-3"></td>
+
+                                                <td className="px-6 py-3"></td>
                                                 <td className="px-6 py-3"></td>
                                                 <td className="px-6 py-3">
                                                     {salesData.reduce((sum, item) => sum + (item.objetivo || 0), 0)}
@@ -372,7 +525,7 @@ const ObjectiveRegionalsView = () => {
                                                     {salesData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0)}
                                                 </td>
                                                 <td className="px-6 py-3">
-                                                    {salesData.reduce((sum, item) => sum + (item.cajasVendidas || 0), 0)}
+                                                    {salesData.reduce((sum, item) => sum + (item.cajasVendidas || 0), 0).toFixed(2)}
                                                 </td>
                                                 <td className="px-6 py-3">
                                                     {
@@ -410,6 +563,9 @@ const ObjectiveRegionalsView = () => {
                                                         (salesData.reduce((sum, item) => sum + ((item.cajasVendidas / item.saleLastYear) * 100 || 0), 0).toFixed(2))
                                                     }
                                                 </td>
+                                                <td className="px-6 py-3"></td>
+                                                <td className="px-6 py-3"></td>
+
                                             </tr>
                                         </tfoot>
 
@@ -518,34 +674,75 @@ const ObjectiveRegionalsView = () => {
                                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                                     <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
                                         <tr>
+                                            <th className="px-6 py-3 uppercase">Fecha de Inicio</th>
+                                            <th className="px-6 py-3 uppercase">Fecha de Fin</th>
                                             <th className="px-6 py-3 uppercase">Linea</th>
                                             <th className="px-6 py-3 uppercase">Objetivo</th>
                                             <th className="px-6 py-3 uppercase">VTA AA</th>
                                             <th className="px-6 py-3 uppercase">VTA ACUM</th>
                                             <th className="px-6 py-3 uppercase">VS AA</th>
-                                            <th className="px-6 py-3 uppercase">VS OBJECTIVO</th>
+                                            <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
                                             <th className="px-6 py-3 uppercase">TENDENCIA</th>
                                             <th className="px-6 py-3 uppercase">POR VENDER</th>
+                                            <th className="px-6 py-3 uppercase"></th>
+                                            <th className="px-6 py-3 uppercase"></th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {salesNationalData.length > 0 ? (
                                             salesNationalData.map((item) => (
                                                 <tr
-                                                    onClick={() => {
-                                                        setSelectedItem(item);
-                                                        setViewMode("form");
-                                                    }}
+                                                   
                                                     key={item._id + item.saleLastYear} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-
+                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                        {item.startDate
+                                                            ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                            : "-"}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                        {item.endDate
+                                                            ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                            : "-"}
+                                                    </td>
                                                     <td className="px-6 py-4 text-gray-900">{item.lyne}</td>
                                                     <td className="px-6 py-4 text-gray-900">{item.objetivo}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.cajasVendidas}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.cajasVendidas.toFixed(2)}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31)}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
+                                                    <td className="px-6 py-4">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                deleteObjective1(item._id || "");
+                                                            }}
+                                                            className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                            aria-label="Opciones"
+                                                        >
+                                                            <FiTrash2 size={20} />
+
+                                                        </button>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setShowEditModal(true);
+                                                                setShowEditModal1(true);
+                                                                setId(item._id || "");
+                                                                setObjective(item.objetivo || "");
+                                                                setSaleLastYear(item.saleLastYear || "");
+                                                            }}
+                                                            className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                            aria-label="Opciones"
+                                                        >
+                                                            <FiEdit2 size={20} />
+
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))
                                         ) : (
@@ -558,7 +755,10 @@ const ObjectiveRegionalsView = () => {
                                     </tbody>
                                     <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-2xl">
                                         <tr className="bg-gray-200 font-semibold text-gray-900">
-                                            <td className="px-6 py-3">Totales</td>
+                                            <td className="px-6 py-3"></td>
+                                            <td className="px-6 py-3"></td>
+
+                                            <td className="px-6 py-3"></td>
                                             <td className="px-6 py-3">
                                                 {salesNationalData.reduce((sum, item) => sum + (item.objetivo || 0), 0)}
                                             </td>
@@ -566,7 +766,7 @@ const ObjectiveRegionalsView = () => {
                                                 {salesNationalData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0)}
                                             </td>
                                             <td className="px-6 py-3">
-                                                {salesNationalData.reduce((sum, item) => sum + (item.cajasVendidas || 0), 0)}
+                                                {salesNationalData.reduce((sum, item) => sum + (item.cajasVendidas || 0), 0).toFixed(2)}
                                             </td>
                                             <td className="px-6 py-3">
                                                 {
@@ -598,11 +798,84 @@ const ObjectiveRegionalsView = () => {
                                                         salesNationalData.reduce((sum, item) => sum + ((item.objetivo - item.cajasVendidas) || 0), 0).toFixed(2))
                                                 }
                                             </td>
+                                            <td className="px-6 py-3"></td>
+                                            <td className="px-6 py-3"></td>
                                         </tr>
                                     </tfoot>
 
                                 </table>
                             </div>
+                            {showEditModal && (
+                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                    <div className="bg-white p-8 rounded-lg shadow-xl w-[700px]">
+                                        {showEditModal1 ? (
+                                            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+                                                Actualizar Objetivo por linea
+                                            </h2>
+                                        ) : showEditModal ? (
+                                            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+                                                Actualizar Objetivo
+                                            </h2>
+                                        ) : null}
+
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
+                                                <input
+                                                    type="number"
+
+                                                    value={objective}
+                                                    onChange={(e) => setObjective(e.target.value)}
+
+                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block mb-1 text-sm font-medium text-gray-700">Venta año anterior:</label>
+                                                <input
+                                                    type="number"
+                                                    value={saleLastYear}
+                                                    onChange={(e) => setSaleLastYear(e.target.value)}
+
+                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-4 mt-6">
+
+                                            <button
+                                                onClick={() => setShowEditModal(false)}
+                                                className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                                            >
+                                                Cancelar
+                                            </button>
+                                            {showEditModal1 ? (
+                                                <button
+                                                    onClick={uploadProducts1}
+                                                    className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+                                                >
+                                                    Guardar
+                                                </button>
+                                            ) : showEditModal ? (
+                                                <button
+                                                    onClick={uploadProducts}
+                                                    className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+                                                >
+                                                    Guardar
+                                                </button>
+                                            ) : null}
+
+
+
+
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                     ) : viewMode === "form" ? (
@@ -612,6 +885,8 @@ const ObjectiveRegionalsView = () => {
                                 setViewMode={setViewMode}
                                 setSelectedRegion={setSelectedRegion}
                                 setSelectedLyne={setSelectedLyne}
+                                date1={startDate}
+                                date2={endDate}
                             />
                         </div>
                     ) : viewMode === "sales" ? (
@@ -619,6 +894,8 @@ const ObjectiveRegionalsView = () => {
                             <ObjectiveSalesDetailComponent
                                 region={selectedRegion}
                                 lyne={selectedLyne}
+                                date1={startDate}
+                                date2={endDate}
                             ></ObjectiveSalesDetailComponent>
                         </div>
                     ) : null}

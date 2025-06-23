@@ -248,11 +248,11 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                     <tr>
                                         <th className="px-6 py-3 uppercase">Region</th>
                                         <th className="px-6 py-3 uppercase">Linea</th>
-                                        <th className="px-6 py-3 uppercase">Objectivo</th>
+                                        <th className="px-6 py-3 uppercase">Objetivo</th>
                                         <th className="px-6 py-3 uppercase">VTA AA</th>
                                         <th className="px-6 py-3 uppercase">VTA ACUM</th>
                                         <th className="px-6 py-3 uppercase">VS AA</th>
-                                        <th className="px-6 py-3 uppercase">VS OBJECTIVO</th>
+                                        <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
                                         <th className="px-6 py-3 uppercase">VENDEDOR</th>
                                     </tr>
                                 </thead>

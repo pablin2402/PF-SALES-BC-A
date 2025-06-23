@@ -5,7 +5,7 @@ import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/PrincipalButton";
 import DateInput from "../Components/DateInput";
 
-const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
+const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
 
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
@@ -74,18 +74,22 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
             setLoading(false);
         }
     };
-    const fetchObjectiveDataRegion = async (pageNumber, customFilters) => {
+    const fetchObjectiveDataRegion = async (pageNumber, customFilters = {}) => {
         setLoading(true);
         const filters = {
-            region: region,
+            region,
             id_owner: "CL-01",
-            lyne: lyne,
+            lyne,
             page: pageNumber,
             limit: itemsPerPage,
-            ...customFilters,
+            startDate: date1 || customFilters.startDate,
+            endDate: date2 || customFilters.endDate,
+            ...customFilters 
         };
+    
         try {
             const response = await axios.post(API_URL + "/whatsapp/order/objective/region/product", filters);
+            console.log(response.data);
             console.log(response.data)
             setObjectiveData(response.data.data);
             setTotalPages(response.data.pages);
@@ -121,14 +125,26 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
     const applyFilters = () => {
         const customFilters = {};
 
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const min = new Date(date1);
+        const max = new Date(date2);
+
         if (startDate && endDate) {
+            if (start < min || end > max) {
+                alert("El rango de fechas debe estar dentro del intervalo permitido.");
+                return;
+            }
             customFilters.startDate = startDate;
             customFilters.endDate = endDate;
         }
+
         if (selectedPayment) customFilters.payStatus = selectedPayment;
 
-        fetchObjectiveDataRegion(1,customFilters);
+        fetchObjectiveDataRegion(1, customFilters);
+        setDateFilterActive(true);
     };
+
     const fetchVendedores = async () => {
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
@@ -198,12 +214,22 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                             {selectedFilter === "date" && (
                                 <div className="flex gap-2">
                                     <div className="flex items-center space-x-2">
-                                        <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-                                    </div>
+                                        <DateInput
+                                            value={startDate}
+                                            onChange={setStartDate}
+                                            label="Fecha de Inicio"
+                                            min={date1}
+                                            max={date2}
+                                        />                                    </div>
 
                                     <div className="flex items-center space-x-2">
-                                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-                                    </div>
+                                        <DateInput
+                                            value={endDate}
+                                            onChange={setEndDate}
+                                            label="Fecha Final"
+                                            min={startDate || date1}
+                                            max={date2}
+                                        />                                    </div>
                                     <PrincipalBUtton onClick={() => {
                                         applyFilters();
                                         setDateFilterActive(true);
@@ -266,7 +292,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                             <tbody>
                                 {objectiveData.length > 0 ? (
                                     objectiveData.map((item) => (
-                                        <tr key={item.receiveNumber+item.categoria+item.productName} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                                        <tr key={item.receiveNumber + item.categoria + item.productName} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                                             <td className="px-6 py-4 font-medium text-gray-900">{region}</td>
                                             <td className="px-6 py-4 text-gray-900">{item.categoria}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.productName}</td>
@@ -282,7 +308,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                                                     minute: "2-digit",
                                                     second: "2-digit",
                                                     hour12: false,
-                                                }).toUpperCase(): ''}
+                                                }).toUpperCase() : ''}
                                             </td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.totalBotellas}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.cantidadVendida.toFixed(3)}</td>
@@ -297,7 +323,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                                 )}
                             </tbody>
                             <tfoot className="text-sm text-gray-900 bg-gray-200 border-t border-gray-300 font-semibold ">
-                            <tr className="bg-gray-200 font-semibold text-gray-900">
+                                <tr className="bg-gray-200 font-semibold text-gray-900">
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3">
@@ -319,84 +345,84 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                             </tfoot>
                         </table>
                         {totalPages > 1 && (
-                <div className="flex justify-between items-center px-6 pb-4">
+                            <div className="flex justify-between items-center px-6 pb-4">
 
-                  <div className="flex mb-4 justify-end items-center pt-4">
-                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                      Ítems por página:
-                    </label>
-                    <select
-                      id="itemsPerPage"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        const selectedValue = Number(e.target.value);
-                        setItemsPerPage(selectedValue);
-                        setPage(1);
-                        fetchObjectiveDataRegion(1);
-                      }}
-                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
-                    >
-                      {[5, 10, 15, 20]
-                        .filter((option) => option < items && option <= MAX_ITEMS_PER_PAGE)
-                        .map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                                <div className="flex mb-4 justify-end items-center pt-4">
+                                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                                        Ítems por página:
+                                    </label>
+                                    <select
+                                        id="itemsPerPage"
+                                        value={itemsPerPage}
+                                        onChange={(e) => {
+                                            const selectedValue = Number(e.target.value);
+                                            setItemsPerPage(selectedValue);
+                                            setPage(1);
+                                            fetchObjectiveDataRegion(1);
+                                        }}
+                                        className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                                    >
+                                        {[5, 10, 15, 20]
+                                            .filter((option) => option < items && option <= MAX_ITEMS_PER_PAGE)
+                                            .map((option) => (
+                                                <option key={option} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
 
-                  <nav className="flex items-center justify-center pt-4 space-x-2">
-                    <button
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={page === 1}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
-                    >
-                      ◀
-                    </button>
+                                <nav className="flex items-center justify-center pt-4 space-x-2">
+                                    <button
+                                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                                        disabled={page === 1}
+                                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
+                                    >
+                                        ◀
+                                    </button>
 
-                    <button
-                      onClick={() => setPage(1)}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                    >
-                      1
-                    </button>
+                                    <button
+                                        onClick={() => setPage(1)}
+                                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                                    >
+                                        1
+                                    </button>
 
-                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+                                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
-                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                      .filter((p) => p > 1 && p < totalPages)
-                      .map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setPage(p)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                        >
-                          {p}
-                        </button>
-                      ))}
+                                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                                        .filter((p) => p > 1 && p < totalPages)
+                                        .map((p) => (
+                                            <button
+                                                key={p}
+                                                onClick={() => setPage(p)}
+                                                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                                            >
+                                                {p}
+                                            </button>
+                                        ))}
 
-                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+                                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
-                    {totalPages > 1 && (
-                      <button
-                        onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                      >
-                        {totalPages}
-                      </button>
-                    )}
+                                    {totalPages > 1 && (
+                                        <button
+                                            onClick={() => setPage(totalPages)}
+                                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                                        >
+                                            {totalPages}
+                                        </button>
+                                    )}
 
-                    <button
-                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={page === totalPages}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                    >
-                      ▶
-                    </button>
-                  </nav>
-                </div>
-              )}
+                                    <button
+                                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                                        disabled={page === totalPages}
+                                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                                    >
+                                        ▶
+                                    </button>
+                                </nav>
+                            </div>
+                        )}
                     </div>
                     {modalOpen && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">

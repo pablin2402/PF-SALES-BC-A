@@ -210,7 +210,7 @@ const ProductView = () => {
                     ))}
                   </tbody>
                 </table>
-                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t border-b mb-2 mt-2 border-gray-300">
                   <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
                 </div>
                 {totalPages > 1 && searchTerm === "" && (
