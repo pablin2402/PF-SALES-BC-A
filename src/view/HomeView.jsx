@@ -156,7 +156,7 @@ const HomeView = () => {
             <div className="flex items-center justify-between w-full mb-4">
               <div className="flex gap-2">
                 <select
-                  className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
+                  className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500  rounded-2xl"
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
                 >
@@ -168,7 +168,7 @@ const HomeView = () => {
               {filterType === "monthYear" ? (
                 <div className="flex gap-2">
                   <select
-                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
+                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
                   >
@@ -178,7 +178,7 @@ const HomeView = () => {
                   </select>
 
                   <select
-                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-3xl"
+                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                   >
@@ -229,7 +229,7 @@ const HomeView = () => {
                       <tr key={seller.sellerName} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">{seller.sellerName}</td>
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">{seller.totalOrders}</td>
-                        <td className="px-6 py-4 font-medium font-semibold text-gray-900">${seller.totalAmount.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium font-semibold text-gray-900">Bs. {seller.totalAmount.toFixed(2)}</td>
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">
                           <button
                             onClick={exportOrdersToExcel}

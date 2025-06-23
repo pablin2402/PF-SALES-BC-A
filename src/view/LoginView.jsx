@@ -32,53 +32,59 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="h-screen flex justify-center items-center bg-[#D3423E]">
-
-      <form
-        className="w-full max-w-md md:max-w-xl space-y-6 bg-white shadow-lg p-8 rounded-xl"
-        onSubmit={handleSubmit}
-      >        <img
+    <div className="min-h-screen flex items-center justify-center bg-[#D3423E] px-4">
+    <form
+      className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-6"
+      onSubmit={handleSubmit}
+    >
+      <div className="flex justify-center">
+        <img
           src={icon}
-          alt="Foto del recibo"
-          className="w-50 h-40 object-contain mx-auto mb-4"
-          />
+          alt="Logo"
+          className="h-24 sm:h-32 object-contain"
+        />
+      </div>
+      <div>
+        <label htmlFor="email" className="block mb-1 text-gray-700 text-sm font-medium">
+          Correo electrónico
+        </label>
+        <input
+          type="email"
+          id="email"
+          placeholder="nombre@correo.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
+        />
+      </div>
 
-        {errorMessage && (
-          <div className="text-red-600 text-sm font-medium text-center">{errorMessage}</div>
-        )}
-        <div>
-          <label for="email" className="block mb-2 text-lg font-medium text-gray-900 dark:text-white">
-            Correo electrónico
-          </label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-            placeholder="nombre@correo.com"
-            required="" />
-        </div>
-        <div>
-          <label for="password" className="block mb-2 text-lg font-medium text-gray-900 dark:text-white">
-            Contraseña
-          </label>
-          <input
-            type="password"
-            name="password"
-            id="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 rounded-2xl focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-            required="" />
-        </div>
+      <div>
+        <label htmlFor="password" className="block mb-1 text-gray-700 text-sm font-medium">
+          Contraseña
+        </label>
+        <input
+          type="password"
+          id="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
+        />
+      </div>
+      {errorMessage && (
+        <div className="text-red-600 text-sm font-semibold text-center">{errorMessage}</div>
+      )}
 
-        <button type="submit" className="w-full font-bold text-white bg-[#D3423E] hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-2xl text-lg px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">INICIAR SESIÓN</button>
-
-      </form>
-    </div>
+      <button
+        type="submit"
+        className="w-full py-2 bg-[#D3423E] text-white font-semibold rounded-xl hover:bg-[#bb2c29] transition-colors"
+      >
+        INICIAR SESIÓN
+      </button>
+    </form>
+  </div>
   );
 };
 

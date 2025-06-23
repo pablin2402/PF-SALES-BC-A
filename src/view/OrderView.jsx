@@ -185,24 +185,27 @@ const OrderView = () => {
   };
   const handleDelete = async (id) => {
     try {
-      const response = await axios.post('/api/orders/delete', {
-        _id: id,
-        id_owner: user,
-      },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
+      const response = await axios.delete(`${API_URL}/whatsapp/order/id`, {
+        data: {
+          _id: id,
+          id_owner: user,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
       if (response.status === 200 && response.data.success) {
         fetchOrders(1);
       }
-
+  
       return response.data;
     } catch (error) {
+      console.error("Error al eliminar:", error.response?.data || error.message);
     }
   };
+  
+  
   return (
     <div className="bg-white min-h-screen p-5">
       <div className="relative overflow-x-auto">
@@ -366,6 +369,7 @@ const OrderView = () => {
                 <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-6 py-3 uppercase">Fecha de creación</th>
+                    <th className="px-6 py-3 uppercase">Ciudad</th>
                     <th className="px-6 py-3 uppercase">Nombre</th>
                     <th className="px-6 py-3 uppercase">Tipo de Pago</th>
                     <th className="px-6 py-3 uppercase">Vendedor</th>
@@ -394,6 +398,7 @@ const OrderView = () => {
                             }).toUpperCase()
                             : ''}
                         </td>
+                        <td className="px-6 py-4 text-gray-900">{item.region}</td>
                         <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
                         <td className="px-6 py-4 text-gray-900 font-bold">
                           {item.accountStatus === "Crédito" && (
@@ -435,7 +440,9 @@ const OrderView = () => {
                         <td className="px-6 py-4 text-gray-900">
                           {item.totalAmount === item.restante && (
                             <button
-                              onClick={() => handleDelete(item._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(item._id)}}
                               className="text-red-600 hover:text-red-800"
                               title="Eliminar"
                             >

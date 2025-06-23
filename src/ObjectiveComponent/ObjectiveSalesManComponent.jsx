@@ -4,9 +4,86 @@ import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/PrincipalButton";
 import DateInput from "../Components/DateInput";
+import Chart from "react-apexcharts";
 
 const ObjectiveSalesManComponent = ({ region }) => {
 
+        const options = {
+          chart: {
+            height: "100%",
+            type: "area",
+            fontFamily: "Inter, sans-serif",
+            dropShadow: {
+              enabled: false,
+            },
+            toolbar: {
+              show: false,
+            },
+          },
+          tooltip: {
+            enabled: true,
+            x: {
+              show: false,
+            },
+          },
+          fill: {
+            type: "gradient",
+            gradient: {
+              opacityFrom: 0.55,
+              opacityTo: 0,
+              shade: "#1C64F2",
+              gradientToColors: ["#1C64F2"],
+            },
+          },
+          dataLabels: {
+            enabled: false,
+          },
+          stroke: {
+            width: 6,
+          },
+          grid: {
+            show: false,
+            strokeDashArray: 4,
+            padding: {
+              left: 2,
+              right: 2,
+              top: 0,
+            },
+          },
+          xaxis: {
+            categories: [
+              "01 February",
+              "02 February",
+              "03 February",
+              "04 February",
+              "05 February",
+              "06 February",
+              "07 February",
+            ],
+            labels: {
+              show: false,
+            },
+            axisBorder: {
+              show: false,
+            },
+            axisTicks: {
+              show: false,
+            },
+          },
+          yaxis: {
+            show: false,
+          },
+        };
+      
+        const series = [
+          {
+            name: "New users",
+            data: [6500, 6418, 6456, 6526, 6356, 6456],
+            color: "#1A56DB",
+          },
+        ];
+
+      
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -19,6 +96,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
     const [selectedPayment, setSelectedPayment] = useState("");
     const [paymentFilterActive, setPaymentActive] = useState(false);
     const [vendedores, setVendedores] = useState([]);
+    const [salesmen, setSalesmen] = useState({});
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -39,7 +117,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
             endDate.setDate(endDate.getDate() + 1);
 
             const response = await axios.post(
-                API_URL + "/whatsapp//sales/objective/sales",
+                API_URL + "/whatsapp/sales/objective/sales",
                 {
                     region: formData.ciudad,
                     lyne: formData.categoria,
@@ -70,10 +148,23 @@ const ObjectiveSalesManComponent = ({ region }) => {
             setLoading(false);
         }
     };
-    const fetchObjectiveDataRegion = async (customFilters) => {
+    const fetchSalesmenByIds = async (ids) => {
+        if (!ids.length) return;
+        try {
+            const res = await axios.post(API_URL + "/whatsapp/salesman/multiple", { ids });
+            const map = {};
+            res.data.forEach(({ _id, fullName, lastName }) => {
+                map[_id] = { fullName, lastName };
+            });
+            setSalesmen(map);
+        } catch (error) {
+            console.error("Error fetching salesmen:", error);
+        }
+    };
+    const fetchObjectiveDataRegion = async (customFilters = {}) => {
         setLoading(true);
         const filters = {
-            region: region,
+            region,
             startDate: "2025-06-01",
             endDate: "2025-06-31",
             ...customFilters,
@@ -81,8 +172,13 @@ const ObjectiveSalesManComponent = ({ region }) => {
 
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/objective/list", filters);
-            console.log(response.data)
-            setObjectiveData(response.data);
+            const data = response.data;
+            console.log(data)
+            setObjectiveData(data);
+
+            const uniqueIds = [...new Set(data.map(item => item.salesManId || item._id).filter(Boolean))];
+            await fetchSalesmenByIds(uniqueIds);
+
         } catch (error) {
             console.error("Error fetching products:", error);
         } finally {
@@ -242,10 +338,12 @@ const ObjectiveSalesManComponent = ({ region }) => {
                             )}
                         </div>
 
-                        <div className="mt-5 border border-gray-400 rounded-xl">
+                        <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
                             <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                                 <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                     <tr>
+                                        <th className="px-6 py-3 uppercase">Fecha de Inicio</th>
+                                        <th className="px-6 py-3 uppercase">Fecha de Fin</th>
                                         <th className="px-6 py-3 uppercase">Region</th>
                                         <th className="px-6 py-3 uppercase">Linea</th>
                                         <th className="px-6 py-3 uppercase">Objetivo</th>
@@ -254,48 +352,86 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                         <th className="px-6 py-3 uppercase">VS AA</th>
                                         <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
                                         <th className="px-6 py-3 uppercase">VENDEDOR</th>
+                                        <th className="px-10 py-3 uppercase min-w-[200px]">PROGRESO</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {objectiveData.length > 0 ? (
-                                        objectiveData.map((item) => (
-                                            <tr key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                                                <td className="px-6 py-4 font-medium text-gray-900">{region}</td>
-                                                <td className="px-6 py-4 text-gray-900">{item.lyne}</td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">{item.objetivo}</td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">{item.totalCajas}</td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.objective) * 100).toFixed(2) + "%"}</td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">{item.salesId}</td>
+                                        objectiveData.map((item) => {
+                                            const salesman = salesmen[item.salesManId || item._id];
+                                            return (
+                                                <tr key={item.objetivoId || item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                        {item.startDate
+                                                            ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                            : "-"}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                        {item.endDate
+                                                            ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                            : "-"}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{region}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.lyne}</td>
 
-                                            </tr>
-                                        ))
+                                                    <td className="px-6 py-4 text-gray-900">{item.numberOfBoxes}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.caja}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.caja / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.caja / item.numberOfBoxes) * 100).toFixed(2) + "%"}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{salesman ? `${salesman.fullName} ${salesman.lastName}` : "Sin vendedor"}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">
+
+                                                        <div class="flex justify-between mb-1">
+                                                            <span class="text-base font-medium text-green-700 dark:text-white"></span>
+                                                            <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                                                {((item.caja / item.numberOfBoxes) * 100).toFixed(0)}%
+                                                            </span>
+                                                        </div>
+                                                        <div class="w-full bg-gray-300 rounded-full h-1.5 dark:bg-gray-700">
+
+                                                            <div
+                                                                class="bg-green-600 h-1.5 rounded-full"
+                                                                style={{
+                                                                    width: `${((item.caja / item.numberOfBoxes) * 100).toFixed(2)}%`,
+                                                                }}
+                                                            >
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                </tr>
+                                            );
+                                        })
                                     ) : (
                                         <tr>
-                                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                                            <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
                                                 No se encontraron registros con esa fecha.
                                             </td>
                                         </tr>
                                     )}
                                 </tbody>
+
                                 <tfoot>
                                     <tr className="bg-gray-200 font-semibold text-gray-900">
                                         <td className="px-6 py-3"></td>
                                         <td className="px-6 py-3"></td>
+                                        <td className="px-6 py-3"></td>
+                                        <td className="px-6 py-3"></td>
                                         <td className="px-6 py-3">
-                                            {objectiveData.reduce((sum, item) => sum + (item.objective || 0), 0).toFixed(2)}
+                                            {objectiveData.reduce((sum, item) => sum + (item.numberOfBoxes || 0), 0).toFixed(2)}
                                         </td>
                                         <td className="px-6 py-3">
                                             {objectiveData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0).toFixed(2)}
                                         </td>
                                         <td className="px-6 py-3">
-                                            {objectiveData.reduce((sum, item) => sum + (item.totalCajas || 0), 0).toFixed(2)}
+                                            {objectiveData.reduce((sum, item) => sum + (item.caja || 0), 0).toFixed(2)}
                                         </td>
                                         <td className="px-6 py-3">
                                             {
                                                 (
-                                                    objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.saleLastYear) * 100), 0) /
+                                                    objectiveData.reduce((sum, item) => sum + ((item.caja / item.saleLastYear) * 100), 0) /
                                                     objectiveData.length
                                                 ).toFixed(2) + "%"
                                             }
@@ -303,7 +439,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                         <td className="px-6 py-3">
                                             {
                                                 (
-                                                    objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.objective) * 100), 0) /
+                                                    objectiveData.reduce((sum, item) => sum + ((item.caja / item.numberOfBoxes) * 100), 0) /
                                                     objectiveData.length
                                                 ).toFixed(2) + "%"
                                             }
@@ -311,11 +447,15 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                         <td className="px-6 py-3">
 
                                         </td>
+                                        <td className="px-6 py-3">
 
+                                        </td>
                                     </tr>
                                 </tfoot>
                             </table>
+                            
                         </div>
+                        
                         {modalOpen && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                                 <div className="bg-white w-full max-w-4xl p-6 rounded-lg relative">
@@ -415,7 +555,6 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                                 required
                                             >
                                                 <option value="">Seleccione un vendedor</option>
-                                                <option value="">Mostrar Todos</option>
                                                 <option value="">Mostrar Todos</option>
                                                 {vendedores.map((vendedor) => (
                                                     <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>

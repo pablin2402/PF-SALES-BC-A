@@ -27,8 +27,12 @@ const ObjectiveRegionalsView = () => {
     const [selectedRegion, setSelectedRegion] = useState(null);
     const [selectedLyne, setSelectedLyne] = useState(null);
     const [objective, setObjective] = useState(0);
+
     const [saleLastYear, setSaleLastYear] = useState(0);
+    const [objective1, setObjective1] = useState(0);
+    const [saleLastYear1, setSaleLastYear1] = useState(0);
     const [id, setId] = useState("");
+    const [id1, setId1] = useState("");
 
     const applyFilters = () => {
         const customFilters = {};
@@ -191,10 +195,10 @@ const ObjectiveRegionalsView = () => {
             const response = await axios.put(
                 API_URL + "/whatsapp/order/objective/product",
                 {
-                    _id: id,
+                    _id: id1,
                     id_owner: user,
-                    saleLastYear: saleLastYear,
-                    numberOfBoxes: objective
+                    saleLastYear: saleLastYear1,
+                    numberOfBoxes: objective1
                 },
                 {
                     headers: {
@@ -205,7 +209,7 @@ const ObjectiveRegionalsView = () => {
             if (response.status === 200) {
                 fetchSalesNational();
                 setShowEditModal(false);
-                showEditModal1(false);
+                setShowEditModal1(false);
                 setSaleLastYear(0);
                 setObjective(0);
             }
@@ -732,9 +736,9 @@ const ObjectiveRegionalsView = () => {
                                                                 e.stopPropagation();
                                                                 setShowEditModal(true);
                                                                 setShowEditModal1(true);
-                                                                setId(item._id || "");
-                                                                setObjective(item.objetivo || "");
-                                                                setSaleLastYear(item.saleLastYear || "");
+                                                                setId1(item._id || "");
+                                                                setObjective1(item.objetivo || "");
+                                                                setSaleLastYear1(item.saleLastYear || "");
                                                             }}
                                                             className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
                                                             aria-label="Opciones"
@@ -817,8 +821,33 @@ const ObjectiveRegionalsView = () => {
                                                 Actualizar Objetivo
                                             </h2>
                                         ) : null}
+                                        {showEditModal1 ? (
+                                            <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
+                                                <input
+                                                    type="number"
 
-                                        <div className="grid grid-cols-2 gap-6">
+                                                    value={objective1}
+                                                    onChange={(e) => setObjective1(e.target.value)}
+
+                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block mb-1 text-sm font-medium text-gray-700">Venta año anterior:</label>
+                                                <input
+                                                    type="number"
+                                                    value={saleLastYear1}
+                                                    onChange={(e) => setSaleLastYear1(e.target.value)}
+
+                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                />
+                                            </div>
+                                        </div>
+                                        ) : showEditModal ? (
+                                            <div className="grid grid-cols-2 gap-6">
                                             <div>
                                                 <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
                                                 <input
@@ -842,6 +871,8 @@ const ObjectiveRegionalsView = () => {
                                                 />
                                             </div>
                                         </div>
+                                        ) : null}
+                                      
 
                                         <div className="flex gap-4 mt-6">
 

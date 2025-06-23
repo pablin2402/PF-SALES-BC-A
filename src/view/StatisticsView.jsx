@@ -9,25 +9,10 @@ import PrincipalBUtton from "../Components/PrincipalButton";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-import {
-    Chart as ChartJS,
-    BarElement,
-    CategoryScale,
-    LinearScale,
-    Tooltip,
-    Legend,
-    Title,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
+import VentasChart from "../charts/VentasChart";
 
-ChartJS.register(
-    BarElement,
-    CategoryScale,
-    LinearScale,
-    Tooltip,
-    Legend,
-    Title
-);
+
+
 const StatisticsView = () => {
     const [salesData, setSalesData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -44,7 +29,8 @@ const StatisticsView = () => {
 
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [years, setYears] = useState([]);
-
+    const [labels, setLabels] = useState([]);
+    const [values, setValues] = useState([]);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -62,13 +48,7 @@ const StatisticsView = () => {
         }
         setYears(yearsList);
     }, []);
-    const truncate = (str, maxLength = 15) => {
-        return str.length > maxLength ? str.slice(0, maxLength) + '…' : str;
-    };
-    const colors = [
-        '#D3423E', '#F7A64A', '#3080ED', '#22BD3D', '#00A7C7',
-        '#86BBFA', '#66BB6A', '#CEFCD0', '#FF7F7A', '#00ACC1'
-    ];
+
     useEffect(() => {
         axios.post(API_URL + "/whatsapp/order/products/analysis")
             .then((res) => {
@@ -93,26 +73,13 @@ const StatisticsView = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-            const labels = response.data.data.map((item) => truncate(item._id));
-            const values = response.data.data.map((item) => item.totalCantidad);
-            setSalesData(response.data.data);
-            setTotalPages(response.data.pagination.totalPages);
-            setItems(response.data.pagination.totalItems);
-            setChartData({
-                labels: labels,
-                datasets: [
-                    {
-                        label: `Cantidad Vendida en ${selectedYear}`,
-                        data: values,
-                        backgroundColor: salesData.map((_, index) => colors[index % colors.length]),
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        borderWidth: 1,
-                        font: {
-                            size: 20,
-                        },
-                    },
-                ],
-            });
+                const fetchedData = response.data.data || [];
+                const chartLabels = fetchedData.map((item) => item._id?.slice(0, 12) || "Sin nombre");
+                const chartValues = fetchedData.map((item) => item.totalCantidad || 0);
+          
+                setSalesData(fetchedData);
+                setLabels(chartLabels);
+                setValues(chartValues);
 
         } catch (error) {
             console.error(error);
@@ -120,39 +87,12 @@ const StatisticsView = () => {
             setLoading(false);
         }
     };
-    const options = {
-        responsive: true,
-        plugins: {
-            title: {
-                display: true,
-                text: `Productos vendidos en ${selectedYear}`,
-                font: { size: 24 },
-            },
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    title: (tooltipItems) => salesData[tooltipItems[0].dataIndex]._id,
-                },
-            },
-        },
-        scales: {
-            x: {
-                ticks: {
-                    autoSkip: false,
-                    maxRotation: 45,
-                    minRotation: 0,
-                },
-            },
-            y: {
-                beginAtZero: true,
-            },
-        },
-    };
+
     useEffect(() => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         fetchOrders(page);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, selectedYear, itemsPerPage]);
+    }, [page, selectedYear, selectedMonth, itemsPerPage]);
     const exportToExcel = async () => {
         const filters = {
             id_owner: user,
@@ -244,28 +184,20 @@ const StatisticsView = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    {chartData?.datasets?.[0]?.data?.length > 0 && (
                                         <div className="flex justify-end items-center space-x-4">
                                           
                                             <PrincipalBUtton onClick={exportToExcel} icon={FaFileExport}>                      
                                                 Exportar
                                             </PrincipalBUtton>
                                         </div>
-                                    )}
+                                
                                 </div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-4 px-4 py-4">
                             <div className="max-w p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                                <div style={{ height: "600px" }}>
-                                    {chartData?.datasets?.[0]?.data?.length > 0 ? (
-                                        <Bar data={chartData} options={options} />
-                                    ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-500 text-lg">
-                                            No se encontraron resultados.
-                                        </div>
-                                    )}
-                                </div>
+                            <VentasChart labels={labels} values={values} year={selectedYear} />
+
                             </div>
 
                             <div className="w-full overflow-x-auto">
