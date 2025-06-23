@@ -8,6 +8,10 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FiGrid, FiList } from "react-icons/fi";
 import OrderCalendarView from "./OrderCalendarView";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import DateInput from "../Components/DateInput";
+import TextInputFilter from "../Components/TextInputFilter";
+
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +148,9 @@ const OrderPaymentView = () => {
       setStartDate('');
       setEndDate('');
       setDateFilterActive(false);
+
     }
+    
   };
   const uploadProducts = async (id) => {
     try {
@@ -184,39 +190,18 @@ const OrderPaymentView = () => {
         </div>
       ) : (
         <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
-          {salesData.length === 0 ? (
-            <p className="text-center text-gray-500 mt-5">No existen ordenes disponibles.</p>
-          ) : viewMode === "table" ? (
+          {viewMode === "table" ? (
             <div>
               <div className="flex items-center justify-between w-full">
                 <div className="relative flex items-center space-x-4">
                   <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                      <svg
-                        className="w-5 h-5 text-red-500"
-                        aria-hidden="true"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                          clipRule="evenodd"
-                        ></path>
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Buscar por cliente"
+                   
+                   
+                    <TextInputFilter
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          fetchProducts(1);
-                        }
-                      }}
-                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      onChange={setSearchTerm}
+                      onEnter={() => fetchProducts(1)}
+                      placeholder="Buscar por nombre"
                     />
                   </div>
                   <select
@@ -230,54 +215,32 @@ const OrderPaymentView = () => {
                   </select>
                 </div>
                 <div className="flex justify-end items-center space-x-10">
-                  <button
-                    onClick={exportToExcel}
-                    className="px-4 py-2 text-white font-bold text-lg bg-[#D3423E] uppercase rounded-3xl flex items-center gap-5"
-                  >
-                    <FaFileExport className="text-white" />
 
-                    Exportar
-                  </button>
+                  <PrincipalBUtton onClick={exportToExcel}
+                    icon={FaFileExport}>Exportar</PrincipalBUtton>
+
                 </div>
               </div>
               <div className="relative mt-8 flex items-center space-x-4">
                 {selectedFilter === "date" && (
                   <div className="flex space-x-4 mb-4 items-center">
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
+                      
+                            <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="date"
-                        value={endDate}
-                        min={startDate}
-                        onChange={(e) => {
-                          const newEndDate = e.target.value;
-                          if (newEndDate >= startDate) {
-                            setEndDate(newEndDate);
-                          } else {
-                            alert("La fecha final debe ser mayor o igual a la fecha de inicio");
-                          }
-                        }}
-                        className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
+                      
+                            <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+
                     </div>
 
                     <div className="flex items-center">
-                      <button
-                        className="px-3 py-2 h-full text-white text-lg bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
-                        onClick={() => setApplyFilter(true)}
-                      >
-                        <HiFilter className="text-white text-lg" />
 
-                        Filtrar
-                      </button>
+                      <PrincipalBUtton onClick={() => setApplyFilter(true)}
+                        icon={HiFilter}>Filtrar</PrincipalBUtton>
+
                     </div>
                   </div>
                 )}
@@ -398,8 +361,8 @@ const OrderPaymentView = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                          No se encontraron clientes.
+                        <td colSpan="6" className="px-6 py-4 uppercase text-center text-gray-500">
+                          No se encontraron coincidecias
                         </td>
                       </tr>
                     )}
@@ -624,6 +587,7 @@ const OrderPaymentView = () => {
                     >
                       Guardar
                     </button>
+
                   </div>
                 )}
                 {selectedItem.paymentStatus === "confirmado" && (

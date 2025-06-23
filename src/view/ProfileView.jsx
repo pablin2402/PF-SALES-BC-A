@@ -6,6 +6,8 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FaFileExport } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import { HiFilter } from "react-icons/hi";
 
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
@@ -356,13 +358,9 @@ export default function ProfileView() {
                     className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
                   />
                 </div>
-                <button
-                  onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] rounded-3xl flex items-center gap-2"
-                >
-                  Filtrar
-                </button>
-
+             
+                <PrincipalBUtton onClick={() => handleFilterClick()} icon={HiFilter}>Filtrar</PrincipalBUtton>
+ 
               </div>
               <div className="flex justify-end items-center space-x-4">
                 <button
@@ -372,13 +370,9 @@ export default function ProfileView() {
                   <FaFileExport color="##726E6E" />
                   EXCEL
                 </button>
-                <button
-                  onClick={exportToPDF}
-                  className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white rounded-3xl flex items-center gap-2"
-                >
-                  PDF
-                </button>
-
+               
+                <PrincipalBUtton onClick={() => exportToPDF} icon={HiFilter}>PDF</PrincipalBUtton>
+ 
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4">

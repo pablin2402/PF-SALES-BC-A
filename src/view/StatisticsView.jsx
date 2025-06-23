@@ -4,6 +4,7 @@ import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 
 import Spinner from "../Components/Spinner";
+import PrincipalBUtton from "../Components/PrincipalButton";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -245,13 +246,10 @@ const StatisticsView = () => {
                                     </div>
                                     {chartData?.datasets?.[0]?.data?.length > 0 && (
                                         <div className="flex justify-end items-center space-x-4">
-                                            <button
-                                                onClick={exportToExcel}
-                                                className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
-                                            >
-                                                <FaFileExport color="#FFFFFF" />
+                                          
+                                            <PrincipalBUtton onClick={exportToExcel} icon={FaFileExport}>                      
                                                 Exportar
-                                            </button>
+                                            </PrincipalBUtton>
                                         </div>
                                     )}
                                 </div>
@@ -298,7 +296,7 @@ const StatisticsView = () => {
                                             )}
                                         </tbody>
                                     </table>
-                                    <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+                                    <div className="flex justify-between px-6 py-4 text-sm text-gray-700 rounded-b-2xl bg-gray-200 border-t lg mt-2 border-gray-300">
                                         <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
                                     </div>
                                     {totalPages > 1 && (

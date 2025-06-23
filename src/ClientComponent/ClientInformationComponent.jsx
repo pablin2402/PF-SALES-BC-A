@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FaFileExport } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
+import DateInput from "../Components/DateInput";
 
 import { FaBuilding, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
@@ -264,7 +265,6 @@ export default function ClientInformationComponent() {
         <div>
           <div className="w-full max-w-5xl gap-6">
             <div className="flex mt-4 mb-4 justify-start space-x-2">
-
               <nav className="flex" aria-label="Breadcrumb">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                   <li className="inline-flex items-center" onClick={() => navigate(-1)}>
@@ -344,25 +344,15 @@ export default function ClientInformationComponent() {
             <div className="flex items-center justify-between w-full mb-4">
               <div className="flex gap-2">
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                    }}
-                    className="h-10 px-3 py-2 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
+               
+                    <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                    }}
-                    className="h-10 px-3 py-2 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
+                  
+                                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+
                 </div>
                 <div className="flex items-center space-x-2">
                   <select

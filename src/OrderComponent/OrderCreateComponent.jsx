@@ -11,6 +11,7 @@ import { IoMdAdd } from "react-icons/io";
 import { HiFilter } from "react-icons/hi";
 
 import OrderDetailsComponent from "./OrderDetailsComponent";
+import PrincipalBUtton from "../Components/PrincipalButton";
 
 const OrderCreateComponent = () => {
   const navigate = useNavigate();
@@ -493,13 +494,9 @@ const OrderCreateComponent = () => {
                         <option key={category._id} value={category._id}>{category.categoryName}</option>
                       ))}
                     </select>
-                    <button
-                      onClick={() => fetchProducts(1)}                       
-                      className="flex items-center gap-2 px-4 py-2 bg-[#D3423E] text-lg text-white font-bold rounded-3xl transition duration-200"
-                    >
-                    <HiFilter className="text-white text-lg" />
-                    Filtrar
-                    </button>
+                   
+                    <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
+
                   </div>
                 </div>
                 <div className="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">

@@ -5,6 +5,8 @@ import { HiFilter } from "react-icons/hi";
 
 import ObjectiveDepartmentComponent from "../ObjectiveComponent/ObjectiveDepartmentComponent";
 import ObjectiveSalesDetailComponent from "../ObjectiveComponent/ObjectiveSalesDetailComponent";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import DateInput from "../Components/DateInput";
 
 const ObjectiveRegionalsView = () => {
     const [salesData, setSalesData] = useState([]);
@@ -183,7 +185,7 @@ const ObjectiveRegionalsView = () => {
                                                 <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                                                 </svg>
-                                                <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Objetivos a nivel vendedor</span>
+                                                <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Productos por categoría</span>
                                             </div>
                                         </li>
                                     </ol>
@@ -222,7 +224,7 @@ const ObjectiveRegionalsView = () => {
                                                 <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                                                 </svg>
-                                                <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Objetivos a nivel vendedor</span>
+                                                <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Productos por categoría</span>
                                             </div>
                                         </li>
                                     </ol>
@@ -241,7 +243,7 @@ const ObjectiveRegionalsView = () => {
                                                 <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
                                                 </svg>
-                                               Objetivos a nivel nacional
+                                                Objetivos a nivel nacional
                                             </button>
 
                                         </li>
@@ -255,7 +257,7 @@ const ObjectiveRegionalsView = () => {
                                                     onClick={() => setViewMode("form")}
                                                     className="ms-1 text-sm font-medium text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                                                 >
-                                                   Objetivos a nivel regional
+                                                    Objetivos a nivel regional
                                                 </button>
 
                                             </div>
@@ -278,55 +280,26 @@ const ObjectiveRegionalsView = () => {
                             <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
                                 <div className="flex flex-col w-full space-y-4">
                                     <div className="flex justify-end items-center space-x-4">
-                                        <button
-                                            onClick={() => setModalOpen(true)}
-                                            className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
-                                        >
-                                            Nuevo Objetivo
-                                        </button>
+
+                                        <PrincipalBUtton onClick={() => setModalOpen(true)}
+                                        >                                            Nuevo Objetivo
+                                        </PrincipalBUtton>
+
                                     </div>
 
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-2">
                                             <div className="flex items-center space-x-2">
-                                                <input
-                                                    type="date"
-                                                    value={startDate}
-                                                    onChange={(e) => {
-                                                        setStartDate(e.target.value);
-                                                    }}
-                                                    className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                                />
+                                                <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
                                             </div>
 
                                             <div className="flex items-center space-x-2">
-                                                <input
-                                                    type="date"
-                                                    value={endDate}
-                                                    min={startDate}
-                                                    onChange={(e) => {
-                                                        const newEndDate = e.target.value;
-                                                        if (newEndDate >= startDate) {
-                                                            setEndDate(newEndDate);
-                                                        } else {
-                                                            alert("La fecha final debe ser mayor o igual a la fecha de inicio");
-                                                        }
-                                                    }}
-                                                    className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                                />
-
+                                                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
                                             </div>
-                                            <button
-                                                onClick={() => {
-                                                    applyFilters();
-                                                    setDateFilterActive(true);
-                                                }}
-                                                className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                            >
-                                                <HiFilter className="text-white text-lg" />
-
-                                                Filtrar
-                                            </button>
+                                            <PrincipalBUtton onClick={() => {
+                                                applyFilters();
+                                                setDateFilterActive(true);
+                                            }} icon={HiFilter}>Filtrar</PrincipalBUtton>
                                         </div>
                                     </div>
                                 </div>
@@ -340,7 +313,7 @@ const ObjectiveRegionalsView = () => {
                                 </div>
                                 <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
                                     <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                        <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
+                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
                                             <tr>
                                                 <th className="px-6 py-3 uppercase">Region</th>
                                                 <th className="px-6 py-3 uppercase">Linea</th>
@@ -388,7 +361,7 @@ const ObjectiveRegionalsView = () => {
                                                 </tr>
                                             )}
                                         </tbody>
-                                        <tfoot>
+                                        <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-xl">
                                             <tr className="bg-gray-200 font-semibold text-gray-900">
                                                 <td className="px-6 py-3">Totales</td>
                                                 <td className="px-6 py-3"></td>
@@ -543,7 +516,7 @@ const ObjectiveRegionalsView = () => {
                             </div>
                             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
                                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                    <thead className="text-sm text-gray-700 bg-gray-100 border-b border-gray-300">
+                                    <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
                                         <tr>
                                             <th className="px-6 py-3 uppercase">Linea</th>
                                             <th className="px-6 py-3 uppercase">Objetivo</th>
@@ -583,7 +556,7 @@ const ObjectiveRegionalsView = () => {
                                             </tr>
                                         )}
                                     </tbody>
-                                    <tfoot>
+                                    <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-2xl">
                                         <tr className="bg-gray-200 font-semibold text-gray-900">
                                             <td className="px-6 py-3">Totales</td>
                                             <td className="px-6 py-3">

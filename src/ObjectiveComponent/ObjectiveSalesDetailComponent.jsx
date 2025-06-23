@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import DateInput from "../Components/DateInput";
 
 const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
 
@@ -76,8 +78,6 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
         setLoading(true);
         const filters = {
             region: region,
-            startDate: "2025-06-01",
-            endDate: "2025-06-31",
             id_owner: "CL-01",
             lyne: lyne,
             page: pageNumber,
@@ -127,7 +127,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
         }
         if (selectedPayment) customFilters.payStatus = selectedPayment;
 
-        fetchObjectiveDataRegion(customFilters);
+        fetchObjectiveDataRegion(1,customFilters);
     };
     const fetchVendedores = async () => {
         try {
@@ -150,7 +150,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
         fetchObjectiveDataRegion(page);
         fetchVendedores();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page,itemsPerPage]);
+    }, [page, itemsPerPage]);
     const clearFilter = (type) => {
         if (type === "date") {
             setStartDate("");
@@ -198,43 +198,16 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                             {selectedFilter === "date" && (
                                 <div className="flex gap-2">
                                     <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={startDate}
-                                            onChange={(e) => {
-                                                setStartDate(e.target.value);
-                                            }}
-                                            className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
+                                        <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
                                     </div>
 
                                     <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            min={startDate}
-                                            onChange={(e) => {
-                                                const newEndDate = e.target.value;
-                                                if (newEndDate >= startDate) {
-                                                    setEndDate(newEndDate);
-                                                } else {
-                                                    alert("La fecha final debe ser mayor o igual a la fecha de inicio");
-                                                }
-                                            }}
-                                            className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
+                                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            applyFilters();
-                                            setDateFilterActive(true);
-                                        }}
-                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                    >
-                                        <HiFilter className="text-white text-lg" />
-
-                                        Filtrar
-                                    </button>
+                                    <PrincipalBUtton onClick={() => {
+                                        applyFilters();
+                                        setDateFilterActive(true);
+                                    }} icon={HiFilter}>Filtrar</PrincipalBUtton>
                                 </div>
                             )}
                             {selectedFilter === "payment" && (
@@ -323,8 +296,8 @@ const ObjectiveSalesDetailComponent = ({ region, lyne }) => {
                                     </tr>
                                 )}
                             </tbody>
-                            <tfoot>
-                                <tr className="bg-gray-200 font-semibold text-gray-900">
+                            <tfoot className="text-sm text-gray-900 bg-gray-200 border-t border-gray-300 font-semibold ">
+                            <tr className="bg-gray-200 font-semibold text-gray-900">
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3">

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import DateInput from "../Components/DateInput";
 
-const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, setSelectedLyne }) => {
+const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, setSelectedLyne }) => {
 
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
@@ -169,43 +171,21 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
                             {selectedFilter === "date" && (
                                 <div className="flex gap-2">
                                     <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={startDate}
-                                            onChange={(e) => {
-                                                setStartDate(e.target.value);
-                                            }}
-                                            className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
+
+                                        <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+
                                     </div>
 
                                     <div className="flex items-center space-x-2">
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            min={startDate}
-                                            onChange={(e) => {
-                                                const newEndDate = e.target.value;
-                                                if (newEndDate >= startDate) {
-                                                    setEndDate(newEndDate);
-                                                } else {
-                                                    alert("La fecha final debe ser mayor o igual a la fecha de inicio");
-                                                }
-                                            }}
-                                            className="h-full px-3 py-2 border border-gray-900 text-m text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            applyFilters();
-                                            setDateFilterActive(true);
-                                        }}
-                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                    >
-                                        <HiFilter className="text-white text-lg" />
 
-                                        Filtrar
-                                    </button>
+                                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+
+                                    </div>
+
+                                    <PrincipalBUtton onClick={() => {
+                                        applyFilters();
+                                        setDateFilterActive(true);
+                                    }} icon={HiFilter}>Filtrar</PrincipalBUtton>
                                 </div>
                             )}
                             {selectedFilter === "payment" && (
@@ -270,7 +250,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode,setSelectedRegion, set
                                             setSelectedRegion(item.region);
                                             setSelectedLyne(item.categoria)
                                             setViewMode("sales");
-                                        }}   
+                                        }}
                                             key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                                             <td className="px-6 py-4 text-gray-900">{item.categoria}</td>

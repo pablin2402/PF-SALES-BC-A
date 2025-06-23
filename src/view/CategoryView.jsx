@@ -1,6 +1,8 @@
 import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import TextInputFilter from "../Components/TextInputFilter";
 
 const CategoryView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -46,28 +48,28 @@ const CategoryView = () => {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.post(API_URL + "/whatsapp/category/id", 
-        { 
-          userId: user, 
+      const response = await axios.post(API_URL + "/whatsapp/category/id",
+        {
+          userId: user,
           page: page,
           id_owner: user,
           limit: 8,
         }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setSalesData(response.data.data);
       setFilteredData(response.data.data);
       setTotalPages(response.data.totalPages);
-      
+
     } catch (error) {
       console.error("Error fetching categories:", error);
     } finally {
       setLoading(false);
     }
   }, [page, user, token]);
-  
+
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
@@ -97,32 +99,17 @@ const CategoryView = () => {
           </div>
         ) : (
           <div>
-            <div className="flex items-center justify-between w-full">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                  <svg className="w-5 h-5 text-red-500 fill-red-500" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"></path>
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Buscar por categoría"
+            <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+              <div className="relative flex-grow">
+                <TextInputFilter
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  onChange={setSearchTerm}
+                  placeholder="Buscar por nombre"
                 />
               </div>
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-gray-100 hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
-                  >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path>
-                  </svg>
-                  Crear Categoría
-                </button>
-              </div>
+              <PrincipalBUtton onClick={() => setShowModal(true)} >                  
+                Crear Categoría
+              </PrincipalBUtton>
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
               <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
@@ -139,108 +126,102 @@ const CategoryView = () => {
                   ))}
                 </tbody>
               </table>
-              
+
             </div>
             {totalPages > 1 && searchTerm === "" && (
-          <nav className="flex items-center justify-center pt-4 space-x-2">
-            <button
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
-                page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"
-              }`}
-            >
-              ◀
-            </button>
-
-            <button
-              onClick={() => setPage(1)}
-              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
-                page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
-              }`}
-            >
-              1
-            </button>
-
-            {page > 3 && <span className="px-2 text-gray-900">…</span>}
-
-            {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-              .filter((p) => p > 1 && p < totalPages)
-              .map((p) => (
+              <nav className="flex items-center justify-center pt-4 space-x-2">
                 <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
-                    page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
-                  }`}
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"
+                    }`}
                 >
-                  {p}
+                  ◀
                 </button>
-              ))}
 
-            {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+                <button
+                  onClick={() => setPage(1)}
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
+                    }`}
+                >
+                  1
+                </button>
 
-            {totalPages > 1 && (
-              <button
-                onClick={() => setPage(totalPages)}
-                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
-                  page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
-                }`}
-              >
-                {totalPages}
-              </button>
+                {page > 3 && <span className="px-2 text-gray-900">…</span>}
+
+                {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                  .filter((p) => p > 1 && p < totalPages)
+                  .map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-red-500 text-white font-bold" : "text-gray-900 hover:bg-red-200"
+                        }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+
+                {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                {totalPages > 1 && (
+                  <button
+                    onClick={() => setPage(totalPages)}
+                    className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"
+                      }`}
+                  >
+                    {totalPages}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={page === totalPages}
+                  className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"
+                    }`}
+                >
+                  ▶
+                </button>
+              </nav>
             )}
-
-            <button
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${
-                page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"
-              }`}
-            >
-              ▶
-            </button>
-          </nav>
-        )}
           </div>
         )}
-       
+
       </div>
       {showModal && (
-  <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h2 className="text-2xl text-left text-gray-900 font-bold mb-4">Crear Nueva Categoría</h2>
-      <input
-        type="text"
-        placeholder="Nombre de la categoría"
-        value={newCategory}
-        onChange={(e) => setNewCategory(e.target.value)}
-        className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-2xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-      />
-      
-      <div className="flex gap-2 mt-6">
-        <button
-          onClick={() => setShowModal(false)}
-          className="w-1/2 px-4 py-2 font-bold border-2 border-[#D3423E] bg-white text-red-500 uppercase rounded-2xl"
-        >
-          Cancelar
-        </button>
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-2xl text-left text-gray-900 font-bold mb-4">Crear Nueva Categoría</h2>
+            <input
+              type="text"
+              placeholder="Nombre de la categoría"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className="block p-2 text-sm text-gray-900 border border-gray-900 rounded-2xl w-full bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+            />
 
-        <button
-          onClick={handleCreateCategory}
-          disabled={newCategory.trim() === ""}
-          className={`w-1/2 px-4 py-2 font-bold text-white uppercase rounded-2xl ${
-            newCategory.trim() === ""
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-[#D3423E] hover:bg-[#FF9C99]"
-          }`}
-        >
-          Crear
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-1/2 px-4 py-2 font-bold border-2 border-[#D3423E] bg-white text-red-500 uppercase rounded-2xl"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={handleCreateCategory}
+                disabled={newCategory.trim() === ""}
+                className={`w-1/2 px-4 py-2 font-bold text-white uppercase rounded-2xl ${newCategory.trim() === ""
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-[#D3423E] hover:bg-[#FF9C99]"
+                  }`}
+              >
+                Crear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

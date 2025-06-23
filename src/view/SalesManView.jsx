@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { IoPersonAdd } from "react-icons/io5";
 import { HiFilter } from "react-icons/hi";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import TextInputFilter from "../Components/TextInputFilter";
 
 const ClientView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -55,79 +57,77 @@ const ClientView = () => {
   };
   if (loading) return <p className="text-center">Cargando datos...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
-
+  const getInitials = (name, lastName) => {
+    const firstInitial = name?.charAt(0).toUpperCase() || '';
+    const lastInitial = lastName?.charAt(0).toUpperCase() || '';
+    return firstInitial + lastInitial;
+  };
+  const colorClasses = [
+    'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
+    'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
+  ];
+  const getColor = (name, lastName) => {
+    const hash = (name + lastName)
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const index = hash % colorClasses.length;
+    return colorClasses[index];
+  };
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
-      <div className="ml-10 mr-10 mt-10 relative overflow-x-auto">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-red-500"
-                  aria-hidden="true"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Buscar por Nombre, apellido"
+    <div>
+      <div className="flex flex-col w-full">
+        <div className="flex items-center justify-between w-full mb-4">
+          <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+            <div className="relative flex-grow">
+              <TextInputFilter
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    fetchProducts(1);
-                  }
-                }}
-                className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-3xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500 h-[42px]"
+                onChange={setSearchTerm}
+                onEnter={() => fetchProducts(1)}
+                placeholder="Buscar por nombre"
               />
             </div>
 
-            <button
-              onClick={() => fetchProducts(1)}
-              className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2 h-[42px]"
-            >
-                                  <HiFilter className="text-white text-lg" />
+            <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
 
-              FILTRAR
-            </button>
           </div>
+          <div className="flex justify-end items-center space-x-4">
 
-
-
-          <button
-            onClick={() => navigate("/sales/create")}
-            className="px-4 py-2 font-bold text-lg rounded-3xl text-white bg-[#D3423E] flex items-center gap-2"
-          >
-            <IoPersonAdd />
-            Nuevo Vendedor
-          </button>
+            <PrincipalBUtton onClick={() => navigate("/sales/create")} icon={IoPersonAdd}>            Nuevo Vendedor
+            </PrincipalBUtton>
+          </div>
         </div>
+
 
         <div className="mt-5 border border-gray-400 rounded-xl">
           <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
-            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-              <tr>
+          <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+          <tr>
+                <th className="px-6 py-3"></th>
                 <th className="px-6 py-3 uppercase">Nombre</th>
                 <th className="px-6 py-3 uppercase">Correo Electronico</th>
                 <th className="px-6 py-3 uppercase">Telefono Celular</th>
+                <th className="px-6 py-3 uppercase">Ciudad</th>
+
               </tr>
             </thead>
             <tbody>
               {salesData.length > 0 ? (
                 salesData.map((item) => (
                   <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                     <td className="px-6 py-4 font-medium text-gray-900">
+                            <div
+                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
+                            >
+                              <span className="font-medium text-white">
+                                {getInitials(item.fullName, item.lastName)}
+                              </span>
+                            </div>
+                          </td>
                     <td className="px-6 py-4 font-medium text-gray-900">{item.fullName + " " + item.lastName}</td>
                     <td className="px-6 py-4 text-gray-900">{item.email}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">{item.phoneNumber}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+
                   </tr>
                 ))
               ) : (
@@ -139,8 +139,8 @@ const ClientView = () => {
               )}
             </tbody>
           </table>
-          <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
-            <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
+          <div className="flex justify-between px-6 py-4 text-sm text-gray-700 rounded-b-2xl bg-gray-200 border-t lg mt-2 border-gray-300">
+          <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
           </div>
           {totalPages > 1 && searchTerm === "" && (
             <div className="flex justify-between items-center px-6 pb-4">

@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { MdEdit } from "react-icons/md";
 import { HiFilter } from "react-icons/hi";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import TextInputFilter from "../Components/TextInputFilter";
 
 const ProductView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -27,7 +29,7 @@ const ProductView = () => {
   const [editedPriceId, setEditedPriceId] = useState("");
 
   const [items, setItems] = useState();
-  const [itemsPerPage, setItemsPerPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
 
   const user = localStorage.getItem("id_owner");
@@ -124,42 +126,17 @@ const ProductView = () => {
           <div>
             <div className="flex flex-col w-full gap-4">
               <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => navigate("/product/creation")}
-                  className="px-4 py-2 text-lg bg-[#D3423E] text-white font-bold uppercase rounded-3xl transition duration-200"
-                >
-                  + Crear Producto
-                </button>
+                <PrincipalBUtton onClick={() => navigate("/product/creation")} >                  + Crear Producto
+                </PrincipalBUtton>
               </div>
               <div className="flex items-center justify-between w-full">
-                <div className="relative flex items-center space-x-4">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                      <svg
-                        className="w-5 h-5 text-red-500"
-                        aria-hidden="true"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                          clipRule="evenodd"
-                        ></path>
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Buscar venta..."
+                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+                  <div className="relative flex-grow">
+                    <TextInputFilter
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          fetchProducts(1);
-                        }
-                      }}
-                      className="block p-2 ps-10 text-m text-gray-900 border border-gray-900 rounded-2xl w-80 bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      onChange={setSearchTerm}
+                      onEnter={() => fetchProducts(1)}
+                      placeholder="Buscar por nombre"
                     />
                   </div>
                   <select
@@ -172,16 +149,7 @@ const ProductView = () => {
                       <option key={category._id} value={category._id}>{category.categoryName}</option>
                     ))}
                   </select>
-                  <button
-                    onClick={() => {
-                      fetchProducts(1);
-                    }}
-                    className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-3xl flex items-center gap-2"
-                  >
-                    <HiFilter className="text-white text-lg" />
-
-                    Filtrar
-                  </button>
+                  <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
                 </div>
               </div>
             </div>
@@ -256,8 +224,7 @@ const ProductView = () => {
                         value={itemsPerPage}
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
-                          setPage(1);
-                          fetchProducts(page);
+                          fetchProducts(1);
                         }}
                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                       >
@@ -436,7 +403,7 @@ const ProductView = () => {
                 type="text"
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
               />
             </div>
             <div className="mb-4">
@@ -445,7 +412,7 @@ const ProductView = () => {
                 type="number"
                 value={editedPrice}
                 onChange={(e) => setEditedPrice(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
               />
             </div>
             <div className="flex gap-2 w-full">

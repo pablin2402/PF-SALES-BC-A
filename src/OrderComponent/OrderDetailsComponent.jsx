@@ -1,4 +1,5 @@
 import React from "react";
+import PrincipalBUtton from "../Components/PrincipalButton";
 
 const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcularFechaPago, cart, calcularTotal, handleSubmit }) => {
   return (
@@ -84,12 +85,9 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
             </h3>
           </div>
         </form>
-        <button
-          onClick={handleSubmit}
-          className="mt-auto w-full mt-10 px-5 py-2.5 text-lg font-bold text-white bg-[#D3423E] rounded-3xl transition"
-        >
-          GUARDAR
-        </button>
+    
+        <PrincipalBUtton onClick={handleSubmit}>GUARDAR</PrincipalBUtton>
+
       </div>
     </div>
   );

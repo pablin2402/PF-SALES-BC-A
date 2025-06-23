@@ -6,6 +6,9 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FaFileExport } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
+import DateInput from "../Components/DateInput";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import { HiFilter } from "react-icons/hi";
 
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
@@ -331,32 +334,16 @@ export default function SalesManInformationComponent() {
             <div className="flex items-center justify-between w-full mb-4">
               <div className="flex gap-2">
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                    }}
-                    className="h-10 px-3 py-2 border text-lg text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
+                <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                    }}
-                    className="h-10 px-3 py-2 border text-lg text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
+                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+
                 </div>
-                <button
-                  onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] rounded-3xl flex items-center gap-2"
-                >
-                  Filtrar
-                </button>
+                <PrincipalBUtton onClick={() => handleFilterClick()} icon={HiFilter}>Filtrar</PrincipalBUtton>
+
 
               </div>
               <div className="flex justify-end items-center space-x-4">

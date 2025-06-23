@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 import { HiFilter } from "react-icons/hi";
+import PrincipalBUtton from "../Components/PrincipalButton";
+import TextInputFilter from "../Components/TextInputFilter";
 
 import { IoPersonAdd } from "react-icons/io5";
 import Spinner from "../Components/Spinner";
@@ -160,42 +162,16 @@ const ClientView = () => {
                 <div className="flex items-center justify-between w-full mb-4">
                   <div className="flex items-center w-full max-w-2xl gap-2">
                     <div className="relative flex-grow">
-                      <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                        <svg
-                          className="w-5 h-5 text-red-500"
-                          aria-hidden="true"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                            clipRule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Buscar por Nombre, apellido, teléfono..."
+                      
+                      <TextInputFilter
                         value={searchTerm}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            fetchProducts(1);
-                          }
-                        }}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                        onChange={setSearchTerm}
+                        onEnter={() => fetchProducts(1)}
+                        placeholder="Buscar por Nombre, apellido, teléfono..."
                       />
+                   
                     </div>
-                    <button
-                        onClick={() => fetchProducts(1)}
-                        className="px-3 py-2 h-full text-white text-sm bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
-                      >
-                        <HiFilter className="text-white text-lg" />
-
-                        FILTRAR
-                      </button>
+                    <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>FILTRAR</PrincipalBUtton>
                   </div>
 
                   <div className="flex justify-end items-center space-x-4">
@@ -206,13 +182,11 @@ const ClientView = () => {
                       <FaFileExport />
                       Exportar
                     </button>
-                    <button
-                      onClick={() => navigate("/client/creation")}
-                      className="px-4 py-2 font-bold text-sm text-white rounded-3xl uppercase bg-[#D3423E] flex items-center gap-2"
-                    >
-                      <IoPersonAdd />
-                      Nuevo Cliente
-                    </button>
+                    
+                    <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>                      Nuevo Cliente
+                    </PrincipalBUtton>
+
+                    
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -336,7 +310,7 @@ const ClientView = () => {
                   )}
                 </tbody>
               </table>
-              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t lg mt-2 border-gray-300">
+              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 rounded-b-2xl bg-gray-200 border-t lg mt-2 border-gray-300">
                 <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
               </div>
               {totalPages > 1 && searchTerm === "" && (
