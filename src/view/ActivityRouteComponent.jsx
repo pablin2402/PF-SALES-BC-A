@@ -7,8 +7,8 @@ import tiendaIcon2 from "../icons/tienda.png";
 
 import { HiFilter } from "react-icons/hi";
 import { DirectionsRenderer } from "@react-google-maps/api";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 export default function ActivityRouteComponent() {
     const [filteredData, setFilteredData] = useState([]);

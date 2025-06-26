@@ -8,9 +8,9 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FiGrid, FiList } from "react-icons/fi";
 import OrderCalendarView from "./OrderCalendarView";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import DateInput from "../Components/DateInput";
-import TextInputFilter from "../Components/TextInputFilter";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import DateInput from "../Components/LittleComponents/DateInput";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);

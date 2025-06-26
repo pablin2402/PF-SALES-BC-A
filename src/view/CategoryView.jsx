@@ -1,10 +1,10 @@
 import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
-import SuccessModal from "../modal/SuccessModal";
-import ErrorModal from "../modal/ErrorModal";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import SuccessModal from "../Components/modal/SuccessModal";
+import ErrorModal from "../Components/modal/ErrorModal";
 
 const CategoryView = () => {
   const [salesData, setSalesData] = useState([]);

@@ -8,12 +8,11 @@ import { API_URL, GOOGLE_API_KEY } from "../config";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/tienda.png";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdDelete } from "react-icons/md";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
-import AlertModal from "../modal/AlertModal";
-import DateInput from "../Components/DateInput";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import AlertModal from "../Components/modal/AlertModal";
+import DateInput from "../Components/LittleComponents/DateInput";
 
 export default function DeliveryRouteView() {
   const navigate = useNavigate();
@@ -36,7 +35,6 @@ export default function DeliveryRouteView() {
   const [selectedSaler, setSelectedSaler] = useState("");
   const [totalPages, setTotalPages] = useState(1);
 
-  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [vendedores, setVendedores] = useState([]);
 
   const [selecting] = useState(false);

@@ -6,7 +6,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FaFileExport } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
-import PrincipalBUtton from "../Components/PrincipalButton";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import { HiFilter } from "react-icons/hi";
 
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";

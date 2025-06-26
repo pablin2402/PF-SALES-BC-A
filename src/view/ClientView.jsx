@@ -4,14 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 import { HiFilter } from "react-icons/hi";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 import { IoPersonAdd } from "react-icons/io5";
-import Spinner from "../Components/Spinner";
+import Spinner from "../Components/LittleComponents/Spinner";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+
 const ClientView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);

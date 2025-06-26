@@ -3,14 +3,11 @@ import axios from "axios";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 
-import Spinner from "../Components/Spinner";
+import Spinner from "../Components/LittleComponents/Spinner";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-import VentasChart from "../charts/VentasChart";
-
-
-
+import VentasChart from "../Components/charts/VentasChart";
 const StatisticsView = () => {
     const [salesData, setSalesData] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { IoPersonAdd } from "react-icons/io5";
 import { HiFilter } from "react-icons/hi";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 const ClientView = () => {
   const [salesData, setSalesData] = useState([]);

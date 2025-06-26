@@ -4,38 +4,38 @@ import HomeView from "./view/HomeView";
 import LoginView from "./view/LoginView";
 import SalesManView from "./view/SalesManView";
 
-import ProductView from './view/ProductView';
-import ClientView from './view/ClientView';
-import OrderView from './view/OrderView';
-import CategoryView from './view/CategoryView';
-import LocalizacionView from './view/LocalizationView';
-import OrderPaymentView from './view/OrderPaymentView';
+import ProductView from "./view/ProductView";
+import ClientView from "./view/ClientView";
+import OrderView from "./view/OrderView";
+import CategoryView from "./view/CategoryView";
+import LocalizacionView from "./view/LocalizationView";
+import OrderPaymentView from "./view/OrderPaymentView";
 import DeliveryView from "./view/DeliveryView";
 import StatisticsView from "./view/StatisticsView";
 import DeliveryRouteView from "./view/DeliveryRouteView";
 import ObjectiveRegionalsView from "./view/ObjectiveRegionalsView";
 import ProfileView from "./view/ProfileView";
 
-import DeliveryCreationComponent from "./ClientComponent/DeliveryCreationComponent";
-import ClientCreationComponent from "./ClientComponent/ClientCreationComponent";
-import ClientInformationComponent from "./ClientComponent/ClientInformationComponent";
-import ClientInformationOrdenComponent from "./ClientComponent/ClientInformationOrdenComponent";
-import DeliveryRouteComponent from "./locationComponent/DeliveryRouteComponent";
+import DeliveryCreationComponent from "./Components/ClientComponent/DeliveryCreationComponent";
+import ClientCreationComponent from "./Components/ClientComponent/ClientCreationComponent";
+import ClientInformationComponent from "./Components/ClientComponent/ClientInformationComponent";
+import ClientInformationOrdenComponent from "./Components/ClientComponent/ClientInformationOrdenComponent";
+import DeliveryRouteComponent from "./Components/locationComponent/DeliveryRouteComponent";
 
-import SalesManCreationComponent from "./ClientComponent/SalesManCreationComponent";
-import SalesManInformationComponent from "./ClientComponent/SalesManInformationComponent";
+import SalesManCreationComponent from "./Components/ClientComponent/SalesManCreationComponent";
+import SalesManInformationComponent from "./Components/ClientComponent/SalesManInformationComponent";
 
-import ProductCreationComponent from "./ProductComponent/ProductCreationComponent";
-import CategoryCreationComponent from "./CategoryComponent/CategoryCreation";
+import ProductCreationComponent from "./Components/ProductComponent/ProductCreationComponent";
+import CategoryCreationComponent from "./Components/CategoryComponent/CategoryCreation";
 
-import OrderCreateComponent from "./OrderComponent/OrderCreateComponent";
+import OrderCreateComponent from "./Components/OrderComponent/OrderCreateComponent";
 
-import CreateRouteComponent from "./locationComponent/CreateRouteComponent";
-import ShowRouteComponent from "./locationComponent/ShowRouteComponent";
+import CreateRouteComponent from "./Components/locationComponent/CreateRouteComponent";
+import ShowRouteComponent from "./Components/locationComponent/ShowRouteComponent";
 
-import ObjectiveDepartmentComponent from "./ObjectiveComponent/ObjectiveDepartmentComponent";
-import ObjectiveSalesManComponent from "./ObjectiveComponent/ObjectiveSalesManComponent";
-import ObjectiveSalesDetailComponent from "./ObjectiveComponent/ObjectiveSalesDetailComponent";
+import ObjectiveDepartmentComponent from "./Components/ObjectiveComponent/ObjectiveDepartmentComponent";
+import ObjectiveSalesManComponent from "./Components/ObjectiveComponent/ObjectiveSalesManComponent";
+import ObjectiveSalesDetailComponent from "./Components/ObjectiveComponent/ObjectiveSalesDetailComponent";
 
 import DashboardLayout from "./layouts/DashboardLayouts";
 import ClientsLayout from "./layouts/ClientsLayout";

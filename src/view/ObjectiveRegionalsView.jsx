@@ -4,10 +4,10 @@ import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
 import { FiTrash2, FiEdit2 } from "react-icons/fi";
 
-import ObjectiveDepartmentComponent from "../ObjectiveComponent/ObjectiveDepartmentComponent";
-import ObjectiveSalesDetailComponent from "../ObjectiveComponent/ObjectiveSalesDetailComponent";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import DateInput from "../Components/DateInput";
+import ObjectiveDepartmentComponent from "../Components/ObjectiveComponent/ObjectiveDepartmentComponent";
+import ObjectiveSalesDetailComponent from "../Components/ObjectiveComponent/ObjectiveSalesDetailComponent";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import DateInput from "../Components/LittleComponents/DateInput";
 
 const ObjectiveRegionalsView = () => {
     const [salesData, setSalesData] = useState([]);

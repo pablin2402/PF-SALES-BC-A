@@ -13,7 +13,7 @@ import { FaFilter } from "react-icons/fa";
 import { FaFileExport } from "react-icons/fa6";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import ObjectiveSalesManComponent from "../ObjectiveComponent/ObjectiveSalesManComponent";
+import ObjectiveSalesManComponent from "../Components/ObjectiveComponent/ObjectiveSalesManComponent";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -155,7 +155,7 @@ const HomeView = () => {
   
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <select
-              className="p-2 text-sm text-gray-900 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+              className="p-2 text-sm text-gray-900 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
@@ -166,7 +166,7 @@ const HomeView = () => {
             {filterType === "monthYear" ? (
               <div className="flex gap-2 flex-wrap">
                 <select
-                  className="p-2 text-sm font-bold text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500" 
+                  className="p-2 text-sm font-bold text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500" 
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
@@ -175,7 +175,7 @@ const HomeView = () => {
                   ))}
                 </select>
                 <select
-                  className="p-2 text-sm font-bold text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="p-2 text-sm font-bold text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
                 >
@@ -188,13 +188,13 @@ const HomeView = () => {
               <div className="flex gap-2 flex-wrap">
                 <input
                   type="date"
-                  className="p-2 text-sm font-semibold  text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="p-2 text-sm font-semibold  text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
                 <input
                   type="date"
-                  className="p-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="p-2 text-sm font-semibold text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />

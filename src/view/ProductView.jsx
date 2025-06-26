@@ -6,10 +6,10 @@ import { API_URL } from "../config";
 import { MdEdit } from "react-icons/md";
 import { HiFilter } from "react-icons/hi";
 
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
-import SuccessModal from "../modal/SuccessModal";
-import ErrorModal from "../modal/ErrorModal";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import SuccessModal from "../Components/modal/SuccessModal";
+import ErrorModal from "../Components/modal/ErrorModal";
 const ProductView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);

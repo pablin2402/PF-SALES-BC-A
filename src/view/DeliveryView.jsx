@@ -5,8 +5,8 @@ import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 import { IoPersonAdd } from "react-icons/io5";
 import { HiFilter } from "react-icons/hi";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import TextInputFilter from "../Components/TextInputFilter";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";

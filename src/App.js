@@ -32,8 +32,8 @@ function AppWrapper() {
   return (
     <>
       {location.pathname !== "/login" && <Sidebars />}
-      <div className={location.pathname !== "/login" ? "ml-60" : ""}>
-        <Routes>
+      <div className={location.pathname !== "/login" ? "ml-16 md:ml-60" : ""}>
+      <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/*" element={<AppRoutes />} />
         </Routes>

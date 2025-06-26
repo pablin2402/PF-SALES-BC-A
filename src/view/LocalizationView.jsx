@@ -5,7 +5,7 @@ import { API_URL, GOOGLE_API_KEY } from "../config";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/tienda.png";
-import TextInputFilter from "../Components/TextInputFilter";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 export default function LocalizationView() {
   const navigate = useNavigate();

@@ -5,11 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { FaFileExport } from "react-icons/fa6";
 import { HiOutlineTrash } from "react-icons/hi";
 import { HiFilter } from "react-icons/hi";
-import PrincipalBUtton from "../Components/PrincipalButton";
-import DateInput from "../Components/DateInput";
-import TextInputFilter from "../Components/TextInputFilter";
+import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import DateInput from "../Components/LittleComponents/DateInput";
+import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
-import Spinner from "../Components/Spinner";
+import Spinner from "../Components/LittleComponents/Spinner";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
