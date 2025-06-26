@@ -12,6 +12,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdDelete } from "react-icons/md";
 import PrincipalBUtton from "../Components/PrincipalButton";
 import TextInputFilter from "../Components/TextInputFilter";
+import AlertModal from "../modal/AlertModal";
 
 export default function DeliveryRouteView() {
   const navigate = useNavigate();
@@ -23,13 +24,11 @@ export default function DeliveryRouteView() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [canalesData, setCanalesData] = useState([]);
   const [markers, setMarkers] = useState([]);
 
   const [center, setCenter] = useState({ lat: -17.3835, lng: -66.1568 });
   const [mapZoom, setMapZoom] = useState(13);
 
-  const [selectedCategories, setSelectedCategories] = useState("");
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
@@ -39,18 +38,16 @@ export default function DeliveryRouteView() {
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [vendedores, setVendedores] = useState([]);
 
-
-  const [items, setItems] = useState();
-
-  const [selecting, setSelecting] = useState(false);
+  const [selecting] = useState(false);
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [selectedMarkers, setSelectedMarkers] = useState([]);
   const [page, setPage] = useState(1);
+  const [successModal, setSuccessModal] = useState(false);
+
   const fetchProducts = useCallback(async () => {
-    console.log(searchTerm)
     const filters = {
       id_owner: user,
-      page: 1,
+      page: page,
       limit: 1000,
       searchTerm: ""
     };
@@ -65,15 +62,14 @@ export default function DeliveryRouteView() {
       console.error("Error fetching products:", error);
     } finally {
     }
-  }, [user, searchTerm, token]);
+  }, [user, token,page]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
     id: "google-map-script",
   });
-  const loadMarkersFromAPI = async () => {
+  const loadMarkersFromAPI = useCallback(async () => {
     try {
-
       const filters = {
         id_owner: user,
         page: page,
@@ -91,16 +87,17 @@ export default function DeliveryRouteView() {
       });
       setMarkers(response.data.orders);
       setTotalPages(response.data.totalPages);
-      setItems(response.data.totalRecords);
 
     } catch (error) {
     } finally {
     }
-  };
+  }, [user, searchTerm, token,selectedSaler,page]);
+
   useEffect(() => {
     fetchProducts();
     loadMarkersFromAPI();
-  }, [page]);
+  }, [fetchProducts, loadMarkersFromAPI]);
+  
   const validateForm = () => {
     const newErrors = {};
     if (!routeName) newErrors.routeName = "El nombre es obligatorio.";
@@ -124,7 +121,6 @@ export default function DeliveryRouteView() {
         //console.error("Error: Ubicación inválida", location.client_location);
       }
     } else {
-      //console.error("Error: Cliente sin ubicación", location);
     }
   };
   const goToClientDetails = (client) => {
@@ -132,7 +128,6 @@ export default function DeliveryRouteView() {
   };
   const handleCreateRoute = async () => {
     if (!validateForm()) return;
-
     const routeData = {
       details: routeName,
       delivery: selectedSaler,
@@ -250,7 +245,6 @@ export default function DeliveryRouteView() {
           if (status === window.google.maps.DirectionsStatus.OK) {
             setDirectionsResponse(result);
           } else {
-            console.error("Error en DirectionsService:", status);
           }
         }
       );
@@ -260,10 +254,9 @@ export default function DeliveryRouteView() {
   }, [selectedMarkers]);
   const handleMarkerClick = (location) => {
     if (!selectedSaler) {
-      alert("Por favor, seleccione un vendedor antes de agregar clientes a la ruta.");
+      setSuccessModal(true)
       return;
     }
-
     setSelectedMarkers((prev) => {
       if (!prev.find((item) => item._id === location._id)) {
         const newLocation = {
@@ -277,6 +270,7 @@ export default function DeliveryRouteView() {
           totalAmount: location.totalAmount,
           totalPagado: location.totalPagado,
           accountStatus: location.accountStatus,
+          clientId: location.id_client._id,
           name: location.id_client.name,
           lastName: location.id_client.lastName,
           profilePicture: location.id_client.profilePicture,
@@ -291,7 +285,6 @@ export default function DeliveryRouteView() {
       }
       return prev;
     });
-    console.log(selectedMarkers)
   };
   return (
     <div className="h-screen w-full flex overflow-hidden">
@@ -305,23 +298,6 @@ export default function DeliveryRouteView() {
               placeholder="Buscar por Nombre, apellido"
             />
 
-          </div>
-          <div className="flex gap-4">
-
-            <select
-              value={selectedCategories}
-              onChange={(e) => {
-                setSelectedCategories(e.target.value);
-              }}
-              className="flex-1 block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-            >
-              <option value="">Canal de ventas</option>
-              {canalesData.map((canal, index) => (
-                <option key={index} value={canal.canal}>
-                  {canal.canal}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
         <div className="px-2 py-2 w-full">
@@ -701,6 +677,11 @@ export default function DeliveryRouteView() {
           </div>
         </div>
       )}
+      <AlertModal
+        show={successModal}
+        onClose={() => setSuccessModal(false)}
+        message="Por favor, seleccione un repartidor antes de agregar clientes a la ruta."
+      />
     </div>
   );
 }

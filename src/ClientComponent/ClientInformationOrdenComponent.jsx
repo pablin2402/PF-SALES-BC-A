@@ -19,7 +19,6 @@ export default function ClientInformationOrdenComponent() {
     const [totalPaid, setTotalPaid] = useState(0);
     const tabs = ["Año", "Mes"];
     const [orderData, setOrderData] = useState([]);
-    console.log(state)
     const [activeTab] = useState(0);
     const tabRefs = useRef(new Array(tabs.length).fill(null));
     const [setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -98,7 +97,6 @@ export default function ClientInformationOrdenComponent() {
                 }
             });
             const payments = response.data;
-            console.log(payments)
             if (payments.length > 0) {
                 const totalPaidSum = payments.reduce((sum, payment) => sum + (payment.total || 0), 0);
                 setPaymentsData(payments);

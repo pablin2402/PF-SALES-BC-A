@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/tienda.png";
 import { MdDelete } from "react-icons/md";
 import TextInputFilter from "../Components/TextInputFilter";
+import AlertModal from "../modal/AlertModal";
 
 export default function CreateRouteComponent() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function CreateRouteComponent() {
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [successModal, setSuccessModal] = useState(false);
 
 
   const [isOpen, setIsOpen] = useState(false);
@@ -152,7 +154,7 @@ export default function CreateRouteComponent() {
   };
   const handleMarkerClick = (location) => {
     if (!selectedSaler) {
-      alert("Por favor, seleccione un vendedor antes de agregar clientes a la ruta.");
+      setSuccessModal(true);
       return;
     }
     setSelectedMarkers((prev) => {
@@ -237,7 +239,7 @@ export default function CreateRouteComponent() {
               </>
 
             ) : (
-              <div className="flex flex-1 h-[calc(100vh-150px)] items-center justify-center border border-gray-400 rounded-lg text-gray-700 text-sm font-semibold">
+              <div className="flex flex-1 h-[calc(100vh-150px)] items-center justify-center border border-gray-400 rounded-lg text-gray-700 text-lg font-semibold">
                 Ningún item seleccionado
               </div>
             )}
@@ -280,7 +282,7 @@ export default function CreateRouteComponent() {
 
           <div className="w-1/2">
             <select
-              className="block w-full p-2 text-lg text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block w-full p-2 text-lg text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
               name="vendedor"
               value={selectedSaler}
               onChange={(e) => {
@@ -401,6 +403,11 @@ export default function CreateRouteComponent() {
           </div>
         </div>
       )}
+       <AlertModal
+        show={successModal}
+        onClose={() => setSuccessModal(false)}
+        message="Porfavor seleccione un vendedor antes de agregar clientes a la ruta"
+      />
     </div>
   );
 }

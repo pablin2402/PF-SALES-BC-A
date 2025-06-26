@@ -5,6 +5,8 @@
   import { useNavigate } from "react-router-dom";
   import tiendaIcon from "../icons/tienda.png";
 
+  import ErrorModal from "../modal/ErrorModal";
+  import SuccessModal from "../modal/SuccessModal";
 
   const containerStyle = {
     width: "100%",
@@ -15,8 +17,9 @@
     const [location, setLocation] = useState({ lat: -17.3835, lng: -66.1568 });
     const [address, setAddress] = useState({ road: "", state: "", house_number: "" });
     const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo:"", role:"", password:"" });
+    const [successModal, setSuccessModal] = useState(false);
+    const [errorModal, setErrorModal] = useState(false);
 
-    const [showToast, setShowToast] = useState(false);
     const navigate = useNavigate();
 
     const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -31,8 +34,7 @@
         setAddress(response.data.address);
 
       } catch (error) {
-        console.error("Error obteniendo la dirección", error);
-        setAddress("Error al obtener la dirección");
+        setErrorModal(true);
       }
     };
     const handleMapClick = useCallback((event) => {
@@ -72,8 +74,9 @@
             active: true,
             email: formData.email,
             password: formData.password,
-            role: formData.role,
+            role: "SALES",
             id_owner: user,
+            region: formData.role
           }, {
             headers: {
               Authorization: `Bearer ${token}`
@@ -107,38 +110,39 @@
     
           if (addressResponse.status === 200) {
             const directionId = addressResponse.data._id;
-            const userId = userResponse.data.id;
-            console.log(userId, userResponse)
-            await axios.post(API_URL + "/whatsapp/sales/salesman", {
+            const response = await axios.post(API_URL + "/whatsapp/sales/salesman", {
               fullName: formData.nombre,
-              lastName:formData.apellido,
+              lastName: formData.apellido,
               email: formData.email,
-              role: formData.role,
+              role: "SALES",
               id_owner: user,
               phoneNumber: formData.telefono,
               client_location: directionId,
+              region: formData.role
             }, {
               headers: {
                 Authorization: `Bearer ${token}`
               }
             });
-            setShowToast(true);
-            resetForm();
-            navigate("/sales/client");
-            setTimeout(() => setShowToast(false), 3000);
+          
+            if (response.status === 200) {
+              setSuccessModal(true);
+              resetForm();
+              navigate("/sales/client");
+            }else {
+              setErrorModal(true);
+            }
           } else {
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 3000);
+            setErrorModal(true);
           }
         }
       } catch (error) {
-        console.error("Error en el proceso", error);
-        alert("Error inesperado");
+        setErrorModal(true);
       }
     };
     const isFormValid = () => {
-      const { nombre, apellido, email, telefono, password, role } = formData;
-      const { road, state, house_number } = address;
+      const { nombre, apellido, email, telefono, password } = formData;
+      const { road, state } = address;
     
       return (
         nombre.trim() &&
@@ -146,131 +150,121 @@
         email.trim() &&
         telefono &&
         password.trim() &&
-        role.trim() &&
         road.trim() &&
-        state.trim() &&
-        house_number.trim()
+        state.trim()
       );
     };
     
     return (
-      <div className="flex items-center justify-center min-h-screen] px-6">
-        <div className="flex w-full max-w-5xl gap-6">
-          <div className="w-4/6 p-6 bg-white border border-black rounded-lg shadow-lg">
-            <h2 className="mb-6 text-lg text-left font-bold text-gray-900">Datos personales</h2>
-            <form>
-              <div className="grid gap-6 sm:grid-cols-2">
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1">Nombre</label>
-                  <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Nombre" required />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1">Apellido</label>
-                  <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Apellido" required />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1">Correo electrónico</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Correo electrónico" required />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de teléfono</label>
-                  <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de teléfono" required />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1">Contraseña</label>
-                  <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Contraseña" required />
-                </div>
-                <div className="flex flex-col">
-                      <label className="text-left text-sm font-medium text-gray-900 mb-1">Rol</label>
-                      <select
-                          name="role"
-                          value={formData.role}
-                          onChange={handleChange}
-                          className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5"
-                          required
-                      >
-                          <option value="">Selecciona un rol</option>
-                          <option value="SALES">Vendedor</option>
-                          <option value="RESALESW">Repartidor</option>
-                          <option value="ADMIN">Administrador</option>
-                      </select>
-                  </div>
-                <div className="flex flex-col sm:col-span-2">
-                  <h2 className="mt-2 mb-2 text-l text-left font-bold text-gray-900">Ubicación del Punto</h2>
-                  <h2 className="mb-6 text-sm text-left text-gray-900">Haga click en el punto del mapa donde necesite registrar la ubicación </h2>
-                  <LoadScript
-                    googleMapsApiKey={GOOGLE_API_KEY}
-                    onLoad={() => setIsMapLoaded(true)}
-                  >
-                  {isMapLoaded && (
-                    <GoogleMap
-                      mapContainerStyle={containerStyle}
-                      center={location}
-                      zoom={14}
-                      onClick={handleMapClick}
-                    >
-                      <Marker
-                        key={`${location.lat}-${location.lng}`}
-                        position={location}
-                        draggable={true}
-                        onDragEnd={handleMarkerDragEnd}
-                        icon={{
-                          url: tiendaIcon,
-                          scaledSize: new window.google.maps.Size(40, 40),
-                        }}
-                      />
-                    </GoogleMap>
-                  )}
-                  </LoadScript>
-                </div>
+      <div className="flex items-center justify-center min-h-screen px-6">
+      <div className="flex w-full max-w-5xl gap-6">
+        <div className="w-full p-6 bg-white border border-black rounded-lg shadow-lg">
+          <h2 className="mb-6 text-lg font-bold text-left text-gray-900">Datos personales del vendedor</h2>
+          <form>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Nombre</label>
+                <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Nombre" required />
               </div>
-            </form>
-          </div>
-
-          <div className="w-2/6  p-6 bg-white border border-black rounded-lg shadow-lg">
-            <h2 className="mb-6 text-lg text-left font-bold text-gray-900">Ubicación</h2>
-            <form>
-              <div className="grid gap-6">
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección de domicilio</label>
-                  <input name="road" value={address.road} onChange={handleChangeLocation} ytpe="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Dirección" required />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1  ">Ciudad</label>
-                  <input name="state" value={address.state} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Ciudad" required />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-left text-sm font-medium text-gray-900 mb-1  ">Número de casa</label>
-                  <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de casa" required />
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!isFormValid()}
-                  className={`mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-3xl transition ${
-                    isFormValid()
-                      ? "bg-[#D3423E] text-white hover:bg-white hover:text-red-600"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Apellido</label>
+                <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Apellido" required />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Correo electrónico</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Correo electrónico" required />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de teléfono</label>
+                <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de teléfono" required />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Contraseña</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Contraseña" required />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Ciudad de trabajo</label>
+                <select
+                    className="text-gray-900 rounded-2xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    required
                 >
-                  GUARDAR
-                </button>
-
+                    <option value="">Seleccione una ciudad</option>
+                    <option value="TOTAL CBB">Cochabamba</option>
+                    <option value="TOTAL SC">Santa Cruz</option>
+                    <option value="TOTAL LP">La Paz</option>
+                    <option value="TOTAL OR">Oruro</option>
+                </select>                                  
               </div>
-            </form>
-          </div>
-        </div>
-        {showToast && (
-          <div className="fixed top-10 right-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm" role="alert">
-            <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
-              <svg className="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
-              </svg>
             </div>
-            <div className="ms-3 text-xl text-gray-900 font-bold">Cliente registrado correctamente.</div>
-          </div>
-        )}
-
+    
+            <h2 className="mt-8 mb-2 text-lg font-bold text-left text-gray-900">Ubicación del Punto</h2>
+    
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección de domicilio</label>
+                <input name="road" value={address.road} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Dirección" required />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Ciudad</label>
+                <input name="state" value={address.state} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Ciudad" required />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de casa</label>
+                <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de casa" required />
+              </div>
+            </div>
+    
+            <h2 className="mt-8 mb-2 text-sm text-left text-gray-900">Haga click en el punto del mapa donde necesite registrar la ubicación</h2>
+    
+            <div className="mt-2 mb-6">
+              <LoadScript googleMapsApiKey={GOOGLE_API_KEY} onLoad={() => setIsMapLoaded(true)}>
+                {isMapLoaded && (
+                  <GoogleMap
+                    mapContainerStyle={containerStyle}
+                    center={location}
+                    zoom={14}
+                    onClick={handleMapClick}
+                  >
+                    <Marker
+                      key={`${location.lat}-${location.lng}`}
+                      position={location}
+                      draggable
+                      onDragEnd={handleMarkerDragEnd}
+                      icon={{
+                        url: tiendaIcon,
+                        scaledSize: new window.google.maps.Size(40, 40),
+                      }}
+                    />
+                  </GoogleMap>
+                )}
+              </LoadScript>
+            </div>
+    
+            <button
+              onClick={handleSubmit}
+              disabled={!isFormValid()}
+              className={`mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-3xl transition ${
+                isFormValid()
+                  ? "bg-[#D3423E] text-white hover:bg-white hover:text-red-600"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+            >
+              GUARDAR
+            </button>
+          </form>
+        </div>
       </div>
+      <SuccessModal
+        show={successModal}
+        onClose={() => setSuccessModal(false)}
+        message="Vendedor creado exitosamente"
+      />
+      <ErrorModal show={errorModal} onClose={() => setErrorModal(false)} message="Error al crear al vendedor" />
+    </div>
+    
     );
   };
 

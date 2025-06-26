@@ -28,7 +28,6 @@ export default function ActivityRouteComponent() {
     const [directionsResponse, setDirectionsResponse] = useState(null);
     const [totalPages, setTotalPages] = useState(1);
     const [page, setPage] = useState(1);
-    const [isMapLoaded, setIsMapLoaded] = useState(false);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -157,13 +156,11 @@ export default function ActivityRouteComponent() {
                 <div className="px-4 py-4">
                     <div className="flex flex-col w-full mb-4 space-y-2">
                         <select
-                            className="block w-full p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                            className="block w-full p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                             name="vendedor"
                             value={selectedSaler}
-                            onChange={(e) => {
-                                const selectedValue = e.target.value;
-                                setSelectedSaler(selectedValue);
-                            }} required
+                            onChange={(e) => setSelectedSaler(e.target.value)}
+                            required
                         >
                             <option value="">Filtrar por vendedor</option>
                             <option value="">Mostrar Todos</option>
@@ -173,20 +170,28 @@ export default function ActivityRouteComponent() {
                                 </option>
                             ))}
                         </select>
-                        <div className="flex flex-row gap-2 w-full">
+
+                        {/* Línea de filtros: Fecha + Botón */}
+                        <div className="flex w-full gap-2">
                             <input
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-1/2 h-12 border text-m border-gray-900 rounded-3xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
+                                className="w-1/2 border text-m border-gray-900 rounded-2xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 px-3 py-2"
                             />
 
-                            
-                            <PrincipalBUtton onClick={() => fetchActivities(selectedSaler)} icon={HiFilter}>Filtrar</PrincipalBUtton>
-
+                            <div className="w-1/2">
+                                <PrincipalBUtton
+                                    onClick={() => fetchActivities(selectedSaler)}
+                                    icon={HiFilter}
+                                    className="w-full"
+                                >
+                                    Filtrar
+                                </PrincipalBUtton>
+                            </div>
                         </div>
-
                     </div>
+
                     <div className="space-y-4 mt-4">
                         {filteredData.length > 0 ? (
                             <>
@@ -363,12 +368,12 @@ export default function ActivityRouteComponent() {
                 )}
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-4">
                     <div className="relative">
-                    <TextInputFilter
-                      value={searchTerm}
-                      onChange={setSearchTerm}
-                      placeholder="Buscar por nombre..."
-                    />
-                      
+                        <TextInputFilter
+                            value={searchTerm}
+                            onChange={setSearchTerm}
+                            placeholder="Buscar por nombre..."
+                        />
+
                     </div>
                 </div>
             </div>

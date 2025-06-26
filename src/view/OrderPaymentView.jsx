@@ -215,10 +215,12 @@ const OrderPaymentView = () => {
                   </select>
                 </div>
                 <div className="flex justify-end items-center space-x-10">
-
-                  <PrincipalBUtton onClick={exportToExcel}
-                    icon={FaFileExport}>Exportar</PrincipalBUtton>
-
+                <button
+                    onClick={exportToExcel}
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                  >
+                    <FaFileExport color="##726E6E" />
+                  </button>
                 </div>
               </div>
               <div className="relative mt-8 flex items-center space-x-4">

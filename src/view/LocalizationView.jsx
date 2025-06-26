@@ -24,7 +24,7 @@ export default function LocalizationView() {
   const [selectedSalesmen, setSelectedSalesmen] = useState("");
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
-  const [googleMaps, setGoogleMaps] = useState(null);
+  const [setGoogleMaps] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,

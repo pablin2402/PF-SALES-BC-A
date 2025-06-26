@@ -4,86 +4,10 @@ import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/PrincipalButton";
 import DateInput from "../Components/DateInput";
-import Chart from "react-apexcharts";
+import { FaFileExport } from "react-icons/fa6";
 
 const ObjectiveSalesManComponent = ({ region }) => {
 
-        const options = {
-          chart: {
-            height: "100%",
-            type: "area",
-            fontFamily: "Inter, sans-serif",
-            dropShadow: {
-              enabled: false,
-            },
-            toolbar: {
-              show: false,
-            },
-          },
-          tooltip: {
-            enabled: true,
-            x: {
-              show: false,
-            },
-          },
-          fill: {
-            type: "gradient",
-            gradient: {
-              opacityFrom: 0.55,
-              opacityTo: 0,
-              shade: "#1C64F2",
-              gradientToColors: ["#1C64F2"],
-            },
-          },
-          dataLabels: {
-            enabled: false,
-          },
-          stroke: {
-            width: 6,
-          },
-          grid: {
-            show: false,
-            strokeDashArray: 4,
-            padding: {
-              left: 2,
-              right: 2,
-              top: 0,
-            },
-          },
-          xaxis: {
-            categories: [
-              "01 February",
-              "02 February",
-              "03 February",
-              "04 February",
-              "05 February",
-              "06 February",
-              "07 February",
-            ],
-            labels: {
-              show: false,
-            },
-            axisBorder: {
-              show: false,
-            },
-            axisTicks: {
-              show: false,
-            },
-          },
-          yaxis: {
-            show: false,
-          },
-        };
-      
-        const series = [
-          {
-            name: "New users",
-            data: [6500, 6418, 6456, 6526, 6356, 6456],
-            color: "#1A56DB",
-          },
-        ];
-
-      
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -95,8 +19,11 @@ const ObjectiveSalesManComponent = ({ region }) => {
     const [salesData, setSalesData] = useState("");
     const [selectedPayment, setSelectedPayment] = useState("");
     const [paymentFilterActive, setPaymentActive] = useState(false);
+    const [saleActive, setActiveSaler] = useState(false);
+
     const [vendedores, setVendedores] = useState([]);
     const [salesmen, setSalesmen] = useState({});
+    const [selectedSaler, setSelectedSaler] = useState("");
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -112,9 +39,6 @@ const ObjectiveSalesManComponent = ({ region }) => {
     };
     const handleSubmit = async () => {
         try {
-            const startDate = new Date(formData.startDate);
-            const endDate = new Date(formData.endDate);
-            endDate.setDate(endDate.getDate() + 1);
 
             const response = await axios.post(
                 API_URL + "/whatsapp/sales/objective/sales",
@@ -125,8 +49,8 @@ const ObjectiveSalesManComponent = ({ region }) => {
                     saleLastYear: formData.saleLastYear1,
                     id: formData.ciudad + formData.numberOfBoxes,
                     id_owner: user,
-                    startDate: startDate,
-                    endDate: endDate,
+                    startDate: formData.startDate,
+                    endDate: formData.endDate,
                     salesManId: formData.salesMan
                 },
                 {
@@ -163,6 +87,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
     };
     const fetchObjectiveDataRegion = async (customFilters = {}) => {
         setLoading(true);
+        
         const filters = {
             region,
             startDate: "2025-06-01",
@@ -173,7 +98,6 @@ const ObjectiveSalesManComponent = ({ region }) => {
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/objective/list", filters);
             const data = response.data;
-            console.log(data)
             setObjectiveData(data);
 
             const uniqueIds = [...new Set(data.map(item => item.salesManId || item._id).filter(Boolean))];
@@ -214,6 +138,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
             customFilters.endDate = endDate;
         }
         if (selectedPayment) customFilters.payStatus = selectedPayment;
+        if (selectedSaler) customFilters.salesManId = selectedSaler;
 
         fetchObjectiveDataRegion(customFilters);
     };
@@ -243,10 +168,11 @@ const ObjectiveSalesManComponent = ({ region }) => {
         if (type === "date") {
             setStartDate("");
             setEndDate("");
-            setSelectedPayment("")
+            setSelectedPayment("");
+            setSelectedSaler("")
             setDateFilterActive(false);
             setPaymentActive(false);
-
+            setActiveSaler(false)
         }
     };
     return (
@@ -276,9 +202,21 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                     className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 >
                                     <option value="">Filtrar por: </option>
+                                    <option value="all">Filtrar por todos:</option>
                                     <option value="payment">Filtrar por estado de pago:</option>
                                     <option value="date">Filtrar por fecha:</option>
+                                    <option value="saller">Filtrar por vendedor:</option>
                                 </select>
+                                {selectedFilter === "all" && (
+                                    <div className="flex gap-2">
+
+                                        <PrincipalBUtton onClick={() => {
+                                            clearFilter("date");
+                                            fetchObjectiveDataRegion();
+                                        }} icon={HiFilter}>Filtrar</PrincipalBUtton>
+
+                                    </div>
+                                )}
                                 {selectedFilter === "date" && (
                                     <div className="flex gap-2">
                                         <div className="flex items-center space-x-2">
@@ -306,7 +244,6 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                             className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                         >
                                             <option value="">Selecciona un estado</option>
-                                            <option value="">Mostrar Todos</option>
                                             <option value="Pagado">Pagado</option>
                                             <option value="Pendiente">Pendiente</option>
                                         </select>
@@ -318,10 +255,34 @@ const ObjectiveSalesManComponent = ({ region }) => {
 
                                     </div>
                                 )}
+                                {selectedFilter === "saller" && (
+                                    <div className="flex gap-2">
+                                    <select
+                                        className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                         value={selectedSaler} onChange={(e) => setSelectedSaler(e.target.value)} required>
+                                        <option value="">Seleccione un vendedor</option>
+                                        {vendedores.map((vendedor) => (
+                                            <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
+                                        ))}
+                                    </select>
+                                        <PrincipalBUtton onClick={() => {
+                                            applyFilters();
+                                            setActiveSaler(true);
+                                        }} icon={HiFilter}>Filtrar</PrincipalBUtton>
+                                        </div>
+                                )}
                             </div>
-                            <PrincipalBUtton onClick={() => setModalOpen(true)}>
-                                Nuevo Objetivo
-                            </PrincipalBUtton>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    className="px-4 py-2 bg-white font-bold text-red-700 text-lg rounded-2xl flex items-center gap-2"
+                                >
+                                    <FaFileExport size={24} color="bg-red-700" />
+                                </button>
+
+                                <PrincipalBUtton onClick={() => setModalOpen(true)}>
+                                    Nuevo Objetivo
+                                </PrincipalBUtton>
+                            </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-4">
                             {dateFilterActive && (
@@ -336,6 +297,16 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                     <button onClick={() => clearFilter("date")} className="font-bold">×</button>
                                 </span>
                             )}
+                            {saleActive && (
+                                <span className="bg-green-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                                    Vendedor: {
+                                    vendedores.find(v => v._id === selectedSaler)?.fullName + " " +
+                                    vendedores.find(v => v._id === selectedSaler)?.lastName
+                                    }
+                                    <button onClick={() => clearFilter("date")} className="font-bold">×</button>
+                                </span>
+                                )}
+
                         </div>
 
                         <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
@@ -377,22 +348,22 @@ const ObjectiveSalesManComponent = ({ region }) => {
 
                                                     <td className="px-6 py-4 text-gray-900">{item.numberOfBoxes}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.caja}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.caja.toFixed(2)}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{((item.caja / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{((item.caja / item.numberOfBoxes) * 100).toFixed(2) + "%"}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">{salesman ? `${salesman.fullName} ${salesman.lastName}` : "Sin vendedor"}</td>
                                                     <td className="px-6 py-4 font-medium text-gray-900">
 
-                                                        <div class="flex justify-between mb-1">
-                                                            <span class="text-base font-medium text-green-700 dark:text-white"></span>
-                                                            <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                                        <div className="flex justify-between mb-1">
+                                                            <span className="text-base font-medium text-green-700 dark:text-white"></span>
+                                                            <span className="text-sm font-medium text-gray-900 dark:text-white">
                                                                 {((item.caja / item.numberOfBoxes) * 100).toFixed(0)}%
                                                             </span>
                                                         </div>
-                                                        <div class="w-full bg-gray-300 rounded-full h-1.5 dark:bg-gray-700">
+                                                        <div className="w-full bg-gray-300 rounded-full h-1.5 dark:bg-gray-700">
 
                                                             <div
-                                                                class="bg-green-600 h-1.5 rounded-full"
+                                                                className="bg-green-600 h-1.5 rounded-full"
                                                                 style={{
                                                                     width: `${((item.caja / item.numberOfBoxes) * 100).toFixed(2)}%`,
                                                                 }}
@@ -453,9 +424,9 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                     </tr>
                                 </tfoot>
                             </table>
-                            
+
                         </div>
-                        
+
                         {modalOpen && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                                 <div className="bg-white w-full max-w-4xl p-6 rounded-lg relative">

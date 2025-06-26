@@ -132,12 +132,11 @@ const DeliveryView = () => {
             <div className="flex justify-end items-center space-x-4">
               {salesData.length > 0 && (
                 <button
-                  onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
-                >
-                  <FaFileExport />
-                  Exportar
-                </button>
+                onClick={exportToExcel}
+                className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+              >
+                <FaFileExport color="##726E6E" />
+              </button>
               )}
               <PrincipalBUtton onClick={() =>  navigate("/delivery/creation")} icon={IoPersonAdd}>                Nuevo Repartidor
               </PrincipalBUtton>
@@ -159,7 +158,7 @@ const DeliveryView = () => {
                       <th className="px-6 py-3 uppercase">Correo Electrónico</th>
                       <th className="px-6 py-3 uppercase">Dirección</th>
                       <th className="px-6 py-3 uppercase">Telefono Celular</th>
-                      <th className="px-6 py-3 uppercase">Ciudad</th>
+                      <th className="px-6 py-3 uppercase">Ciudad Asignada</th>
 
                     </tr>
                   </thead>

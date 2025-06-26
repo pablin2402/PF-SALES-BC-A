@@ -33,7 +33,6 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
     };
     const handleSubmit = async () => {
         try {
-            const startDate = new Date(formData.startDate);
             const endDate = new Date(formData.endDate);
             endDate.setDate(endDate.getDate() + 1);
 

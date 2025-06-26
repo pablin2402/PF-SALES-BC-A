@@ -60,7 +60,7 @@ const ClientView = () => {
             }
           }
         );
-        setVendedores(response.data.data);
+        setVendedores(response.data.data); 
       } catch (error) {
         console.error("Error obteniendo vendedores", error);
         setVendedores([]);
@@ -175,13 +175,12 @@ const ClientView = () => {
                   </div>
 
                   <div className="flex justify-end items-center space-x-4">
-                    <button
-                      onClick={exportToExcel}
-                      className="px-4 py-2 bg-white font-bold text-sm text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center gap-5"
-                    >
-                      <FaFileExport />
-                      Exportar
-                    </button>
+                  <button
+                    onClick={exportToExcel}
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                  >
+                    <FaFileExport color="##726E6E" />
+                  </button>
                     
                     <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>                      Nuevo Cliente
                     </PrincipalBUtton>
@@ -274,7 +273,7 @@ const ClientView = () => {
                     <th className="px-6 py-3 uppercase">Dirección</th>
                     <th className="px-6 py-3 uppercase">Telefono Celular</th>
                     <th className="px-6 py-3 uppercase">Vendedor</th>
-                    <th className="px-6 py-3 uppercase">Ciudad</th>
+                    <th className="px-6 py-3 uppercase">Ciudad asignada</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -298,7 +297,7 @@ const ClientView = () => {
                         <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.client_location.city}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                       </tr>
                     ))
                   ) : (

@@ -5,9 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { MdEdit } from "react-icons/md";
 import { HiFilter } from "react-icons/hi";
+
 import PrincipalBUtton from "../Components/PrincipalButton";
 import TextInputFilter from "../Components/TextInputFilter";
-
+import SuccessModal from "../modal/SuccessModal";
+import ErrorModal from "../modal/ErrorModal";
 const ProductView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +37,8 @@ const ProductView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
+  const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
 
   const fetchProducts = async (pageNumber) => {
     setLoading(true);
@@ -55,7 +59,6 @@ const ProductView = () => {
       setTotalPages(response.data.totalPages || 1);
       setItems(response.data.total)
     } catch (error) {
-      console.error("❌ Error al cargar los productos:", error);
     } finally {
       setLoading(false);
     }
@@ -101,12 +104,12 @@ const ProductView = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      alert("Producto actualizado correctamente.");
+      setSuccessModal(true);
       setShowEditModal(false);
       fetchProducts(page);
     } catch (error) {
       console.error("Error al actualizar producto:", error);
-      alert("Hubo un problema al actualizar el producto.");
+      setErrorModal(true);
     }
   };
   return (
@@ -126,7 +129,8 @@ const ProductView = () => {
           <div>
             <div className="flex flex-col w-full gap-4">
               <div className="flex justify-end gap-4">
-                <PrincipalBUtton onClick={() => navigate("/product/creation")} >                  + Crear Producto
+                <PrincipalBUtton onClick={() => navigate("/product/creation")} >                  
+                  + Crear Producto
                 </PrincipalBUtton>
               </div>
               <div className="flex items-center justify-between w-full">
@@ -433,6 +437,12 @@ const ProductView = () => {
         </div>
 
       )}
+       <SuccessModal
+        show={successModal}
+        onClose={() => setSuccessModal(false)}
+        message="Producto actualizado correctamente"
+      />
+      <ErrorModal show={errorModal} onClose={() => setErrorModal(false)} message="Error al actualizar el producto" />
     </div>
   );
 };

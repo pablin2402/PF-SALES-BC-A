@@ -106,7 +106,7 @@ const ClientView = () => {
                 <th className="px-6 py-3 uppercase">Nombre</th>
                 <th className="px-6 py-3 uppercase">Correo Electronico</th>
                 <th className="px-6 py-3 uppercase">Telefono Celular</th>
-                <th className="px-6 py-3 uppercase">Ciudad</th>
+                <th className="px-6 py-3 uppercase">Ciudad Asignada</th>
 
               </tr>
             </thead>

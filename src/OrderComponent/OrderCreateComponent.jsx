@@ -10,6 +10,9 @@ import { MdDelete } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { HiFilter } from "react-icons/hi";
 
+import AlertModal from "../modal/AlertModal";
+import ErrorModal from "../modal/ErrorModal";
+
 import OrderDetailsComponent from "./OrderDetailsComponent";
 import PrincipalBUtton from "../Components/PrincipalButton";
 
@@ -45,11 +48,14 @@ const OrderCreateComponent = () => {
   const [clientes, setClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [tempSearchTerm] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
-  const id_user = localStorage.getItem("id_user");
+  const id_user = localStorage.getItem("id_user");  
 
+  
   const fetchClients = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/list/id", {
@@ -66,7 +72,8 @@ const OrderCreateComponent = () => {
         direction_id: cliente.client_location._id,
         number: cliente.number,
         sales_id: cliente.sales_id,
-        salesMan: cliente.sales_id.fullName
+        salesMan: cliente.sales_id.fullName,
+        region: cliente.region
       }));
   
       setClientes(clientesData);
@@ -92,7 +99,6 @@ const OrderCreateComponent = () => {
               Authorization: `Bearer ${token}`
             }
           });
-          console.log(response)
         setVendedores(response.data.data);
   
       } catch (error) {
@@ -112,6 +118,8 @@ const OrderCreateComponent = () => {
       vendedor: clienteSeleccionado ? clienteSeleccionado.salesMan : "",
       direccion: clienteSeleccionado ? clienteSeleccionado.directionid : "",
       telefono: clienteSeleccionado ? clienteSeleccionado.number : "",
+      region: clienteSeleccionado ? clienteSeleccionado.region : "",
+
     }));
   };
   const handleSearchKeyDown = (e) => {
@@ -218,7 +226,7 @@ const OrderCreateComponent = () => {
   };
   const handleSubmit = async () => {
     if (cart.length === 0) {
-      alert("Debe seleccionar al menos un producto.");
+      setSuccessModal(true);
       return;
     }
     try {
@@ -250,7 +258,7 @@ const OrderCreateComponent = () => {
           id_client: selectedCliente?.value || "No seleccionado",
           salesId: formData.vendedorId,
           orderTrackId: null,
-          region: "TOTAL CBB"
+          region: formData.region  || "No seleccionado",
         },{
         headers: {
           Authorization: `Bearer ${token}`
@@ -259,7 +267,6 @@ const OrderCreateComponent = () => {
         new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
       ]);
       if (orderResponse.status === 200) {
-        alert("Orden guardada exitosamente.");
         setCart([]);
         navigate("/order");
         setFormData({ nombre: "", apellido: "", email: "", direccion: "", telefono: 0, punto: "", vendedor: "", tipopago: '', plazoCredito: 0,vendedorId:'' });
@@ -270,7 +277,7 @@ const OrderCreateComponent = () => {
             async (position) => {
               const lat = position.coords.latitude;
               const lng = position.coords.longitude;
-        
+              console.log(clientId, id_user)
               try {
                 const response = await axios.post(API_URL + "/whatsapp/order/track", {
                   orderId: clientId,
@@ -288,18 +295,18 @@ const OrderCreateComponent = () => {
                 setSalesData(response.data.products || []);
                 setTotalPages(response.data.totalPages || 1);
               } catch (error) {
-                console.error("Error al enviar evento de orden:", error);
+                setErrorModal(true);
               } finally {
                 setLoading(false);
               }
             },
-            (error) => {
-              console.error("No se pudo obtener la ubicación:", error);
+            () => {
+              setErrorModal(true);
               setLoading(false);
             }
           );
         } else {
-          console.warn("La geolocalización no es soportada por este navegador.");
+          setErrorModal(true);
         }
         
       }
@@ -494,9 +501,8 @@ const OrderCreateComponent = () => {
                         <option key={category._id} value={category._id}>{category.categoryName}</option>
                       ))}
                     </select>
-                   
                     <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
-
+                  
                   </div>
                 </div>
                 <div className="max-w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
@@ -513,7 +519,7 @@ const OrderCreateComponent = () => {
                         <button
                           onClick={() => addToCart(item)}
                           href="#"
-                          className="text-[#D3423E] bg-white hover:bg-[#D3423E] hover:text-white focus:ring-4 focus:outline-none focus:ring-[#D3423E] font-bold rounded-full text-l px-2.5 py-2.5 text-center "
+                          className="text-white bg-[#D3423E] focus:ring-4 focus:outline-none focus:ring-[#D3423E] font-bold rounded-full text-l px-2.5 py-2.5 text-center "
                         >
                           <IoMdAdd size={30} />
                         </button>
@@ -668,6 +674,17 @@ const OrderCreateComponent = () => {
                       )}
                       {selectedCliente && (
                         <div className="flex flex-col">
+                          <label className="text-left text-sm font-medium text-gray-900 mb-1">Region</label>
+                          <input
+                            type="text"
+                            value={formData.region}
+                            className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 p-2.5"
+                            readOnly
+                          />
+                        </div>
+                      )}
+                      {selectedCliente && (
+                        <div className="flex flex-col">
                           <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de teléfono</label>
                           <input
                             type="text"
@@ -716,7 +733,7 @@ const OrderCreateComponent = () => {
                                 const newQuantity = Math.max(1, parseInt(e.target.value) || 1);
                                 setCart(cart.map((c, i) => i === index ? { ...c, quantity: newQuantity } : c));
                               }}
-                              className="w-1/6  mr-1 ml-1 text-center border rounded-lg text-gray-900"
+                              className="w-1/6  mr-1 ml-1 text-center border rounded-2xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
                             <input
                               type="number"
@@ -725,7 +742,7 @@ const OrderCreateComponent = () => {
                                 const newPrice = parseFloat(e.target.value) || 0;
                                 setCart(cart.map((c, i) => i === index ? { ...c, price: newPrice } : c));
                               }}
-                              className="w-1/6  mr-1 ml-1 text-center border rounded-lg text-gray-900"
+                              className="w-1/6  mr-1 ml-1 text-center border rounded-2xl text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
                             <span className="w-1/6 text-center font-bold text-gray-900">
                               Bs. {(item.discount || 0).toFixed(2)}
@@ -775,6 +792,13 @@ const OrderCreateComponent = () => {
           </div>
         )}
       </div>
+      <AlertModal
+        show={successModal}
+        onClose={() => setSuccessModal(false)}
+        message="Porfavor seleccione un producto"
+      />
+      <ErrorModal show={errorModal} onClose={() => setErrorModal(false)} message="Error al crear el pedido" />
+
     </div>
   );
 }

@@ -229,10 +229,9 @@ const OrderView = () => {
                 <div className="flex justify-end items-center space-x-4">
                   <button
                     onClick={exportToExcel}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl hover:text-white border-2 border-[#D3423E] hover:bg-[#D3423E] flex items-center gap-5"
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
                   >
                     <FaFileExport color="##726E6E" />
-                    Exportar
                   </button>
                   <PrincipalBUtton onClick={() => handleNewOrderClick()} icon={HiFilter}>Nuevo Pedido</PrincipalBUtton>
                 </div>
@@ -241,7 +240,7 @@ const OrderView = () => {
                 <select
                   value={selectedFilter}
                   onChange={(e) => setSelectedFilter(e.target.value)}
-                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                 >
                   <option value="">Filtrar por: </option>
                   <option value="payment">Filtrar por estado de pago:</option>
@@ -253,7 +252,7 @@ const OrderView = () => {
                 {selectedFilter === "seller" && (
                   <div className="flex gap-2">
                     <select
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                       name="vendedor" value={selectedSaler} onChange={(e) => setSelectedSaler(e.target.value)} required>
                       <option value="">Seleccione un vendedor</option>
                       <option value="">Mostrar Todos</option>
@@ -267,7 +266,7 @@ const OrderView = () => {
                   <div className="flex gap-2">
                     <select
                       value={selectedPaymentType} onChange={(e) => setSelectedPaymentType(e.target.value)}
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Selecciona tipo de pago</option>
                       <option value="">Mostrar Todos</option>
@@ -282,7 +281,7 @@ const OrderView = () => {
                     <select
                       value={selectedPayment}
                       onChange={(e) => setSelectedPayment(e.target.value)}
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
                       <option value="">Selecciona un estado</option>
                       <option value="">Mostrar Todos</option>
@@ -306,7 +305,7 @@ const OrderView = () => {
                 {selectedFilter === "region" && (
                   <div className="flex gap-2">
                     <select
-                      className="text-gray-900 rounded-3xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="text-gray-900 rounded-2xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
                       name="ciudad"
                       value={selectedRegion}
                       onChange={(e) => setSelectedRegion(e.target.value)}
@@ -454,8 +453,8 @@ const OrderView = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                        No se encontraron productos.
+                      <td colSpan="6" className="px-6 py-4 text-center  uppercase text-gray-500">
+                        No se encontraron coincidencias.
                       </td>
                     </tr>
                   )}

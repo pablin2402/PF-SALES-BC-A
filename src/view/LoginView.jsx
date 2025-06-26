@@ -17,10 +17,11 @@ const Login = ({ onLogin }) => {
         email,
         password,
       });
-      console.log(response)
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("id_owner", response.data.usuarioDB.id_owner);
       localStorage.setItem("id_user", response.data.usuarioDB.salesMan);
+      localStorage.setItem("role", response.data.usuarioDB.role);
+      localStorage.setItem("region", response.data.usuarioDB.region);
 
       onLogin(response.data.token);
       navigate("/");

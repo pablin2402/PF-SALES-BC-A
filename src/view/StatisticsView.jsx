@@ -4,8 +4,6 @@ import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 
 import Spinner from "../Components/Spinner";
-import PrincipalBUtton from "../Components/PrincipalButton";
-
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -17,15 +15,14 @@ const StatisticsView = () => {
     const [salesData, setSalesData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [totalPages] = useState(1);
     const [searchTerm] = useState("");
     const [selectedMonth, setSelectedMonth] = useState(null);
 
 
     const [selectedStatus] = useState("");
 
-    const [items, setItems] = useState();
-    const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+    const [items] = useState();
 
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [years, setYears] = useState([]);
@@ -185,10 +182,12 @@ const StatisticsView = () => {
                                         </div>
                                     </div>
                                         <div className="flex justify-end items-center space-x-4">
-                                          
-                                            <PrincipalBUtton onClick={exportToExcel} icon={FaFileExport}>                      
-                                                Exportar
-                                            </PrincipalBUtton>
+                                            <button
+                                                onClick={exportToExcel}
+                                                className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                                            >
+                                                <FaFileExport color="##726E6E" />
+                                            </button>
                                         </div>
                                 
                                 </div>

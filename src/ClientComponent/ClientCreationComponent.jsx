@@ -5,6 +5,8 @@ import { API_URL, GOOGLE_API_KEY } from "../config";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/tienda.png";
 
+import SuccessModal from "../modal/SuccessModal";
+import ErrorModal from "../modal/ErrorModal";
 
 const containerStyle = {
   width: "100%",
@@ -17,10 +19,11 @@ const ClientCreationComponent = () => {
   const [addressNumber, setAddressNumber] = useState({ house_number: "" });
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo: "", identificacion: "0" });
+  const [formData, setFormData] = useState({ nombre: "", apellido: "", email: "", telefono: 0, punto: "", vendedor: "", tipo: "", identificacion: "0", region:"" });
+  const [successModal, setSuccessModal] = useState(false);
+  const [errorModal, setErrorModal] = useState(false);
 
   const [vendedores, setVendedores] = useState([]);
-  const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
 
   const user = localStorage.getItem("id_owner");
@@ -39,7 +42,6 @@ const ClientCreationComponent = () => {
       setAddress(response.data.address);
 
     } catch (error) {
-      setAddress("Error al obtener la dirección");
     }
   };
   const handleMapClick = useCallback((event) => {
@@ -80,7 +82,6 @@ const ClientCreationComponent = () => {
         });
         setVendedores(response.data.data);
       } catch (error) {
-        console.error("obteniendo vendedores", error);
         setVendedores([]);
       }
     };
@@ -91,14 +92,30 @@ const ClientCreationComponent = () => {
   const resetForm = () => {
     setFormData({
       nombre: "", apellido: "", email: "", telefono: 0,
-      punto: "", vendedor: "", tipo: "", identificacion: "0"
+      punto: "", vendedor: "", tipo: "", identificacion: "0", region: ""
     });
     setAddress({ road: "", state: "" });
     setAddressNumber({ house_number: "" });
     setLocation({ lat: -17.3835, lng: -66.1568 });
   };
+  const isFormValid = () => {
+    return (
+      formData.nombre.trim() !== "" &&
+      formData.apellido.trim() !== "" &&
+      formData.email.trim() !== "" &&
+      formData.telefono > 0 &&
+      formData.vendedor.trim() !== "" &&
+      formData.tipo.trim() !== "" &&
+      formData.punto.trim() !== "" &&
+      formData.identificacion.trim() !== "" &&
+      address.state.trim() !== "" &&
+      addressNumber.house_number.trim() !== ""
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isFormValid()) return;
 
     try {
       const userResponse =  await Promise.race([ await axios.post(API_URL + "/whatsapp/maps/id",
@@ -140,7 +157,8 @@ const ClientCreationComponent = () => {
             chat: "",
             directionId: directionId,
             sales_id: formData.vendedor,
-            userCategory: formData.tipo
+            userCategory: formData.tipo,
+            region: formData.region
           }, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -148,20 +166,17 @@ const ClientCreationComponent = () => {
         }
         );
         if (postResponse.status === 200 || postResponse.status === 201) {
-          setShowToast(true);
+          setSuccessModal(true);
           resetForm();
           navigate("/client");
-          setTimeout(() => setShowToast(false), 3000);
         } else {
-          console.error("POST fallido:", postResponse.status);
+          setErrorModal(true);
         }
       } else {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+        setSuccessModal(true);
       }
     } catch (error) {
-      console.error("Error en el proceso", error);
-      alert("Error inesperado");
+      setErrorModal(true);
     }
   };
 
@@ -220,6 +235,22 @@ const ClientCreationComponent = () => {
                   <option value="Restaurante">Restaurante</option>
                 </select>
               </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-left text-sm font-medium text-gray-900">Ciudad de trabajo</label>
+                <select
+                  className="text-gray-900 rounded-2xl p-2.5 bg-gray-50 border border-gray-900"
+                  name="region"
+                  value={formData.region}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccione una ciudad</option>
+                  <option value="TOTAL CBB">Cochabamba</option>
+                  <option value="TOTAL SC">Santa Cruz</option>
+                  <option value="TOTAL LP">La Paz</option>
+                  <option value="TOTAL OR">Oruro</option>
+                </select>
+              </div>
             </div>
             <h2 className="mb-6 mt-6  text-lg text-left font-bold text-gray-900">Ubicación</h2>
             <div className="grid gap-6 sm:grid-cols-2">
@@ -269,26 +300,24 @@ const ClientCreationComponent = () => {
                 </LoadScript>
             </div>
             <button
-              onClick={handleSubmit}
-              className={`mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-2xl bg-[#D3423E] text-white transition`}
-            >
-              GUARDAR
-            </button>
+            onClick={handleSubmit}
+            disabled={!isFormValid()}
+            className={`mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-2xl ${isFormValid() ? "bg-[#D3423E] text-white" : "bg-gray-400 text-white cursor-not-allowed"}`}
+          >
+            GUARDAR
+          </button>
           </form>
         </div>
 
 
       </div>
-      {showToast && (
-        <div className="fixed top-10 right-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm" role="alert">
-          <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
-            <svg className="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
-            </svg>
-          </div>
-          <div className="ms-3 text-xl text-gray-900 font-bold">Cliente registrado correctamente.</div>
-        </div>
-      )}
+      <SuccessModal
+        show={successModal}
+        onClose={() => setSuccessModal(false)}
+        message="Cliente creado exitosamente"
+      />
+      <ErrorModal show={errorModal} onClose={() => setErrorModal(false)} message="Error al crear al cliente" />
+
 
     </div>
   );

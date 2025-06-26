@@ -51,6 +51,7 @@ export default function DeliveryRouteComponent() {
                         Authorization: `Bearer ${token}`
                     }
                 });
+                console.log(response.data.data)
                 setVendedores(response.data.data);
             } catch (error) {
                 console.error("Error fetching products:", error);
@@ -82,7 +83,7 @@ export default function DeliveryRouteComponent() {
         } catch (error) {
             console.error("Error al cargar los marcadores: ", error);
         }
-    }, [page, selectedStatus, user, token]);
+    }, [page, user, token]);
 
     useEffect(() => {
         loadRoute(null, null, "todos");
@@ -139,12 +140,11 @@ export default function DeliveryRouteComponent() {
                 data: {
                     _id: value,
                     id_owner: user,
-                }
-            }, {
+                },
                 headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+                  Authorization: `Bearer ${token}`,
+                },
+              });
             loadRoute(null, null, "todos");
         } catch (error) {
             console.error("Error al eliminar la ruta:", error);

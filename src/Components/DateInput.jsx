@@ -5,11 +5,9 @@ const DateInput = ({ value, min, max, onChange, label }) => {
     const newValue = e.target.value;
 
     if (min && newValue < min) {
-      alert("La fecha debe ser mayor o igual a la fecha mínima permitida");
       return;
     }
     if (max && newValue > max) {
-      alert("La fecha debe ser menor o igual a la fecha máxima permitida");
       return;
     }
 

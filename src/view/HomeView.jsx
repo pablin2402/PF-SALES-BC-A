@@ -51,6 +51,7 @@ const HomeView = () => {
   const fetchOrders = useCallback(async () => {
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
+
     setLoading(true);
     setError(null);
     try {
@@ -178,7 +179,7 @@ const HomeView = () => {
                   </select>
 
                   <select
-                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl"
+                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-2xl"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                   >
@@ -231,13 +232,14 @@ const HomeView = () => {
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">{seller.totalOrders}</td>
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">Bs. {seller.totalAmount.toFixed(2)}</td>
                         <td className="px-6 py-4 font-medium font-semibold text-gray-900">
-                          <button
-                            onClick={exportOrdersToExcel}
-                            className="px-4 py-2 bg-white font-bold text-lg text-[#3A3737] rounded-lg hover:text-white hover:bg-[#D3423E] flex items-center gap-2"
-                          >
-                            <FaFileExport color="##726E6E" />
-                            Exportar
-                          </button>
+                        <button
+                          onClick={exportOrdersToExcel}
+                          className="px-4 py-2 bg-white font-bold text-[#D3423E] text-lg rounded-2xl flex items-center gap-2"
+                        >
+                          <FaFileExport size={24} color="#D3423E" />
+                          
+                        </button>
+
                         </td>
 
                       </tr>
@@ -253,7 +255,6 @@ const HomeView = () => {
               </table>
             </div>
             <ObjectiveSalesManComponent region="TOTAL CBB" />
-
           </div>
         )}
       </div>

@@ -38,8 +38,7 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
           <div>
             <p className="text-gray-900 font-medium text-left">Vendedor:</p>
             <p className="text-gray-700 text-left">
-              {vendedores.find((v) => v._id === formData.vendedor)?.fullName || "No seleccionado"} {" "}
-              {vendedores.find((v) => v._id === formData.vendedor)?.lastName || ""}
+              {vendedores.find((v) => v._id === formData.vendedor) || "No seleccionado"} {" "}
             </p>
           </div>
         </div>
@@ -85,12 +84,9 @@ const OrderDetailsComponent = ({ selectedCliente, formData, vendedores, calcular
             </h3>
           </div>
         </form>
-    
         <PrincipalBUtton onClick={handleSubmit}>GUARDAR</PrincipalBUtton>
-
       </div>
     </div>
   );
 };
-
 export default OrderDetailsComponent;
