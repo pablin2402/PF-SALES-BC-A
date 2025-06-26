@@ -120,7 +120,6 @@ export default function ClientInformationOrdenComponent() {
                 }
             });
             const payments = response.data || [];
-            console.log(payments)
             setOrderData(payments);
         } catch (error) {
             console.error("Error al obtener los pagos", error);

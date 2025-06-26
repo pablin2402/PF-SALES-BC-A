@@ -27,9 +27,11 @@ export default function ClientInformationComponent() {
   const [dateFilterActive, setDateFilterActive] = useState(false);
 
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [items, setItems] = useState(5);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  
   const fetchClientData = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/info/id", {
@@ -77,6 +79,7 @@ export default function ClientInformationComponent() {
       );
       setSalesData(response.data.orders || []);
       setTotalPages(response.data.totalPages);
+      setItems(response.data.items);
     } catch (error) {
       console.error("Error al obtener los productos", error);
     } finally {
@@ -121,7 +124,7 @@ export default function ClientInformationComponent() {
         id_owner: user,
         id_client: idClient,
         page: 1,
-        limit: itemsPerPage,
+        limit: items,
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
@@ -175,7 +178,7 @@ export default function ClientInformationComponent() {
         id_owner: user,
         id_client: idClient,
         page: 1,
-        limit: itemsPerPage,
+        limit: items+1,
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
@@ -381,14 +384,15 @@ export default function ClientInformationComponent() {
                   className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl  flex items-center gap-2"
                 >
                   <FaFileExport color="##726E6E" />
-                  EXCEL
+                  CSV
                 </button>
+             
                 <button
-                  onClick={exportToPDF}
-                  className="px-4 py-2 font-bold text-lg text-white rounded-3xl bg-[#D3423E] flex items-center gap-6"
-                >
-                  PDF
-                </button>
+                    onClick={exportToPDF}
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                  >
+                    <FaFileExport color="##726E6E" /> PDF
+                  </button>
 
               </div>
             </div>

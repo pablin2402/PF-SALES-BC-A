@@ -67,7 +67,6 @@ const OrderPaymentView = () => {
       setSalesData(response.data.data);
       setItems(response.data.pagination.totalRecords);
       setTotalPages(response.data.pagination.totalPages || 1);
-      console.log(response.data.pagination.totalPages)
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -84,7 +83,7 @@ const OrderPaymentView = () => {
       const filters = {
         id_owner: user,
         page: 1,
-        limit: 100000,
+        limit: items,
         clientName: searchTerm,
       };
 

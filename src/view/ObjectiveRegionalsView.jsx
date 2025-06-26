@@ -53,7 +53,6 @@ const ObjectiveRegionalsView = () => {
 
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/objective/region/order", filters);
-            console.log(response.data)
             setSalesData(response.data);
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -73,7 +72,6 @@ const ObjectiveRegionalsView = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log(response.data)
             setSalesNationaData(response.data || []);
         } catch (error) {
         } finally {

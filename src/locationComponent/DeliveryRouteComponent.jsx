@@ -10,6 +10,7 @@ import { DirectionsRenderer } from "@react-google-maps/api";
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { FaFileExport } from "react-icons/fa6";
+import DateInput from "../Components/DateInput";
 
 export default function DeliveryRouteComponent() {
 
@@ -51,7 +52,6 @@ export default function DeliveryRouteComponent() {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                console.log(response.data.data)
                 setVendedores(response.data.data);
             } catch (error) {
                 console.error("Error fetching products:", error);
@@ -78,7 +78,6 @@ export default function DeliveryRouteComponent() {
             setTotalPages(response.data.totalPages);
             setSelectedMarkers(response.data.data);
             setListRoutes(response.data.data);
-            console.log(response.data.data)
             setDirectionsResponse(null);
         } catch (error) {
             console.error("Error al cargar los marcadores: ", error);
@@ -280,18 +279,8 @@ export default function DeliveryRouteComponent() {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            />
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            />
+                            <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+                            <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
                             <button
                                 onClick={() => exportToExcel(listRoutes)}
                                 className="w-10 h-10 flex items-center justify-center text-green-600 hover:text-green-600 transition rounded-md"
@@ -306,10 +295,7 @@ export default function DeliveryRouteComponent() {
                             </button>
                         </div>
                     </div>
-
-
-
-                    <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white" data-inactive-classes="text-gray-500 dark:text-gray-400">
+                    <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white " data-inactive-classes="text-gray-500 dark:text-gray-400">
                         {listRoutes.length > 0 ? (
                             <>
                                 {listRoutes.map((client, idx) => (
@@ -332,9 +318,9 @@ export default function DeliveryRouteComponent() {
                                                     {client.delivery.fullName} {client.delivery.lastName} - {""}{formatDateToLocal(client.startDate)} - {""}
                                                     <span
                                                         className={`
-                                                        ${client.status === "En progreso" ? "bg-green-200 font-bold text-green-800" : ""}
-                                                        ${client.status === "Finalizado" ? "bg-blue-600 font-bold text-white" : ""}
-                                                        ${client.status === "Por iniciar" ? "bg-yellow-100 font-bold text-yellow-800" : ""}
+                                                        ${client.status === "En progreso" ? "bg-green-200 uppercase font-bold text-green-800" : ""}
+                                                        ${client.status === "Finalizado" ? "bg-blue-600 uppercase font-bold text-white" : ""}
+                                                        ${client.status === "Por iniciar" ? "bg-yellow-100 font-bold uppercase text-yellow-800" : ""}
                                                         px-2.5 py-0.5 rounded-full text-sm font-medium
                                                     `}
                                                     >
@@ -414,19 +400,12 @@ export default function DeliveryRouteComponent() {
                                                         client.route.map((route, routeIdx) => (
                                                             <div key={routeIdx} className="p-4 bg-gray-100 rounded-lg border border-gray-400">
                                                                 <div className="flex justify-between">
-                                                                    <span className="font-semibold text-gray-500">Nombre:</span>
-                                                                    <span className="text-gray-900 font-bold ">{route.name}{route.lastName}</span>
+                                                                    <span className="font-semibold text-gray-500">Nombre de la ruta:</span>
+                                                                    <span className="text-gray-900 text-m font-bold ">{route.name+" "+route.lastName}</span>
                                                                 </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="font-semibold text-gray-500">Fecha de visita:</span>
-                                                                    <span className="text-gray-900">{formatDateToLocal(route.visitEndTime)}</span>
-                                                                </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="font-semibold text-gray-500">Tiempo:</span>
-                                                                    <span className="text-gray-900 font-bold ">{route.visitTime}</span>
-                                                                </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="font-semibold text-gray-500">Estado:</span>
+                                                             
+                                                                <div className="flex justify-between mt-2">
+                                                                    <span className="font-semibold text-m text-gray-500">Estado:</span>
                                                                     <span
                                                                         className={`
                                                                         ${route.visitStatus === true ? "bg-green-500 uppercase font-bold text-white" : ""}
@@ -448,7 +427,7 @@ export default function DeliveryRouteComponent() {
                                                 <div className="flex justify-between pt-4">
                                                     <button
                                                         onClick={() => handleSelectRoute(client)}
-                                                        className="text-blue-600 font-bold text-m"
+                                                        className="text-green-600 uppercase font-bold text-m"
                                                     >
                                                         Ver ruta
                                                     </button>
@@ -457,7 +436,7 @@ export default function DeliveryRouteComponent() {
                                                             const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta ruta?");
                                                             if (confirmDelete) deleteRoutes(client._id);
                                                         }}
-                                                        className="text-red-600 font-bold text-m flex items-center gap-1"
+                                                        className="text-red-600 font-bold uppercase text-m flex items-center gap-1"
                                                     >
                                                         <MdDelete className="h-4 w-4" />
                                                         Eliminar

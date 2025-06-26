@@ -23,6 +23,7 @@ export default function SalesManInformationComponent() {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [items, setItems] = useState(1);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -74,6 +75,8 @@ export default function SalesManInformationComponent() {
       );
       setSalesData(response.data.orders || []);
       setTotalPages(response.data.totalPages || 1);
+      setItems(response.data.total || 1);
+
     } catch (error) {
       console.error("Error al obtener los productos", error);
     } finally {
@@ -120,7 +123,7 @@ export default function SalesManInformationComponent() {
         id_owner: user,
         salesId: id,
         page: page,
-        limit: itemsPerPage
+        limit: items
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
@@ -171,7 +174,7 @@ export default function SalesManInformationComponent() {
         id_owner: user,
         salesId: id,
         page: page,
-        limit: itemsPerPage
+        limit: items
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
@@ -349,19 +352,21 @@ export default function SalesManInformationComponent() {
               <div className="flex justify-end items-center space-x-4">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl  flex items-center gap-2"
                 >
                   <FaFileExport color="##726E6E" />
-                  EXCEL
+                  CSV
                 </button>
+             
                 <button
-                  onClick={exportToPDF}
-                  className="px-4 py-2 bg-[#D3423E] font-bold text-lg text-white rounded-3xl flex items-center gap-2"
-                >
-                  PDF
-                </button>
+                    onClick={exportToPDF}
+                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                  >
+                    <FaFileExport color="##726E6E" /> PDF
+                  </button>
 
               </div>
+              
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {dateFilterActive && (

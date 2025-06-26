@@ -118,7 +118,7 @@ const OrderView = () => {
     const filters = {
       id_owner: user,
       page: page,
-      limit: 10000,
+      limit: items,
     };
     if (inputValue) filters.fullName = inputValue;
     if (selectedStatus) filters.status = selectedStatus;
@@ -453,14 +453,14 @@ const OrderView = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center  uppercase text-gray-500">
+                      <td colSpan="6" className="px-6 py-4 text-center uppercase text-gray-500">
                         No se encontraron coincidencias.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
                 <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
               </div>
               {totalPages > 1 && (

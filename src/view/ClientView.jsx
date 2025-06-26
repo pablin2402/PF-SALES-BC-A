@@ -81,7 +81,6 @@ const ClientView = () => {
     };
     if (selectedSaler) filters.sales_id = selectedSaler;
     if (selectedRegion) filters.region = selectedRegion;
-    console.log(filters)
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/list/id", filters, {
         headers: {

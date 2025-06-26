@@ -13,6 +13,7 @@ import { MdDelete } from "react-icons/md";
 import PrincipalBUtton from "../Components/PrincipalButton";
 import TextInputFilter from "../Components/TextInputFilter";
 import AlertModal from "../modal/AlertModal";
+import DateInput from "../Components/DateInput";
 
 export default function DeliveryRouteView() {
   const navigate = useNavigate();
@@ -312,51 +313,7 @@ export default function DeliveryRouteView() {
                   tabIndex={0}
                   style={{ minHeight: "280px" }}
                 >
-                  <div className="absolute top-2 right-2 z-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenDropdownId(openDropdownId === client._id ? null : client._id);
-                      }}
-                      className="text-gray-700 hover:text-gray-900"
-                    >
-                      <BsThreeDotsVertical size={20} />
-                    </button>
-
-                    {openDropdownId === client._id && (
-                      <div
-                        className="z-10 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 absolute right-0 mt-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ul className="py-2" aria-labelledby="dropdownButton">
-                          <li>
-                            <button
-                              onClick={() => console.log("Asignar repartidor", client._id)}
-                              className="block w-full font-bold text-left px-4 py-2 text-m text-gray-900"
-                            >
-                              Asignar repartidor
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={() => console.log("Reprogramar pedido", client._id)}
-                              className="block w-full font-bold text-left px-4 py-2 text-m text-gray-900 "
-                            >
-                              Reprogramar pedido
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              onClick={() => console.log("Cancelar pedido", client._id)}
-                              className="block w-full text-left font-bold px-4 py-2 text-m text-red-700 "
-                            >
-                              Cancelar pedido
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  </div>
+                 
                   <span className="absolute top-2 left-2 text-gray-900 font-bold">
                     {client.orderStatus === "deliver" && (
                       <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
@@ -620,7 +577,7 @@ export default function DeliveryRouteView() {
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Crear Ruta
                 </h3>
-                <button type="button" onClick={() => setIsOpen(false)} className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
+                <button type="button" onClick={() => setIsOpen(false)} className="end-2.5 text-gray-700 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
                   <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                     <path stroke="currentColor" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                   </svg>
@@ -637,37 +594,28 @@ export default function DeliveryRouteView() {
                       placeholder="Nombre de la ruta"
                       value={routeName}
                       onChange={(e) => setRouteName(e.target.value)}
-                      className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
+                      className="w-full  px-3 py-2 border text-gray-900 rounded-2xl text-sm   focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
                   <div className="text-left">
                     <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de inicio</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full p-2 border text-gray-900 rounded-2xl mb-2"
-                    />
+                      <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
                   </div>
                   <div className="text-left">
-                    <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de fin</label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full p-2 border text-gray-900 rounded-2xl mb-4"
-                    />
+                    <label className="block mb-2 text-m font-medium text-gray-900 ">Fecha de fin</label>
+                    <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <button
+                  <div className="w-full">
+                  <button
                       type="button"
                       onClick={() => handleCreateRoute()}
                       disabled={!routeName || !startDate || !endDate}
-                      className={`px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${!routeName || !startDate || !endDate
+                      className={`w-full  px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${!routeName || !startDate || !endDate
                         ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                         : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
                         }`}                  >
-                      Crear
+                      Crear Ruta
                     </button>
                   </div>
                 </form>

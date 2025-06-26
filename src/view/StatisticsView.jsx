@@ -50,7 +50,6 @@ const StatisticsView = () => {
         axios.post(API_URL + "/whatsapp/order/products/analysis")
             .then((res) => {
                 setProducts(res.data);
-                console.log(res.data)
             })
             .catch((err) => console.error('Error al obtener predicciones:', err));
     }, []);

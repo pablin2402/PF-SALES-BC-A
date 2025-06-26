@@ -133,132 +133,126 @@ const HomeView = () => {
   };
 
   return (
-    <div className="bg-white max-w-screen p-5">
-      <div className="ml-10 mr-10 relative overflow-x-auto">
-        {loading ? (
-          <p className="text-center text-gray-500">
-            <div className="flex justify-center items-center h-64">
-              <div role="status">
-                <svg aria-hidden="true" className="inline w-10 h-10 text-gray-200 animate-spin dark:text-gray-600 fill-red-500" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                  <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                </svg>
-                <span className="sr-only">Loading...</span>
-              </div>
-            </div>
-          </p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
-        ) : (
-          <div>
-            <div className="flex items-center justify-between w-full mt-5 mb-10">
-              <h2 className="text-2xl font-bold text-gray-900">Reporte de ventas</h2>
-            </div>
-            <div className="flex items-center justify-between w-full mb-4">
-              <div className="flex gap-2">
+    <div className="bg-white w-full min-h-screen p-4 sm:p-5">
+    <div className="mx-auto w-full max-w-7xl overflow-x-auto">
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div role="status">
+            <svg className="w-10 h-10 text-gray-200 animate-spin fill-red-500" viewBox="0 0 100 101">
+              <path d="M100 50.59..." fill="currentColor" />
+              <path d="M93.97 39.04..." fill="currentFill" />
+            </svg>
+            <span className="sr-only">Loading...</span>
+          </div>
+        </div>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
+      ) : (
+        <div className="flex flex-col space-y-6">
+          <div className="flex justify-between items-start sm:items-center mt-2 sm:mt-5">
+            <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Reporte de ventas</h2>
+          </div>
+  
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <select
+              className="p-2 text-sm text-gray-900 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="monthYear">Filtrar por Mes y Año</option>
+              <option value="dateRange">Filtrar por Rango de Fechas</option>
+            </select>
+  
+            {filterType === "monthYear" ? (
+              <div className="flex gap-2 flex-wrap">
                 <select
-                  className="p-2 text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500  rounded-2xl"
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
+                  className="p-2 text-sm font-bold text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500" 
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
                 >
-                  <option value="monthYear">Filtrar por Mes y Año</option>
-                  <option value="dateRange">Filtrar por Rango de Fechas</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <select
+                  className="p-2 text-sm font-bold text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  {months.map((month) => (
+                    <option key={month.value} value={month.value}>{month.label}</option>
+                  ))}
                 </select>
               </div>
-
-              {filterType === "monthYear" ? (
-                <div className="flex gap-2">
-                  <select
-                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl"
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                  >
-                    {years.map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-
-                  <select
-                    className="p-2 font-bold text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500 font-bold rounded-2xl"
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                  >
-                    {months.map((month) => (
-                      <option key={month.value} value={month.value}>{month.label}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    className="p-2 font-bold text-gray-700  rounded-lg"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                  <input
-                    type="date"
-                    className="p-2 font-bold text-gray-700 rounded-lg"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                  <button
-                    className="px-5 py-2.5 bg-white font-bold text-lg text-[#D3423E] rounded-lg hover:bg-gray-100 rounded-2xl hover:text-[#D3423E] flex items-center gap-2 "
-                    onClick={fetchOrders}
-                  >
-                    <FaFilter />
-                    Filtrar
-                  </button>
-                </div>
-              )}
-
-            </div>
-            <div className="mt-5 border border-gray-400 rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 shadow-xl rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                  <tr>
-                    <th className="px-6 py-3 font-bold uppercase">Vendedor</th>
-                    <th className="px-6 py-3 font-bold uppercase">Número de Pedidos</th>
-                    <th className="px-6 py-3 font-bold uppercase">Monto Total Vendido</th>
-                    <th className="px-6 py-3 font-bold uppercase"></th>
-
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesBySeller.length > 0 ? (
-                    salesBySeller.map((seller) => (
-                      <tr key={seller.sellerName} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                        <td className="px-6 py-4 font-medium font-semibold text-gray-900">{seller.sellerName}</td>
-                        <td className="px-6 py-4 font-medium font-semibold text-gray-900">{seller.totalOrders}</td>
-                        <td className="px-6 py-4 font-medium font-semibold text-gray-900">Bs. {seller.totalAmount.toFixed(2)}</td>
-                        <td className="px-6 py-4 font-medium font-semibold text-gray-900">
+            ) : (
+              <div className="flex gap-2 flex-wrap">
+                <input
+                  type="date"
+                  className="p-2 text-sm font-semibold  text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <input
+                  type="date"
+                  className="p-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+                <button
+                  onClick={fetchOrders}
+                  className="px-4 py-2 text-sm font-bold bg-white text-[#D3423E] border border-red-400 rounded-2xl hover:bg-gray-100 flex items-center gap-1"
+                >
+                  <FaFilter />
+                  Filtrar
+                </button>
+              </div>
+            )}
+          </div>
+  
+          <div className="mt-5 border border-gray-300 rounded-xl overflow-x-auto">
+            <table className="min-w-full text-xs sm:text-sm text-left text-gray-500">
+              <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200">
+                <tr>
+                  <th className="px-4 py-3 font-bold uppercase">Vendedor</th>
+                  <th className="px-4 py-3 font-bold uppercase">Pedidos</th>
+                  <th className="px-4 py-3 font-bold uppercase">Total Vendido</th>
+                  <th className="px-4 py-3 font-bold uppercase">Exportar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesBySeller.length > 0 ? (
+                  salesBySeller.map((seller) => (
+                    <tr key={seller.sellerName} className="bg-white border-b hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900">{seller.sellerName}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{seller.totalOrders}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">Bs. {seller.totalAmount.toFixed(2)}</td>
+                      <td className="px-4 py-3">
                         <button
                           onClick={exportOrdersToExcel}
-                          className="px-4 py-2 bg-white font-bold text-[#D3423E] text-lg rounded-2xl flex items-center gap-2"
+                          className="p-2 bg-white font-bold text-[#D3423E] rounded-2xl flex items-center gap-1"
                         >
-                          <FaFileExport size={24} color="#D3423E" />
-                          
+                          <FaFileExport size={20} />
                         </button>
-
-                        </td>
-
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
-                        No hay datos disponibles.
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <ObjectiveSalesManComponent region="TOTAL CBB" />
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-4 py-4 text-center text-gray-500">
+                      No hay datos disponibles.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+  
+          <ObjectiveSalesManComponent region="TOTAL CBB" />
+        </div>
+      )}
     </div>
+  </div>
+  
   );
 }
 

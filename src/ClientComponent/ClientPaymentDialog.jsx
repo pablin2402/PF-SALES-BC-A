@@ -81,7 +81,6 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
         onSave();
         setPaymentData({ amount: '', payer: '' });
         setFile(null);
-        console.log(orderResponse)
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {

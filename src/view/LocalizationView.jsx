@@ -24,8 +24,9 @@ export default function LocalizationView() {
   const [selectedSalesmen, setSelectedSalesmen] = useState("");
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
-  const [setGoogleMaps] = useState(null);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [googleMaps, setGoogleMaps] = useState(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
     id: "google-map-script",
@@ -66,7 +67,6 @@ export default function LocalizationView() {
 
   const loadMarkersFromAPI = async () => {
     try {
-      console.log(selectedSalesmen)
       const response = await axios.post(API_URL + "/whatsapp/maps/list/id", {
         id_owner: user,
         userCategory: selectedCategories,

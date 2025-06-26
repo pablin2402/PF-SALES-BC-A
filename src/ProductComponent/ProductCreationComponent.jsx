@@ -82,7 +82,6 @@ const SalesView = () => {
           );
           const priceResponse = await Promise.race([pricePromise, new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))]);
           if (priceResponse.status === 200) {
-                console.log(priceResponse)   
                 const directionId = priceResponse.data.id;
                 const name = priceResponse.data.productId;
                 await axios.post(API_URL + "/whatsapp/product",

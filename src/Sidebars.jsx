@@ -1,4 +1,4 @@
-import {HiOutlineUserGroup, HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineChartBar, HiOutlineMap, HiOutlineUser } from 'react-icons/hi';
+import { HiOutlineUserGroup, HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineChartBar, HiOutlineMap, HiOutlineUser } from 'react-icons/hi';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogOut } from "react-icons/fi";
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ export default function Sidebars() {
   const isSales = role === "SALES";
 
   return (
-    <div className="h-screen Sidebar w-60 fixed top-0 left-0 bg-white overflow-y-auto border-r-2 border-black-700 flex flex-col">
+    <div className="Sidebar fixed top-0 left-0 h-screen bg-white border-r-2 border-black-700 w-full md:w-60 z-50 overflow-y-auto flex flex-col">
       <div className="px-0 py-0 flex-1">
         <ul className="mt-4 space-y-2 border-t border-gray-200 pt-4 first:mt-0 first:border-t-0 first:pt-0 text-white">
           <Link to="/">

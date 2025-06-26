@@ -75,7 +75,6 @@ export default function ShowRouteComponent() {
             setTotalPages(response.data.totalPages);
             setSelectedMarkers(response.data.data);
             setListRoutes(response.data.data);
-            console.log(response.data.data)
             setDirectionsResponse(null);
         } catch (error) {
             console.error("Error al cargar los marcadores: ", error);

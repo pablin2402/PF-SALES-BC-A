@@ -277,7 +277,6 @@ const OrderCreateComponent = () => {
             async (position) => {
               const lat = position.coords.latitude;
               const lng = position.coords.longitude;
-              console.log(clientId, id_user)
               try {
                 const response = await axios.post(API_URL + "/whatsapp/order/track", {
                   orderId: clientId,

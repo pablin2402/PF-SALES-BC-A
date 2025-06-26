@@ -67,7 +67,6 @@
     };
     const handleSubmit = async (e) => {
       e.preventDefault();
-      console.log(formData)
       try {
         const userResponse = await Promise.race([
           axios.post(API_URL + "/whatsapp/user", {

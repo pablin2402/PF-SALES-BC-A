@@ -106,7 +106,6 @@ export default function CreateRouteComponent() {
       });
       setMarkers(response.data.users);
       setFilteredData(response.data.users);
-      console.log(response)
 
     } catch (error) {
       console.error("Error al cargar los marcadores: ", error);
@@ -384,18 +383,21 @@ export default function CreateRouteComponent() {
                       className="w-full p-2 border text-gray-900 rounded-2xl mb-4"
                     />
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleCreateRoute()}
-                      disabled={!routeName || !startDate || !endDate}
-                      className={`px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${!routeName || !startDate || !endDate
-                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                          : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
-                        }`}                  >
-                      Crear
-                    </button>
-                  </div>
+                  <div className="w-full">
+  <button
+    type="button"
+    onClick={() => handleCreateRoute()}
+    disabled={!routeName || !startDate || !endDate}
+    className={`w-full px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${
+      !routeName || !startDate || !endDate
+        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+        : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
+    }`}
+  >
+    Crear
+  </button>
+</div>
+
                 </form>
               </div>
 
