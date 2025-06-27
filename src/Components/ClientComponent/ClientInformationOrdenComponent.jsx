@@ -484,17 +484,18 @@ export default function ClientInformationOrdenComponent() {
                                     <span className="absolute flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full -start-3 ring-8 ring-white">
                                         <div
                                             className={`flex items-center justify-center w-10 h-10 rounded-full ${getColor(
-                                                event.triggeredBySalesman?.fullName,
-                                                event.triggeredBySalesman?.lastName
+                                                event.triggeredBySalesman?.fullName || event.triggeredByDelivery?.fullName,
+                                                event.triggeredBySalesman?.lastName || event.triggeredByDelivery?.lastName
                                             )}`}
                                         >
                                             <span className="font-medium text-white">
                                                 {getInitials(
-                                                    event.triggeredBySalesman?.fullName,
-                                                    event.triggeredBySalesman?.lastName
+                                                    event.triggeredBySalesman?.fullName || event.triggeredByDelivery?.fullName,
+                                                    event.triggeredBySalesman?.lastName || event.triggeredByDelivery?.lastName
                                                 )}
                                             </span>
                                         </div>
+
                                     </span>
 
                                     <div className="p-8 ml-4 bg-white border border-gray-200 rounded-lg shadow-xs dark:bg-gray-700 dark:border-gray-600">
@@ -530,6 +531,28 @@ export default function ClientInformationOrdenComponent() {
                                                                         : "Alguien"}
                                                         </strong>{" "}
                                                         ha ingresado un pago
+                                                    </div>
+                                                )}
+                                                 {event.eventType === "Ha aprobado un pago" && (
+                                                    <div>
+                                                    <strong>
+                                                        {event.triggeredBySalesman?.fullName && event.triggeredBySalesman?.lastName
+                                                            ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                                                            : "Un administrador"}
+                                                    </strong>{" "}
+                                                    ha aprobado un pago
+
+                                                </div>
+                                                )}
+                                                {event.eventType === "Ha sido asignado como repartidor" && (
+                                                    <div>
+                                                        <strong>
+                                                            {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                                                                ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                                                                : "Un repartidor"}
+                                                        </strong>{" "}
+                                                        ha sido asignado como repartidor.
+
                                                     </div>
                                                 )}
                                             </div>

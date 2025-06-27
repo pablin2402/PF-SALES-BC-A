@@ -305,7 +305,7 @@ export default function SalesManInformationComponent() {
             <div className="w-full relative bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
               <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
                 <img
-                  src={client.profileImage || "https://via.placeholder.com/150"}
+                  src={client.identificationImage || "https://via.placeholder.com/150"}
                   alt={client.fullName}
                   className="w-full h-full object-cover"
                 />

@@ -7,7 +7,7 @@ import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
-const SalesManView = () => {
+const AdminView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,55 +22,33 @@ const SalesManView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
-  const fetchProducts = async (pageNumber) => {
+  const fetchProducts = async () => {
     setLoading(true);
     setError(null);
     try {
       const filters = {
         id_owner: user,
-        page: pageNumber,
-        limit: itemsPerPage,
-        searchTerm: searchTerm
       };
-      const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+      const response = await axios.post(API_URL + "/whatsapp/administrator/list",
         filters, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       }
       );
-      setSalesData(response.data.data);
-      setTotalPages(response.data.totalPages);
-      setItems(response.data.items);
+      console.log(response.data)
+      setSalesData(response.data);
     } catch (error) {
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
-  const handleToggle = async (newStatus, id) => {
-    try {
-      await axios.put(API_URL + "/whatsapp/salesman/status", {
-        _id: id,
-        active: newStatus,
-      },{
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      fetchProducts(1);
-    } catch (error) {
-      console.error("Error al cambiar estado", error);
-    }
-  };
-
   useEffect(() => {
     fetchProducts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
-  const goToClientDetails = (client) => {
-    navigate(`/sales/${client._id}`, { state: { client } });
-  };
+
   if (loading) return <p className="text-center">Cargando datos...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
   const getInitials = (name, lastName) => {
@@ -107,71 +85,53 @@ const SalesManView = () => {
 
           </div>
           <div className="flex justify-end items-center space-x-4">
-
-            <PrincipalBUtton onClick={() => navigate("/sales/create")} icon={IoPersonAdd}>
-              Nuevo Vendedor
+            <PrincipalBUtton onClick={() => navigate("/admin/create")} icon={IoPersonAdd}>           
+              Nuevo Administrador
             </PrincipalBUtton>
           </div>
         </div>
-
-
         <div className="mt-5 border border-gray-400 rounded-xl">
           <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
-            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-              <tr>
+          <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+          <tr>
                 <th className="px-6 py-3"></th>
                 <th className="px-6 py-3 uppercase">Nombre</th>
                 <th className="px-6 py-3 uppercase">Correo Electronico</th>
                 <th className="px-6 py-3 uppercase">Telefono Celular</th>
                 <th className="px-6 py-3 uppercase">Ciudad Asignada</th>
-                <th className="px-6 py-3 uppercase">Estado</th>
-
               </tr>
             </thead>
             <tbody>
               {salesData.length > 0 ? (
                 salesData.map((item) => (
-                  <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      <div
-                        className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
-                      >
-                        <span className="font-medium text-white">
-                          {getInitials(item.fullName, item.lastName)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{item.fullName + " " + item.lastName}</td>
-                    <td className="px-6 py-4 text-gray-900">{item.email}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{item.phoneNumber}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      <label  onClick={(e) => e.stopPropagation()} className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={item.active}
-                          onChange={() => handleToggle(!item.active, item._id)}
-
-                        />
-                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-400 rounded-full peer peer-checked:bg-green-500 transition-colors duration-300">
-                          <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
-                        </div>                    </label>
-                    </td>
+                  <tr  key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                     <td className="px-6 py-4 font-medium text-gray-900">
+                            <div
+                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.salesId.fullName, item.salesId.lastName)}`}
+                            >
+                              <span className="font-medium text-white">
+                                {getInitials(item.salesId.fullName, item.salesId.lastName)}
+                              </span>
+                            </div>
+                          </td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
+                    <td className="px-6 py-4 text-gray-900">{item.salesId.email}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{item.salesId.phoneNumber}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{item.salesId.region}</td>
 
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No se encontraron clientes.
+                    No se encontraron administradores.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
           <div className="flex justify-between px-6 py-4 text-sm text-gray-700 rounded-b-2xl bg-gray-200 border-t lg mt-2 border-gray-300">
-            <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
+          <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
           </div>
           {totalPages > 1 && searchTerm === "" && (
             <div className="flex justify-between items-center px-6 pb-4">
@@ -254,4 +214,4 @@ const SalesManView = () => {
   );
 };
 
-export default SalesManView;
+export default AdminView;

@@ -4,6 +4,7 @@ import HomeView from "./view/HomeView";
 import LoginView from "./view/LoginView";
 import SalesManView from "./view/SalesManView";
 
+import AdminView from "./view/AdminView";
 import ProductView from "./view/ProductView";
 import ClientView from "./view/ClientView";
 import OrderView from "./view/OrderView";
@@ -21,6 +22,7 @@ import ClientCreationComponent from "./Components/ClientComponent/ClientCreation
 import ClientInformationComponent from "./Components/ClientComponent/ClientInformationComponent";
 import ClientInformationOrdenComponent from "./Components/ClientComponent/ClientInformationOrdenComponent";
 import DeliveryRouteComponent from "./Components/locationComponent/DeliveryRouteComponent";
+import AdministrationCreationComponent from "./Components/ClientComponent/AdministrationCreationComponent";
 
 import SalesManCreationComponent from "./Components/ClientComponent/SalesManCreationComponent";
 import SalesManInformationComponent from "./Components/ClientComponent/SalesManInformationComponent";
@@ -69,8 +71,10 @@ export default function AppRoutes() {
             </Route>
             <Route element={<ClientsLayout />}>
               <Route path="/client" element={<ClientView />} />
+              <Route path="/admin" element={<AdminView />} />
               <Route path="/sales/client" element={<SalesManView />} />
               <Route path="/delivery/list" element={<DeliveryView />} />
+              <Route path="/admin/create" element={<AdministrationCreationComponent />} />
               <Route path="/sales/create" element={<SalesManCreationComponent />} />
               <Route path="/sales/:id" element={<SalesManInformationComponent />} />
               <Route path="/client/:id" element={<ClientInformationComponent />} />

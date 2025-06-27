@@ -28,7 +28,28 @@ const ClientCreationComponent = () => {
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadedUrl, setUploadedUrl] = useState("");
 
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+  const uploadImage = async () => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+  
+    const res = await axios.post(API_URL + "/whatsapp/upload/image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    setUploadedUrl(res.data.imageUrl);
+    console.log("URL de imagen:", res.data.imageUrl);
+
+
+    return res.data.imageUrl;
+  };
+      
   const generateUniqueId = () => {
     return `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
@@ -118,6 +139,8 @@ const ClientCreationComponent = () => {
     if (!isFormValid()) return;
 
     try {
+      const imageUrl = imageFile ? await uploadImage() : ""; 
+
       const userResponse = await Promise.race([await axios.post(API_URL + "/whatsapp/maps/id",
         {
           sucursalName: formData.punto,
@@ -158,7 +181,9 @@ const ClientCreationComponent = () => {
             directionId: directionId,
             sales_id: formData.vendedor,
             userCategory: formData.tipo,
-            region: formData.region
+            region: formData.region,
+            identificationImage:imageUrl
+
           }, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -271,7 +296,16 @@ const ClientCreationComponent = () => {
                 <input name="house_number" value={addressNumber.house_number} onChange={handleChangeLocationNumber} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl p-2.5" placeholder="Número de casa" required />
               </div>
             </div>
-
+            <div className="flex flex-col">
+              <h2 className="mt-8 mb-2 text-lg font-bold text-left text-gray-900">Adjunta una foto del lugar del punto de venta</h2>
+              <input
+                className="block w-full text-gray-900 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-[#D3423E] focus:outline-none"
+                id="user_avatar"
+                type="file"
+                accept=".svg,.png,.jpg,.jpeg"
+                onChange={handleFileChange}              />
+              <p className="mt-2 text-sm text-gray-500"><span className="font-semibold">Haz clic para subir</span> SVG, PNG o JPG</p>
+            </div>
             <div className="flex flex-col sm:col-span-2">
               <h2 className="mt-6 mb-6 text-lg text-left font-bold text-gray-900">Ubicación del Punto</h2>
               <LoadScript googleMapsApiKey={GOOGLE_API_KEY}

@@ -162,7 +162,7 @@ export default function CreateRouteComponent() {
           _id: location._id,
           name: location.name,
           lastName: location.lastName,
-          profilePicture: location.profilePicture,
+          identificationImage: location.identificationImage,
           client_location: location.client_location,
           visitStatus: false,
           visitTime: null,
@@ -210,7 +210,7 @@ export default function CreateRouteComponent() {
                   >
                     <img
                       className="w-[120px] h-[120px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
-                      src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
+                      src={client.identificationImage || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
                       alt={client.name || "Cliente"}
                     />
                     <div className="flex flex-col justify-between leading-normal">
@@ -313,7 +313,7 @@ export default function CreateRouteComponent() {
               >
                 <img
                   className="w-16 h-16 object-cover rounded-md"
-                  src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
+                  src={client.identificationImage || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
                   alt={client.name}
                 />
                 <div className="flex flex-col justify-between leading-normal">

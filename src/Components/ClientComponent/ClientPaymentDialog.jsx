@@ -15,6 +15,28 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
   const total = totalGeneral - totalPaid;
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadedUrl, setUploadedUrl] = useState("");
+
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+  const uploadImage = async () => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+  
+    const res = await axios.post(API_URL + "/whatsapp/upload/image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    setUploadedUrl(res.data.imageUrl);
+    console.log("URL de imagen:", res.data.imageUrl);
+
+
+    return res.data.imageUrl;
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "amount") {
@@ -29,9 +51,6 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
     setPaymentData({ ...paymentData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
   /*      
   const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
       try {
@@ -54,74 +73,86 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
           console.error("❌ Error al registrar pago en blockchain:", error);
       }
   }*/
-  const handleSavePayment = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("saleImage", file);
-      formData.append("total", paymentData.amount);
-      formData.append("note", paymentData.payer);
-      formData.append("orderId", orderId);
-      formData.append("numberOrden", "");
-      formData.append("paymentStatus", "paid");
-      formData.append("id_client", idClient);
-      formData.append("sales_id", salesID);
-      formData.append("id_owner", user);
-      const orderResponse = await Promise.race([
-        await axios.post(API_URL + "/whatsapp/order/pay",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`
+      const handleSavePayment = async () => {
+        try {
+          let imageUrl = "";
+      
+          if (imageFile) {
+            imageUrl = await uploadImage();
+      
+            if (!imageUrl || typeof imageUrl !== "string" || imageUrl === "null") {
+              console.error("No se pudo obtener la URL de la imagen");
+              return; 
             }
-          }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
-      ]);
-      if (orderResponse.status === 200) {
-        onSave();
-        setPaymentData({ amount: '', payer: '' });
-        setFile(null);
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const lat = position.coords.latitude;
-              const lng = position.coords.longitude;
-
-              try {
-                await axios.post(API_URL + "/whatsapp/order/track", {
-                  orderId: orderId,
-                  eventType: "Pago Ingresado",
-                  triggeredBySalesman: id_user,
-                  triggeredByDelivery: "",
-                  triggeredByUser: "",
-                  location: { lat, lng }
-                }, {
-                  headers: {
-                    Authorization: `Bearer ${token}`
-                  }
-                });
-
-              } catch (error) {
-                console.error("Error al enviar evento de orden:", error);
-              } finally {
+          }
+      
+          const formData = new FormData();
+          formData.append("saleImage", imageUrl);
+          formData.append("total", paymentData.amount);
+          formData.append("note", paymentData.payer);
+          formData.append("orderId", orderId);
+          formData.append("numberOrden", "");
+          formData.append("paymentStatus", "paid");
+          formData.append("id_client", idClient);
+          formData.append("sales_id", salesID);
+          formData.append("id_owner", user);
+      
+          const orderResponse = await Promise.race([
+            axios.post(API_URL + "/whatsapp/order/pay", formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`
               }
-            },
-            (error) => {
-              console.error("No se pudo obtener la ubicación:", error);
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+          ]);
+      
+          if (orderResponse.status === 200) {
+            onSave();
+            setPaymentData({ amount: '', payer: '' });
+            setFile(null);
+      
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+      
+                  try {
+                    await axios.post(API_URL + "/whatsapp/order/track", {
+                      orderId,
+                      eventType: "Pago Ingresado",
+                      triggeredBySalesman: id_user,
+                      triggeredByDelivery: "",
+                      triggeredByUser: "",
+                      location: { lat, lng }
+                    }, {
+                      headers: {
+                        Authorization: `Bearer ${token}`
+                      }
+                    });
+      
+                  } catch (error) {
+                    console.error("Error al enviar evento de orden:", error);
+                  }
+                },
+                (error) => {
+                  console.error("No se pudo obtener la ubicación:", error);
+                }
+              );
+            } else {
+              console.warn("La geolocalización no es soportada por este navegador.");
             }
-          );
-        } else {
-          console.warn("La geolocalización no es soportada por este navegador.");
+      
+            onClose();
+          }
+      
+        } catch (error) {
+          console.error("Error al registrar el pago", error);
         }
-        onClose();
-      }
-      //await registrarPagoEnBlockchain(orderId, paymentData.payer, paymentData.amount);
-
-
-    } catch (error) {
-      console.error("Error al registrar el pago", error);
-    }
-  };
+      };
+      
+      
 
   if (!isOpen) return null;
 

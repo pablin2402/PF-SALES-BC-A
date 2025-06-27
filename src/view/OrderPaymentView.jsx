@@ -151,7 +151,7 @@ const OrderPaymentView = () => {
     }
     
   };
-  const uploadProducts = async (id) => {
+  const uploadProducts = async (id, orderId1) => {
     try {
       const response = await axios.put(
         API_URL + "/whatsapp/order/pay/status/id",
@@ -167,6 +167,18 @@ const OrderPaymentView = () => {
         }
       );
       if (response.status === 200) {
+        await axios.post(API_URL + "/whatsapp/order/track", {
+          orderId: orderId1._id, 
+          eventType: "Ha aprobado un pago",
+          triggeredBySalesman: id_user,
+          triggeredByDelivery: "",
+          triggeredByUser: "",
+          location: { lat: 0, lng: 0 }
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         fetchProducts(1);
         setShowEditModal(false);
       }
@@ -583,7 +595,7 @@ const OrderPaymentView = () => {
                       Cancelar
                     </button>
                     <button
-                      onClick={() => uploadProducts(selectedItem._id)}
+                      onClick={() => uploadProducts(selectedItem._id, selectedItem.orderId)}
                       className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
                     >
                       Guardar

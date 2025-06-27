@@ -16,6 +16,11 @@ const ClientsLayout = () => {
                     <div className="hidden w-full md:block md:w-auto" id="navbar-default">
                         <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
                             <li>
+                                <a href="/admin" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                    Administradores
+                                </a>
+                            </li>
+                            <li>
                                 <a href="/client" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
                                     Clientes
                                 </a>

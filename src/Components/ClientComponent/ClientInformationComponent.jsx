@@ -310,7 +310,7 @@ export default function ClientInformationComponent() {
             <div className="w-full relative bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
               <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
                 <img
-                  src={client[0].profilePicture || "https://via.placeholder.com/150"}
+                  src={client[0].identificationImage || "https://via.placeholder.com/150"}
                   alt={client[0].name}
                   className="w-full h-full object-cover"
                 />

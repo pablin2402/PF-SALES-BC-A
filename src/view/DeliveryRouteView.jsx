@@ -127,6 +127,7 @@ export default function DeliveryRouteView() {
   };
   const handleCreateRoute = async () => {
     if (!validateForm()) return;
+  
     const routeData = {
       details: routeName,
       delivery: selectedSaler,
@@ -137,16 +138,16 @@ export default function DeliveryRouteView() {
       endDate: endDate,
       progress: 0
     };
-
+  
     try {
       const response = await axios.post(API_URL + "/whatsapp/delivert/route", routeData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-
+  
       if (response.status === 200) {
-        const updatePromises = selectedMarkers.map(marker => {
+        const updatePromises = selectedMarkers.map(async (marker) => {
           const orderUpdate = {
             _id: marker._id,
             id_owner: user,
@@ -154,35 +155,46 @@ export default function DeliveryRouteView() {
             orderTrackId: selectedSaler,
             orderStatus: "En Ruta"
           };
-
-          return axios.put(API_URL + "/whatsapp/order/status/id", orderUpdate, {
+  
+          const res = await axios.put(API_URL + "/whatsapp/order/status/id", orderUpdate, {
             headers: {
               Authorization: `Bearer ${token}`
             }
           });
-        });
-
-        try {
-          const responses = await Promise.all(updatePromises);
-
-          const allSuccessful = responses.every(res => res.status === 200);
-
-          if (allSuccessful) {
-            loadMarkersFromAPI();
-            setIsOpen(false);
-            cleanData();
-
-          } else {
+  
+          if (res.status === 200) {
+            await axios.post(API_URL + "/whatsapp/order/track", {
+              orderId: marker._id, 
+              eventType: "Ha sido asignado como repartidor",
+              triggeredBySalesman: "",
+              triggeredByDelivery: selectedSaler,
+              triggeredByUser: "",
+              location: { lat: 0, lng: 0 }
+            }, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
           }
-
-        } catch (error) {
+  
+          return res;
+        });
+  
+        const results = await Promise.all(updatePromises);
+  
+        const allSuccessful = results.every(r => r.status === 200);
+        if (allSuccessful) {
+          loadMarkersFromAPI();
+          setIsOpen(false);
+          cleanData();
         }
       }
-
+  
     } catch (error) {
-      console.error("Error al crear la ruta:", error);
+      console.error("Error al crear la ruta o actualizar las órdenes:", error);
     }
   };
+  
   const handleDelete = (clientId) => {
     setSelectedMarkers((prev) => prev.filter(client => client._id !== clientId));
   };
@@ -272,7 +284,7 @@ export default function DeliveryRouteView() {
           clientId: location.id_client._id,
           name: location.id_client.name,
           lastName: location.id_client.lastName,
-          profilePicture: location.id_client.profilePicture,
+          profilePicture: location.id_client.identificationImage,
           client_location: location.id_client.client_location,
           visitStatus: false,
           visitTime: null,
@@ -333,7 +345,7 @@ export default function DeliveryRouteView() {
                   <img
                     className="w-[150px] h-[280px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
                     src={
-                      client.id_client.profilePicture ||
+                      client.id_client.identificationImage ||
                       "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
                     }
                     alt={client.id_client.name}

@@ -228,6 +228,7 @@ const ProductView = () => {
                         value={itemsPerPage}
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
+                          setPage(1);
                           fetchProducts(1);
                         }}
                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"

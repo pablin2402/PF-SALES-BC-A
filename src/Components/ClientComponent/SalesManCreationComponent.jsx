@@ -26,6 +26,28 @@
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
 
+    const [imageFile, setImageFile] = useState(null);
+    const [uploadedUrl, setUploadedUrl] = useState("");
+
+    const handleFileChange = (e) => {
+      setImageFile(e.target.files[0]);
+    };
+    const uploadImage = async () => {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+    
+      const res = await axios.post(API_URL + "/whatsapp/upload/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setUploadedUrl(res.data.imageUrl);
+      console.log("URL de imagen:", res.data.imageUrl);
+
+
+      return res.data.imageUrl;
+    };
+        
     const fetchAddress = async (lat, lng) => {
       try {
         const response = await axios.get(
@@ -67,78 +89,75 @@
     };
     const handleSubmit = async (e) => {
       e.preventDefault();
+    
       try {
-        const userResponse = await Promise.race([
-          axios.post(API_URL + "/whatsapp/user", {
+        const imageUrl = imageFile ? await uploadImage() : ""; 
+        const addressResponse = await Promise.race([
+          axios.post(API_URL + "/whatsapp/maps/id", {
+            sucursalName: "",
+            iconType: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
+            longitud: location.lng,
+            latitud: location.lat,
+            logoColor: "",
             active: true,
-            email: formData.email,
-            password: formData.password,
-            role: "SALES",
+            client_id: "",
             id_owner: user,
-            region: formData.role
+            direction: address.road,
+            house_number: address.house_number,
+            city: address.state
           }, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
           }),
           new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
         ]);
     
-        if (userResponse.status === 200) {
-          const clientId = userResponse.data._id;
-          const addressResponse = await Promise.race([
-            axios.post(API_URL + "/whatsapp/maps/id", {
-              sucursalName: "",
-              iconType: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
-              longitud: location.lng,
-              latitud: location.lat,
-              logoColor: "",
-              active: true,
-              client_id: clientId,
-              id_owner: user,
-              direction: address.road,
-              house_number: address.house_number,
-              city: address.state
-            }, {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
-          ]);
+        if (addressResponse.status !== 200) throw new Error("Error en address");
+        const directionId = addressResponse.data._id;
     
-          if (addressResponse.status === 200) {
-            const directionId = addressResponse.data._id;
-            const response = await axios.post(API_URL + "/whatsapp/sales/salesman", {
-              fullName: formData.nombre,
-              lastName: formData.apellido,
-              email: formData.email,
-              role: "SALES",
-              id_owner: user,
-              phoneNumber: formData.telefono,
-              client_location: directionId,
-              region: formData.role
-            }, {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            });
-          
-            if (response.status === 200) {
-              setSuccessModal(true);
-              resetForm();
-              navigate("/sales/client");
-            }else {
-              setErrorModal(true);
-            }
-          } else {
-            setErrorModal(true);
-          }
-        }
+        const salesmanResponse = await Promise.race([
+          axios.post(API_URL + "/whatsapp/sales/salesman", {
+            fullName: formData.nombre,
+            lastName: formData.apellido,
+            email: formData.email,
+            role: "SALES",
+            id_owner: user,
+            phoneNumber: formData.telefono,
+            client_location: directionId,
+            region: formData.role,
+            identificationImage:imageUrl
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+        ]);
+    
+        if (salesmanResponse.status !== 200) throw new Error("Error en salesman");
+        const salesmanId = salesmanResponse.data._id;
+    
+        const userResponse = await axios.post(API_URL + "/whatsapp/user", {
+          active: true,
+          email: formData.email,
+          password: formData.password,
+          role: "SALES",
+          id_owner: user,
+          region: formData.role,
+          salesMan: salesmanId
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+    
+        if (userResponse.status !== 200) throw new Error("Error en usuario");
+    
+        setSuccessModal(true);
+        resetForm();
+        navigate("/sales/client");
+    
       } catch (error) {
+        console.error("Error al crear usuario ADMIN:", error);
         setErrorModal(true);
       }
     };
+    
     const isFormValid = () => {
       const { nombre, apellido, email, telefono, password } = formData;
       const { road, state } = address;
@@ -214,8 +233,17 @@
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de casa</label>
                 <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de casa" required />
               </div>
+            </div>   
+            <div className="flex flex-col">
+              <h2 className="mt-8 mb-2 text-lg font-bold text-left text-gray-900">Adjunta el documento de identidad del vendedor</h2>
+              <input
+                className="block w-full text-gray-900 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-[#D3423E] focus:outline-none"
+                id="user_avatar"
+                type="file"
+                accept=".svg,.png,.jpg,.jpeg"
+                onChange={handleFileChange}              />
+              <p className="mt-2 text-sm text-gray-500"><span className="font-semibold">Haz clic para subir</span> SVG, PNG o JPG</p>
             </div>
-    
             <h2 className="mt-8 mb-2 text-sm text-left text-gray-900">Haga click en el punto del mapa donde necesite registrar la ubicación</h2>
     
             <div className="mt-2 mb-6">

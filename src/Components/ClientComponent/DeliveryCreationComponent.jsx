@@ -40,7 +40,27 @@ const DeliveryCreationComponent = () => {
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadedUrl, setUploadedUrl] = useState("");
 
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+  const uploadImage = async () => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+  
+    const res = await axios.post(API_URL + "/whatsapp/upload/image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    setUploadedUrl(res.data.imageUrl);
+    console.log("URL de imagen:", res.data.imageUrl);
+
+
+    return res.data.imageUrl;
+  };
   const fetchAddress = async (lat, lng) => {
     try {
       const { data } = await axios.get(
@@ -103,63 +123,76 @@ const DeliveryCreationComponent = () => {
       address.house_number
     );
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid()) return;
+  
     try {
-      const userRes = await axios.post(
-        API_URL + "/whatsapp/user",
-        {
-          active: true,
-          email: formData.email,
-          password: formData.password,
-          role: "DELIVERY",
-          id_owner: user,
-          region: formData.region
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const imageUrl = imageFile ? await uploadImage() : ""; 
 
-      const clientId = userRes.data.id;
-
-      const addressRes = await axios.post(
-        API_URL + "/whatsapp/maps/id",
-        {
-          sucursalName: "",
-          iconType: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
-          longitud: location.lng,
-          latitud: location.lat,
-          logoColor: "",
-          active: true,
-          client_id: clientId,
-          id_owner: user,
-          direction: address.road,
-          house_number: address.house_number,
-          city: address.state,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const addressRes = await Promise.race([
+        axios.post(
+          API_URL + "/whatsapp/maps/id",
+          {
+            sucursalName: "",
+            iconType: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
+            longitud: location.lng,
+            latitud: location.lat,
+            logoColor: "",
+            active: true,
+            client_id: "",
+            id_owner: user,
+            direction: address.road,
+            house_number: address.house_number,
+            city: address.state
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout en dirección")), 10000))
+      ]);
+  
       const directionId = addressRes.data._id;
+  
+      const deliveryRes = await Promise.race([
+        axios.post(
+          API_URL + "/whatsapp/delivery",
+          {
+            fullName: formData.nombre,
+            lastName: formData.apellido,
+            email: formData.email,
+            id_owner: user,
+            phoneNumber: formData.telefono,
+            client_location: directionId,
+            identificationNumber: formData.identification,
+            region: formData.region,
+            identificationImage:imageUrl
 
-      const delivery = await axios.post(
-        API_URL + "/whatsapp/delivery",
-        {
-          fullName: formData.nombre,
-          lastName: formData.apellido,
-          email: formData.email,
-          id_owner: user,
-          phoneNumber: formData.telefono,
-          client_location: directionId,
-          identificationNumber: formData.identification,
-          userId: clientId,
-          region: formData.region
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (delivery.status === 200) {
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout en delivery")), 10000))
+      ]);
+  
+      const deliveryId = deliveryRes.data._id;
+  
+      const userRes = await Promise.race([
+        axios.post(
+          API_URL + "/whatsapp/user",
+          {
+            active: true,
+            email: formData.email,
+            password: formData.password,
+            role: "DELIVERY",
+            id_owner: user,
+            region: formData.region,
+            salesMan: deliveryId 
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout en usuario")), 10000))
+      ]);
+  
+      if (userRes.status === 200) {
         setSuccessModal(true);
         resetForm();
         navigate("/delivery/list");
@@ -169,6 +202,7 @@ const DeliveryCreationComponent = () => {
       setErrorModal(true);
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center px-6 min-h-screen">
@@ -238,6 +272,16 @@ const DeliveryCreationComponent = () => {
                 </div>
 
               ))}
+            </div>
+            <div className="flex flex-col">
+              <h2 className="mt-8 mb-2 text-lg font-bold text-left text-gray-900">Adjunta el documento de identidad del vendedor</h2>
+              <input
+                className="block w-full text-gray-900 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-[#D3423E] focus:outline-none"
+                id="user_avatar"
+                type="file"
+                accept=".svg,.png,.jpg,.jpeg"
+                onChange={handleFileChange}              />
+              <p className="mt-2 text-sm text-gray-500"><span className="font-semibold">Haz clic para subir</span> SVG, PNG o JPG</p>
             </div>
             <div className="mt-6">
               <h2 className="mb-2 text-left text-l font-bold text-gray-900">Dirección de domicilio</h2>

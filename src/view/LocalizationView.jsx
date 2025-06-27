@@ -117,13 +117,13 @@ export default function LocalizationView() {
       <div className="w-2/6 overflow-y-auto border-r-2 border-gray-200">
         <div className="w-full max-w-screen-lg mx-auto px-4">
           <div className="relative w-full mt-4 mb-4">
-          <TextInputFilter
-                      value={searchTerm}
-                      onChange={setSearchTerm}
-                      onEnter={() => loadMarkersFromAPI()}
-                      placeholder="Buscar por Nombre, apellido"
-                    />
-        
+            <TextInputFilter
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onEnter={() => loadMarkersFromAPI()}
+              placeholder="Buscar por Nombre, apellido"
+            />
+
           </div>
 
           <div className="flex flex-wrap gap-4 mb-6">
@@ -173,7 +173,7 @@ export default function LocalizationView() {
                 <img
                   className="w-[150px] h-[280px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
                   src={
-                    client.profilePicture ||
+                    client.identificationImage ||
                     "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
                   }
                   alt={client.name}
