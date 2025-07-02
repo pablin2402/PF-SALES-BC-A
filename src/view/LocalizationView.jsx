@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { useJsApiLoader, GoogleMap, Marker } from "@react-google-maps/api";
-import { API_URL, GOOGLE_API_KEY,UPLOAD_TIME } from "../config";
+import { API_URL, GOOGLE_API_KEY, UPLOAD_TIME } from "../config";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/pin-de-ubicacion.png";
@@ -260,7 +260,6 @@ export default function LocalizationView() {
               const hasDelivery = loc.delivery && typeof loc.delivery === "object";
               const hasSalesman = loc.salesManId && typeof loc.salesManId === "object";
 
-              // Iniciales delivery
               const deliveryInitials = hasDelivery
                 ? (
                   (loc.delivery.fullName?.slice(0, 1) || "X") +
@@ -268,7 +267,6 @@ export default function LocalizationView() {
                 ).toUpperCase()
                 : "";
 
-              // Iniciales salesman
               const salesmanInitials = hasSalesman
                 ? (
                   (loc.salesManId.fullName?.slice(0, 1) || "X") +
@@ -298,9 +296,6 @@ export default function LocalizationView() {
                 </OverlayView>
               );
             })}
-
-
-
           </GoogleMap>
         ) : (
           <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
