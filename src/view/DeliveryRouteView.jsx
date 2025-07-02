@@ -290,7 +290,10 @@ export default function DeliveryRouteView() {
           visitTime: null,
           orderTaken: false,
           visitStartTime: null,
-          visitEndTime: null
+          visitEndTime: null,
+          tripTime: null,
+          distanceTrip: null,
+          timeToPlace:null
         };
         return [...prev, newLocation];
       }
@@ -361,9 +364,31 @@ export default function DeliveryRouteView() {
                     >
                       {client.id_client.name} {client.id_client.lastName}
                     </h5>
+                    <h5 className="text-l mt-2 mb-2 font-bold tracking-tight text-gray-900 flex items-center">
+                    {client.accountStatus === "Crédito" && (
+                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                              CRÉDITO
+                            </span>
+                          )}
+                          {client.accountStatus === "Contado" && (
+                            <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                              CONTADO
+                            </span>
+                          )}
+                          {client.accountStatus === "Cheque" && (
+                            <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
+                              CHEQUE
+                            </span>
+                          )}
+                    </h5>
+                    <h5 className="text-l mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
+                      #{client.receiveNumber}
+                    </h5>
+                    
                     <h5 className="text-l mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
                       {client.id_client.company}
                     </h5>
+                   
                     <p className="text-m mt-2 mb-2 font-normal text-gray-700 flex items-center">
                       <FaMapMarkerAlt className="text-red-500 mr-2" />
                       {client.id_client.client_location?.direction || "No disponible"}
@@ -438,7 +463,6 @@ export default function DeliveryRouteView() {
       </div>
       <div className="w-4/6 h-[calc(105vh-4rem)] bg-white relative">
         {isLoaded ? (
-
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
@@ -556,7 +580,7 @@ export default function DeliveryRouteView() {
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-6">
           <div className="w-1/2">
             <select
-              className="block w-full p-2 text-lg text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+              className="block w-full p-2 text-lg text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
               name="vendedor"
               value={selectedSaler}
               onChange={(e) => {

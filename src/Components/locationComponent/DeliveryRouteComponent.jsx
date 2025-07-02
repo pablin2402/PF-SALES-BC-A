@@ -7,10 +7,8 @@ import tiendaIcon from "../../icons/tienda.png";
 import { HiFilter } from "react-icons/hi";
 import { MdDelete } from "react-icons/md";
 import { DirectionsRenderer } from "@react-google-maps/api";
-import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
-import { FaFileExport } from "react-icons/fa6";
 import DateInput from "../LittleComponents/DateInput";
+import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 
 export default function DeliveryRouteComponent() {
 
@@ -19,7 +17,7 @@ export default function DeliveryRouteComponent() {
     const [vendedores, setVendedores] = useState([]);
     const [listRoutes, setListRoutes] = useState([]);
     const [selectedMarkers, setSelectedMarkers] = useState([]);
-    const [selectedSaler, setSelectedSaler] = useState("");
+    const [selectedSaler2, setSelectedSaler2] = useState("");
 
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -58,18 +56,18 @@ export default function DeliveryRouteComponent() {
             } finally {
             }
         };
-
         fetchVendedores();
     }, [user, token]);
 
-    const loadRoute = useCallback(async (startDate, endDate, selectedSaler2) => {
+    const loadRoute = useCallback(async (startDate, endDate) => {
         try {
             const response = await axios.post(API_URL + "/whatsapp/delivery/list/route", {
                 id_owner: user,
                 startDate,
-                delivery: selectedSaler2,
                 endDate,
+                delivery: selectedSaler2,
                 page,
+                status: selectedStatus === "todos" ? null : selectedStatus,
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -82,11 +80,12 @@ export default function DeliveryRouteComponent() {
         } catch (error) {
             console.error("Error al cargar los marcadores: ", error);
         }
-    }, [page, user, token]);
+    }, [user, selectedSaler2, page, selectedStatus, token]);
+
 
     useEffect(() => {
-        loadRoute(null, null, "todos");
-    }, [page, selectedSaler, selectedStatus, loadRoute]);
+        loadRoute(null, null);
+    }, [page, selectedStatus, selectedSaler2, loadRoute]);
 
     const findLocation = (client) => {
         if (client && client.client_location) {
@@ -141,9 +140,9 @@ export default function DeliveryRouteComponent() {
                     id_owner: user,
                 },
                 headers: {
-                  Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
-              });
+            });
             loadRoute(null, null, "todos");
         } catch (error) {
             console.error("Error al eliminar la ruta:", error);
@@ -200,101 +199,56 @@ export default function DeliveryRouteComponent() {
             );
         }
     }, [selectedMarkers]);
-
-    const exportToExcel = (data) => {
-        const flatData = [];
-
-        data.forEach((item) => {
-            const vendedor = `${item.salesMan?.fullName || ""} ${item.salesMan?.lastName || ""}`;
-            const nombreRuta = item.details || "";
-
-            item.route?.forEach((client) => {
-                flatData.push({
-                    Vendedor: vendedor,
-                    "Nombre de ruta": nombreRuta,
-                    Sucursal: client.client_location?.sucursalName || "",
-                    Cliente: `${client.name || ""} ${client.lastName || ""}` || "",
-                    Ciudad: client.client_location?.city || "",
-                    Dirección: client.client_location?.direction || "",
-                    Visitado: client.visitStatus ? "Sí" : "No",
-                    "Tiempo de visita": client.visitTime || "",
-                    "Fecha de visita": client.visitEndTime
-                        ? new Date(client.visitEndTime).toLocaleString("es-ES", {
-                            timeZone: "America/La_Paz",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                        })
-                        : "",
-                    "Orden tomada": client.orderTaken ? "Sí" : "No",
-                });
-            });
-        });
-
-        const ws = XLSX.utils.json_to_sheet(flatData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Rutas por cliente");
-
-        const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-        saveAs(new Blob([excelFile], { type: "application/octet-stream" }), "visitas_por_cliente.xlsx");
-    };
-
     return (
         <div className="h-screen w-full flex overflow-hidden">
             <div className="w-2/6 h-[calc(100vh-4rem)] overflow-auto border-r-2 border-gray-200">
                 <div className="px-4 py-4">
-                    <div className="bg-white p-4 rounded-xl shadow-md w-full mb-4 space-y-4">
+
+                    <div className="bg-white p-6 rounded-xl shadow-md w-full mb-6 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <select
-                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                                name="vendedor"
-                                value={selectedSaler}
-                                onChange={(e) => setSelectedSaler(e.target.value)}
-                                required
-                            >
-                                <option value="">Repartidor</option>
-                                <option value="">Mostrar Todos</option>
-                                {vendedores.map((vendedor) => (
-                                    <option key={vendedor._id} value={vendedor._id}>
-                                        {vendedor.fullName + " " + vendedor.lastName}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="flex flex-col">
+                                <select
+                                    className="w-full p-2.5 text-sm text-gray-900 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                    name="vendedor"
+                                    value={selectedSaler2}
+                                    onChange={(e) => setSelectedSaler2(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Seleccionar Repartidor</option>
+                                    <option value="todos">Mostrar Todos</option>
+                                    {vendedores.map((vendedor) => (
+                                        <option key={vendedor._id} value={vendedor._id}>
+                                            {vendedor.fullName + " " + vendedor.lastName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                            <select
-                                className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                                name="estado"
-                                value={selectedStatus}
-                                onChange={(e) => setSelectedStatus(e.target.value)}
-                                required
-                            >
-                                <option value="">Filtrar por estado</option>
-                                <option value="">Mostrar Todos</option>
-                                <option value="Por iniciar">Por iniciar</option>
-                                <option value="En progreso">En progreso</option>
-                                <option value="Finalizado">Finalizado</option>
-                            </select>
+                            <div className="flex flex-col">
+                                <select
+                                    className="w-full p-2.5 text-sm text-gray-900 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                    name="estado"
+                                    value={selectedStatus}
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Seleccionar Estado</option>
+                                    <option value="todos">Mostrar Todos</option>
+                                    <option value="Por iniciar">Por iniciar</option>
+                                    <option value="En progreso">En progreso</option>
+                                    <option value="Finalizado">Finalizado</option>
+                                </select>
+                            </div>
                         </div>
-
-                        <div className="flex items-center gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
                             <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-                            <button
-                                onClick={() => exportToExcel(listRoutes)}
-                                className="w-10 h-10 flex items-center justify-center text-green-600 hover:text-green-600 transition rounded-md"
-                            >
-                                <FaFileExport className="text-xl" />
-                            </button>
-                            <button
-                                onClick={() => loadRoute(startDate, endDate, selectedSaler)}
-                                className="w-10 h-10 flex items-center justify-center text-red-700 hover:text-red-600 transition rounded-md"
-                            >
-                                <HiFilter className="text-2xl" />
-                            </button>
+                            <PrincipalBUtton onClick={() => loadRoute(startDate, endDate)} icon={HiFilter}>
+                                Filtrar
+                            </PrincipalBUtton>
                         </div>
                     </div>
+                    <div className="bg-white p-6 rounded-xl shadow-md w-full mb-6 space-y-6">
                     <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white " data-inactive-classes="text-gray-500 dark:text-gray-400">
                         {listRoutes.length > 0 ? (
                             <>
@@ -315,7 +269,7 @@ export default function DeliveryRouteComponent() {
 
                                             >
                                                 <span className="font-bold text-gray-900">
-                                                    {client.delivery.fullName} {client.delivery.lastName} - {""}{formatDateToLocal(client.startDate)} - {""}
+                                                    {client.delivery.fullName+"   "+client.delivery.lastName} - {" "}{formatDateToLocal(client.startDate)} - {" "}
                                                     <span
                                                         className={`
                                                         ${client.status === "En progreso" ? "bg-green-200 uppercase font-bold text-green-800" : ""}
@@ -379,10 +333,7 @@ export default function DeliveryRouteComponent() {
                                                     <span className="font-semibold text-gray-500">Fecha programada de fin:</span>
                                                     <span className="text-gray-900 font-bold">{formatDateToLocal(client.endDate)}</span>
                                                 </div>
-                                                <div className="flex justify-between">
-                                                    <span className="font-semibold text-gray-500">Fecha de inicio repartidor:</span>
-                                                    <span className="text-gray-900 font-bold">{formatDateToLocalHour(client.startDateRouteSales)}</span>
-                                                </div>
+                                        
 
                                                 <div className="flex justify-between items-center mt-3">
                                                     <span className="font-semibold text-gray-500">Progreso:</span>
@@ -401,9 +352,16 @@ export default function DeliveryRouteComponent() {
                                                             <div key={routeIdx} className="p-4 bg-gray-100 rounded-lg border border-gray-400">
                                                                 <div className="flex justify-between">
                                                                     <span className="font-semibold text-gray-500">Nombre de la ruta:</span>
-                                                                    <span className="text-gray-900 text-m font-bold ">{route.name+" "+route.lastName}</span>
+                                                                    <span className="text-gray-900 text-m font-bold ">{route.name + " " + route.lastName}</span>
                                                                 </div>
-                                                             
+                                                                <div className="flex justify-between">
+                                                                    <span className="font-semibold text-gray-500">Distancia estimada:</span>
+                                                                    <span className="text-gray-900 text-m font-bold ">{route?.distanceTrip || "No disponible"}</span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span className="font-semibold text-gray-500">Tiempo estimado de llegada:</span>
+                                                                    <span className="text-gray-900 text-m font-bold "> {route?.tripTime|| "No disponible"}</span>
+                                                                </div>
                                                                 <div className="flex justify-between mt-2">
                                                                     <span className="font-semibold text-m text-gray-500">Estado:</span>
                                                                     <span
@@ -499,7 +457,7 @@ export default function DeliveryRouteComponent() {
                             </div>
                         )}
                     </div>
-
+                    </div>
                 </div>
             </div>
             <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">

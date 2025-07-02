@@ -27,7 +27,6 @@
     const token = localStorage.getItem("token");
 
     const [imageFile, setImageFile] = useState(null);
-    const [uploadedUrl, setUploadedUrl] = useState("");
 
     const handleFileChange = (e) => {
       setImageFile(e.target.files[0]);
@@ -41,10 +40,6 @@
           "Content-Type": "multipart/form-data",
         },
       });
-      setUploadedUrl(res.data.imageUrl);
-      console.log("URL de imagen:", res.data.imageUrl);
-
-
       return res.data.imageUrl;
     };
         
@@ -182,23 +177,23 @@
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Nombre</label>
-                <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Nombre" required />
+                <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Nombre" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Apellido</label>
-                <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Apellido" required />
+                <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Apellido" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Correo electrónico</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Correo electrónico" required />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Correo electrónico" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de teléfono</label>
-                <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de teléfono" required />
+                <input type="number" name="telefono" value={formData.telefono} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Número de teléfono" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Contraseña</label>
-                <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Contraseña" required />
+                <input type="password" name="password" value={formData.password} onChange={handleChange} className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Contraseña" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Ciudad de trabajo</label>
@@ -223,15 +218,15 @@
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Dirección de domicilio</label>
-                <input name="road" value={address.road} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Dirección" required />
+                <input name="road" value={address.road} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Dirección" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Ciudad</label>
-                <input name="state" value={address.state} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Ciudad" required />
+                <input name="state" value={address.state} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Ciudad" required />
               </div>
               <div className="flex flex-col">
                 <label className="text-left text-sm font-medium text-gray-900 mb-1">Número de casa</label>
-                <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5" placeholder="Número de casa" required />
+                <input name="house_number" value={address.house_number} onChange={handleChangeLocation} type="text" className="bg-gray-50 border border-gray-900 text-sm text-gray-900 rounded-2xl p-2.5 focus:outline-none focus:ring-0 focus:border-red-500" placeholder="Número de casa" required />
               </div>
             </div>   
             <div className="flex flex-col">

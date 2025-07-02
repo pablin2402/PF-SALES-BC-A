@@ -10,14 +10,12 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
     payer: ''
   });
   const id_user = localStorage.getItem("id_user");
-  const [file, setFile] = useState(null);
   const [amountError, setAmountError] = useState('');
   const total = totalGeneral - totalPaid;
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
   const [imageFile, setImageFile] = useState(null);
-  const [uploadedUrl, setUploadedUrl] = useState("");
 
   const handleFileChange = (e) => {
     setImageFile(e.target.files[0]);
@@ -31,10 +29,6 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
         "Content-Type": "multipart/form-data",
       },
     });
-    setUploadedUrl(res.data.imageUrl);
-    console.log("URL de imagen:", res.data.imageUrl);
-
-
     return res.data.imageUrl;
   };
   const handleInputChange = (e) => {
@@ -109,9 +103,7 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
       
           if (orderResponse.status === 200) {
             onSave();
-            setPaymentData({ amount: '', payer: '' });
-            setFile(null);
-      
+            setPaymentData({ amount: '', payer: '' });      
             if (navigator.geolocation) {
               navigator.geolocation.getCurrentPosition(
                 async (position) => {

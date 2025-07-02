@@ -6,6 +6,7 @@ import { IoPersonAdd } from "react-icons/io5";
 import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import Spinner from "../Components/LittleComponents/Spinner";
 
 const SalesManView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -15,6 +16,8 @@ const SalesManView = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [items, setItems] = useState();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [formData, setFormData] = useState({ email: "", newPassword: "" });
 
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
@@ -53,7 +56,7 @@ const SalesManView = () => {
       await axios.put(API_URL + "/whatsapp/salesman/status", {
         _id: id,
         active: newStatus,
-      },{
+      }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -89,11 +92,47 @@ const SalesManView = () => {
     const index = hash % colorClasses.length;
     return colorClasses[index];
   };
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+        await axios.put(API_URL + "/whatsapp/password",
+          {
+            email: formData.email,
+            newPassword: formData.newPassword
+          }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setShowEditModal(false); 
+    } catch (error) {
+    }
+  };
   return (
+    <div className="bg-white min-h-screen rounded-lg p-5">
+    {loading ? (
+      <Spinner />
+    ) : (
     <div>
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between w-full mb-4">
-          <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+          <div className="flex items-center w-full max-w-2xl gap-2">
+              <h1 className="text-gray-900 font-bold text-2xl">Personal de Ventas</h1>
+          </div>
+          <div className="flex justify-end items-center space-x-4">
+              <PrincipalBUtton onClick={() => navigate("/sales/create")} icon={IoPersonAdd}>
+                Nuevo Vendedor
+              </PrincipalBUtton>
+          </div>
+          
+          </div>
+          <div className="relative flex items-center mt-20 w-full max-w-2xl  space-x-4">
             <div className="relative flex-grow">
               <TextInputFilter
                 value={searchTerm}
@@ -102,19 +141,10 @@ const SalesManView = () => {
                 placeholder="Buscar por nombre"
               />
             </div>
-
             <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
-
-          </div>
-          <div className="flex justify-end items-center space-x-4">
-
-            <PrincipalBUtton onClick={() => navigate("/sales/create")} icon={IoPersonAdd}>
-              Nuevo Vendedor
-            </PrincipalBUtton>
           </div>
         </div>
-
-
+      <div>
         <div className="mt-5 border border-gray-400 rounded-xl">
           <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
             <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
@@ -125,6 +155,7 @@ const SalesManView = () => {
                 <th className="px-6 py-3 uppercase">Telefono Celular</th>
                 <th className="px-6 py-3 uppercase">Ciudad Asignada</th>
                 <th className="px-6 py-3 uppercase">Estado</th>
+                <th className="px-6 py-3 uppercase"></th>
 
               </tr>
             </thead>
@@ -146,7 +177,7 @@ const SalesManView = () => {
                     <td className="px-6 py-4 font-medium text-gray-900">{item.phoneNumber}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      <label  onClick={(e) => e.stopPropagation()} className="relative inline-flex items-center cursor-pointer">
+                      <label onClick={(e) => e.stopPropagation()} className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           className="sr-only peer"
@@ -158,7 +189,27 @@ const SalesManView = () => {
                           <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
                         </div>                    </label>
                     </td>
-
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowEditModal(true);
+                        }}
+                        className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
+                        aria-label="Opciones"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <circle cx="10" cy="4" r="2" />
+                          <circle cx="10" cy="10" r="2" />
+                          <circle cx="10" cy="16" r="2" />
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -248,8 +299,66 @@ const SalesManView = () => {
             </div>
           )}
         </div>
-
       </div>
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute top-3 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white text-xl"
+            >
+              &times;
+            </button>
+
+            <h2 className="mb-4 text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
+              Cambiar contraseña
+            </h2>
+
+            <form className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Tu correo
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}                  
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500  block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="ejemplo@email.com"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="new-password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Nueva contraseña
+                </label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  id="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl block w-full p-2.5 focus:outline-none focus:ring-0 focus:border-red-500 "
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <button
+                onClick={handleSubmit}
+                className={"mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-2xl bg-[#D3423E] text-white"}
+              >
+                Cambiar contraseña
+                </button>
+              
+            </form>
+          </div>
+        </div>
+      )}
+      </div>
+      
+    )}
     </div>
   );
 };

@@ -4,9 +4,9 @@ import { API_URL } from "../../config";
 import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 import DateInput from "../LittleComponents/DateInput";
+import Spinner from "../LittleComponents/Spinner";
 
 const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
-
     const [objectiveData, setObjectiveData] = useState([]);
     const [dateFilterActive, setDateFilterActive] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -24,7 +24,6 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
     const [itemsPerPage, setItemsPerPage] = useState(5);
-    const MAX_ITEMS_PER_PAGE = 20;
     const [items, setItems] = useState();
 
 
@@ -122,27 +121,37 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
     };
     const applyFilters = () => {
         const customFilters = {};
-
+    
         const start = new Date(startDate);
         const end = new Date(endDate);
         const min = new Date(date1);
         const max = new Date(date2);
-
+    
         if (startDate && endDate) {
             if (start < min || end > max) {
-                alert("El rango de fechas debe estar dentro del intervalo permitido.");
                 return;
             }
-            customFilters.startDate = startDate;
-            customFilters.endDate = endDate;
+            customFilters.startDate = startDate + "T00:00:00.000Z";
+            customFilters.endDate = endDate + "T23:59:59.999Z";
         }
-
-        if (selectedPayment) customFilters.payStatus = selectedPayment;
-
+    
+        if (selectedFilter === "payment" && !selectedPayment) {
+            return;
+        }
+        if (selectedFilter === "payment" && selectedPayment === "") {
+            // Quitar filtros
+            setDateFilterActive(false);
+            setPaymentActive(false);
+            fetchObjectiveDataRegion(1); // Sin filtros
+            return;
+        }
+        if (selectedPayment) {
+            customFilters.payStatus = selectedPayment;
+        }
+    
         fetchObjectiveDataRegion(1, customFilters);
-        setDateFilterActive(true);
     };
-
+    
     const fetchVendedores = async () => {
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
@@ -169,24 +178,19 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
         if (type === "date") {
             setStartDate("");
             setEndDate("");
-            setSelectedPayment("")
             setDateFilterActive(false);
+            setSelectedFilter("");
+        } else if (type === "pay") {
+            setSelectedPayment("");
             setPaymentActive(false);
+            setSelectedFilter("");
 
         }
     };
     return (
         <div className="bg-white min-h-screen rounded-lg p-5">
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div role="status">
-                        <svg aria-hidden="true" className="inline w-10 h-10 text-gray-200 animate-spin dark:text-gray-600 fill-red-500" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                        </svg>
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                </div>
+                <Spinner />
             ) : (
                 <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
                     <div className="flex flex-col w-full space-y-4">
@@ -202,10 +206,23 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                         <div className="flex items-center gap-2">
                             <select
                                 value={selectedFilter}
-                                onChange={(e) => setSelectedFilter(e.target.value)}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setSelectedFilter(value);
+                            
+                                    if (value === "all") {
+                                        setStartDate("");
+                                        setEndDate("");
+                                        setSelectedPayment("");
+                                        setDateFilterActive(false);
+                                        setPaymentActive(false);
+                                        fetchObjectiveDataRegion(1);
+                                    }
+                                }}  
                                 className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                             >
                                 <option value="">Filtrar por: </option>
+                                <option value="all">Mostrar todos</option>
                                 <option value="payment">Filtrar por estado de pago:</option>
                                 <option value="date">Filtrar por fecha:</option>
                             </select>
@@ -218,8 +235,8 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                                             label="Fecha de Inicio"
                                             min={date1}
                                             max={date2}
-                                        />                                    </div>
-
+                                        />                                    
+                                    </div>
                                     <div className="flex items-center space-x-2">
                                         <DateInput
                                             value={endDate}
@@ -227,11 +244,20 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                                             label="Fecha Final"
                                             min={startDate || date1}
                                             max={date2}
-                                        />                                    </div>
-                                    <PrincipalBUtton onClick={() => {
-                                        applyFilters();
-                                        setDateFilterActive(true);
-                                    }} icon={HiFilter}>Filtrar</PrincipalBUtton>
+                                        />                                    
+                                    </div>
+                                    <PrincipalBUtton
+                                        onClick={() => {
+                                            if (startDate && endDate) {
+                                                applyFilters();
+                                                setDateFilterActive(true);
+                                            }
+                                        }}
+                                        icon={HiFilter}
+                                    >
+                                        Filtrar
+                                    </PrincipalBUtton>
+                                   
                                 </div>
                             )}
                             {selectedFilter === "payment" && (
@@ -246,15 +272,17 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                                         <option value="Pagado">Pagado</option>
                                         <option value="Pendiente">Pendiente</option>
                                     </select>
-                                    <button
+                                    <PrincipalBUtton
                                         onClick={() => {
-                                            applyFilters();
-                                            setPaymentActive(true);
+                                            if (selectedPayment) {
+                                                applyFilters();
+                                                setPaymentActive(true);
+                                            }
                                         }}
-                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
+                                        icon={HiFilter}
                                     >
                                         Filtrar
-                                    </button>
+                                    </PrincipalBUtton>
                                 </div>
                             )}
                         </div>
@@ -269,7 +297,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                         {paymentFilterActive && (
                             <span className="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
                                 Estado de pago: {selectedPayment}
-                                <button onClick={() => clearFilter("date")} className="font-bold">×</button>
+                                <button onClick={() => clearFilter("pay")} className="font-bold">×</button>
                             </span>
                         )}
                     </div>
@@ -360,12 +388,10 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                                         }}
                                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                                     >
-                                        {[5, 10, 15, 20]
-                                            .filter((option) => option < items && option <= MAX_ITEMS_PER_PAGE)
-                                            .map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option}
-                                                </option>
+                                            {[5, 10, 20].map((option) => (
+                                            <option key={option} value={option}>
+                                                {option}
+                                            </option>
                                             ))}
                                     </select>
                                 </div>

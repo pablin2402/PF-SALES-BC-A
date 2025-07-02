@@ -29,7 +29,6 @@ const ClientCreationComponent = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const [imageFile, setImageFile] = useState(null);
-  const [uploadedUrl, setUploadedUrl] = useState("");
 
   const handleFileChange = (e) => {
     setImageFile(e.target.files[0]);
@@ -43,10 +42,6 @@ const ClientCreationComponent = () => {
         "Content-Type": "multipart/form-data",
       },
     });
-    setUploadedUrl(res.data.imageUrl);
-    console.log("URL de imagen:", res.data.imageUrl);
-
-
     return res.data.imageUrl;
   };
       
@@ -169,7 +164,7 @@ const ClientCreationComponent = () => {
             lastName: formData.apellido,
             profilePicture: "",
             icon: "",
-            company: "",
+            company: formData.punto,
             number: formData.telefono,
             email: formData.email,
             socialNetwork: "true",
@@ -245,7 +240,7 @@ const ClientCreationComponent = () => {
                 </select>
               </div>
               <div className="flex flex-col">
-                <label className="text-left text-sm font-medium text-gray-900 mb-1">TIpo de Punto</label>
+                <label className="text-left text-sm font-medium text-gray-900 mb-1">Tipo de Punto</label>
                 <select
                   className="text-gray-900 hover:text-red-700 hover:border-red-700 focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl"
                   name="tipo"
@@ -311,7 +306,6 @@ const ClientCreationComponent = () => {
               <LoadScript googleMapsApiKey={GOOGLE_API_KEY}
                 onLoad={() => setIsMapLoaded(true)}
               >
-
                   <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={location}

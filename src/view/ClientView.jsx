@@ -161,8 +161,22 @@ const ClientView = () => {
               <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between w-full mb-4">
                   <div className="flex items-center w-full max-w-2xl gap-2">
-                    <div className="relative flex-grow">
-                      
+                    <h1 className="text-gray-900 font-bold text-2xl">Clientes</h1>
+                  </div>
+                  <div className="flex justify-end items-center space-x-4">
+                    <button
+                      onClick={exportToExcel}
+                      className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                    >
+                      <FaFileExport color="##726E6E" />
+                    </button>
+                      <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>                      Nuevo Cliente
+                      </PrincipalBUtton>                    
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 mt-20 mb-4">
+                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+                   <div className="relative flex-grow">
                       <TextInputFilter
                         value={searchTerm}
                         onChange={setSearchTerm}
@@ -171,33 +185,16 @@ const ClientView = () => {
                       />
                    
                     </div>
-                    <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>FILTRAR</PrincipalBUtton>
-                  </div>
-
-                  <div className="flex justify-end items-center space-x-4">
-                  <button
-                    onClick={exportToExcel}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                  >
-                    <FaFileExport color="##726E6E" />
-                  </button>
-                    
-                    <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>                      Nuevo Cliente
-                    </PrincipalBUtton>
-
-                    
-                  </div>
+                    <select
+                      value={selectedFilter}
+                      onChange={(e) => setSelectedFilter(e.target.value)}
+                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    >
+                      <option value="">Filtrar por: </option>
+                      <option value="seller">Filtrar por vendedores: </option>
+                      <option value="region">Filtrar por region:</option>
+                    </select>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <select
-                    value={selectedFilter}
-                    onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  >
-                    <option value="">Filtrar por: </option>
-                    <option value="seller">Filtrar por vendedores: </option>
-                    <option value="region">Filtrar por region:</option>
-                  </select>
                   {selectedFilter === "region" && (
                     <div className="flex gap-2">
                       <select
@@ -207,7 +204,7 @@ const ClientView = () => {
                         onChange={(e) => setSelectedRegion(e.target.value)}
                         required
                       >
-                        <option value="">Seleccione una ciudad</option>
+                        <option value="">Ciudad</option>
                         <option value="Cochabamba">Cochabamba</option>
                         <option value="Santa Cruz">Santa Cruz</option>
                         <option value="La Paz">La Paz</option>
@@ -226,7 +223,7 @@ const ClientView = () => {
                         onChange={(e) => setSelectedSaler(e.target.value)}
                         required
                       >
-                        <option value="">Filtrar por vendedor</option>
+                        <option value="">Vendedor</option>
                         <option value="">Mostrar Todos</option>
                         {vendedores.map((vendedor) => (
                           <option key={vendedor._id} value={vendedor._id}>
@@ -237,13 +234,13 @@ const ClientView = () => {
                     
                     </div>
                   )}
-
+                  <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>FILTRAR</PrincipalBUtton>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-4">
                 {selectedSaler && (
                   <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                    Vendedor: {vendedores.find(v => v._id === selectedSaler)?.fullName}
+                    Vendedor: {vendedores.find(v => v._id === selectedSaler)?.fullName} {vendedores.find(v => v._id === selectedSaler)?.lastName}
                     <button onClick={() => clearFilter("seller")} className="font-bold">×</button>
                   </span>
                 )}

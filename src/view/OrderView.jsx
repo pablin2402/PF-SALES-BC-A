@@ -40,7 +40,6 @@ const OrderView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const MAX_ITEMS_PER_PAGE = 20;
 
   const handleNewOrderClick = () => {
     navigate("/order/creation");
@@ -103,6 +102,7 @@ const OrderView = () => {
     if (startDate && endDate) {
       customFilters.startDate = startDate;
       customFilters.endDate = endDate;
+      setDateFilterActive(true);
     }
     fetchOrders(1, customFilters);
     setPage(1);
@@ -171,17 +171,20 @@ const OrderView = () => {
     if (type === "date") {
       setStartDate("");
       setEndDate("");
-
       setDateFilterActive(false);
     }
     fetchOrders(1);
   };
   const clearAllFilters = () => {
     setSelectedFilter("");
+    setStartDate("");
+    setEndDate("");
     setSelectedSaler("");
     setSelectedPaymentType("");
     setSelectedPayment("");
     setSelectedRegion("");
+    setDateFilterActive(false);
+
   };
   const handleDelete = async (id) => {
     try {
@@ -194,18 +197,18 @@ const OrderView = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (response.status === 200 && response.data.success) {
         fetchOrders(1);
       }
-  
+
       return response.data;
     } catch (error) {
       console.error("Error al eliminar:", error.response?.data || error.message);
     }
   };
-  
-  
+
+
   return (
     <div className="bg-white min-h-screen p-5">
       <div className="relative overflow-x-auto">
@@ -215,17 +218,8 @@ const OrderView = () => {
           <div>
             <div className="flex flex-col w-full">
               <div className="flex items-center justify-between w-full mb-4">
-                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
-                  <div className="relative flex-grow">
-                    <TextInputFilter
-                      value={inputValue}
-                      onChange={setInputValue}
-                      onEnter={applyFilters}
-                      placeholder="Buscar por nombre"
-                    />
-                  </div>
-                  <PrincipalBUtton onClick={() => applyFilters()} icon={HiFilter}>Filtrar</PrincipalBUtton>
-                </div>
+                <h1 className="text-gray-900 font-bold text-2xl">Órdenes de venta</h1>
+
                 <div className="flex justify-end items-center space-x-4">
                   <button
                     onClick={exportToExcel}
@@ -236,25 +230,37 @@ const OrderView = () => {
                   <PrincipalBUtton onClick={() => handleNewOrderClick()} icon={HiFilter}>Nuevo Pedido</PrincipalBUtton>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                <select
-                  value={selectedFilter}
-                  onChange={(e) => setSelectedFilter(e.target.value)}
-                  className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                >
-                  <option value="">Filtrar por: </option>
-                  <option value="payment">Filtrar por estado de pago:</option>
-                  <option value="date">Filtrar por fecha:</option>
-                  <option value="seller">Filtrar por vendedores: </option>
-                  <option value="paymentType">Filtrar por tipo de pago:</option>
-                  <option value="region">Filtrar por region:</option>
-                </select>
+
+              <div className="flex flex-wrap items-center gap-4 mt-20 mb-4">
+                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+                  <div className="relative flex-grow">
+                    <TextInputFilter
+                      value={inputValue}
+                      onChange={setInputValue}
+                      onEnter={applyFilters}
+                      placeholder="Buscar por nombre"
+                    />
+                  </div>
+                  <select
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
+                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                  >
+                    <option value="">Filtrar por: </option>
+                    <option value="payment">Filtrar por estado de pago:</option>
+                    <option value="date">Filtrar por fecha:</option>
+                    <option value="seller">Filtrar por vendedores: </option>
+                    <option value="paymentType">Filtrar por tipo de pago:</option>
+                    <option value="region">Filtrar por region:</option>
+                  </select>
+                </div>
+
                 {selectedFilter === "seller" && (
                   <div className="flex gap-2">
                     <select
                       className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                       name="vendedor" value={selectedSaler} onChange={(e) => setSelectedSaler(e.target.value)} required>
-                      <option value="">Seleccione un vendedor</option>
+                      <option value="">Vendedor</option>
                       <option value="">Mostrar Todos</option>
                       {vendedores.map((vendedor) => (
                         <option key={vendedor._id} value={vendedor._id}>{vendedor.fullName + " " + vendedor.lastName}</option>
@@ -268,7 +274,7 @@ const OrderView = () => {
                       value={selectedPaymentType} onChange={(e) => setSelectedPaymentType(e.target.value)}
                       className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
-                      <option value="">Selecciona tipo de pago</option>
+                      <option value="">Tipo de pago</option>
                       <option value="">Mostrar Todos</option>
 
                       <option value="Crédito">Crédito</option>
@@ -283,7 +289,7 @@ const OrderView = () => {
                       onChange={(e) => setSelectedPayment(e.target.value)}
                       className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
-                      <option value="">Selecciona un estado</option>
+                      <option value="">Estado de pago</option>
                       <option value="">Mostrar Todos</option>
                       <option value="Pagado">Pagado</option>
                       <option value="Pendiente">Pendiente</option>
@@ -295,11 +301,9 @@ const OrderView = () => {
                     <div className="flex items-center space-x-2">
                       <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
                     </div>
-
                     <div className="flex items-center space-x-2">
                       <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
                     </div>
-
                   </div>
                 )}
                 {selectedFilter === "region" && (
@@ -311,7 +315,7 @@ const OrderView = () => {
                       onChange={(e) => setSelectedRegion(e.target.value)}
                       required
                     >
-                      <option value="">Seleccione una ciudad</option>
+                      <option value="">Ciudad</option>
                       <option value="TOTAL CBB">Cochabamba</option>
                       <option value="TOTAL SC">Santa Cruz</option>
                       <option value="TOTAL LP">La Paz</option>
@@ -320,7 +324,7 @@ const OrderView = () => {
 
                   </div>
                 )}
-
+                <PrincipalBUtton onClick={() => applyFilters()} icon={HiFilter}>Filtrar</PrincipalBUtton>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4">
@@ -441,7 +445,8 @@ const OrderView = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDelete(item._id)}}
+                                handleDelete(item._id)
+                              }}
                               className="text-red-600 hover:text-red-800"
                               title="Eliminar"
                             >
@@ -465,7 +470,6 @@ const OrderView = () => {
               </div>
               {totalPages > 1 && (
                 <div className="flex justify-between items-center px-6 pb-4">
-
                   <div className="flex mb-4 justify-end items-center pt-4">
                     <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
                       Ítems por página:
@@ -477,13 +481,10 @@ const OrderView = () => {
                         const selectedValue = Number(e.target.value);
                         setItemsPerPage(selectedValue);
                         setPage(1);
-                        fetchOrders(1);
                       }}
-                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500"
                     >
-                      {[5, 10, 15, 20]
-                        .filter((option) => option < items && option <= MAX_ITEMS_PER_PAGE)
-                        .map((option) => (
+                      {[5, 10, 20].map((option) => (
                           <option key={option} value={option}>
                             {option}
                           </option>

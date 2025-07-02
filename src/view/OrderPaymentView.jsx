@@ -11,6 +11,7 @@ import OrderCalendarView from "./OrderCalendarView";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import Spinner from "../Components/LittleComponents/Spinner";
 
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -21,12 +22,10 @@ const OrderPaymentView = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const [selectedFilter, setSelectedFilter] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [applyFilter, setApplyFilter] = useState(false);
 
-  const [selectedCliente, setSelectedCliente] = useState(null);
 
   const [items, setItems] = useState();
 
@@ -49,8 +48,6 @@ const OrderPaymentView = () => {
         limit: itemsPerPage,
         clientName: searchTerm
       };
-      if (selectedStatus) filters.status = selectedStatus;
-      if (selectedCliente) filters.id_client = selectedCliente.value;
       if (startDate && endDate) {
         filters.startDate = startDate;
         filters.endDate = endDate;
@@ -77,7 +74,7 @@ const OrderPaymentView = () => {
     fetchProducts(page);
     setApplyFilter(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applyFilter, page, itemsPerPage]);
+  }, [applyFilter, page, itemsPerPage, selectedFilter]);
   const exportToExcel = async () => {
     try {
       const filters = {
@@ -87,8 +84,6 @@ const OrderPaymentView = () => {
         clientName: searchTerm,
       };
 
-      if (selectedStatus) filters.status = selectedStatus;
-      if (selectedCliente) filters.id_client = selectedCliente.value;
       if (startDate && endDate) {
         filters.startDate = startDate;
         filters.endDate = endDate;
@@ -134,20 +129,20 @@ const OrderPaymentView = () => {
 
   const handleFilterChange = (value) => {
     setSelectedFilter(value);
-    setSearchTerm("");
-    setSelectedCliente(null);
-    setSelectedStatus("");
-    setStartDate("");
-    setEndDate("");
-    setPage(1);
-    setApplyFilter(true);
+
+    if (value === "all") {
+      setDateFilterActive(false);
+      setStartDate(null);
+      setEndDate(null);
+      setApplyFilter(false);
+    }
   };
   const clearFilter = (type) => {
     if (type === 'date') {
       setStartDate('');
       setEndDate('');
+      fetchProducts(1);
       setDateFilterActive(false);
-
     }
     
   };
@@ -190,24 +185,28 @@ const OrderPaymentView = () => {
   return (
     <div className="bg-white min-h-screen shadow-lg rounded-lg p-5">
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div role="status">
-            <svg aria-hidden="true" className="inline w-10 h-10 text-gray-200 animate-spin dark:text-gray-600 fill-red-500" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-            </svg>
-            <span className="sr-only">Loading...</span>
-          </div>
-        </div>
+        <Spinner />
       ) : (
         <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
           {viewMode === "table" ? (
             <div>
-              <div className="flex items-center justify-between w-full">
-                <div className="relative flex items-center space-x-4">
-                  <div className="relative flex-1">
-                   
-                   
+              <div className="flex flex-col w-full">
+              <div className="flex items-center justify-between w-full mb-4">
+                <div>
+                  <h1 className="text-gray-900 font-bold text-2xl">Lista de pagos</h1>
+                </div>
+                <div className="flex justify-end items-center space-x-4">
+                    <button
+                      onClick={exportToExcel}
+                      className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                    >
+                      <FaFileExport color="##726E6E" />
+                    </button>
+                </div>
+                </div>
+              <div className="flex flex-wrap items-center gap-4 mb-4">
+                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+                  <div className="relative flex-grow">
                     <TextInputFilter
                       value={searchTerm}
                       onChange={setSearchTerm}
@@ -217,48 +216,31 @@ const OrderPaymentView = () => {
                   </div>
                   <select
                     value={selectedFilter}
-                    onChange={(e) => handleFilterChange(e.target.value)}
-                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    onChange={(e) => {handleFilterChange(e.target.value)}}
+                    className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                   >
                     <option value="none">Filtrar por: </option>
                     <option value="all">Mostrar todos</option>
                     <option value="date">Filtrar por Fecha:</option>
                   </select>
                 </div>
-                <div className="flex justify-end items-center space-x-10">
-                <button
-                    onClick={exportToExcel}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                  >
-                    <FaFileExport color="##726E6E" />
-                  </button>
+                <div className="flex flex-wrap items-center gap-2 mt-4">
+                  {selectedFilter === "date" && (
+                    <div className="flex space-x-4 mb-4 items-center">
+                      <div className="flex items-center space-x-2">
+                        <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+                      </div>
+                    </div>
+                  )}
                 </div>
+                <PrincipalBUtton onClick={() => setApplyFilter(true)} icon={HiFilter}>
+                  Filtrar
+                </PrincipalBUtton>
               </div>
-              <div className="relative mt-8 flex items-center space-x-4">
-                {selectedFilter === "date" && (
-                  <div className="flex space-x-4 mb-4 items-center">
-                    <div className="flex items-center space-x-2">
-                      
-                            <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      
-                            <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-
-                    </div>
-
-                    <div className="flex items-center">
-
-                      <PrincipalBUtton onClick={() => setApplyFilter(true)}
-                        icon={HiFilter}>Filtrar</PrincipalBUtton>
-
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 mt-4">
+              <div className="flex flex-wrap items-center gap-2">
                 {dateFilterActive && (
                   <span className="bg-orange-400 text-white px-3 py-1 rounded-full font-bold text-sm flex items-center gap-2">
                     Fecha: {startDate} → {endDate}
@@ -270,14 +252,14 @@ const OrderPaymentView = () => {
                   </span>
                 )}
               </div>
-              <div className="flex mt-4 justify-end space-x-2">
+              </div>
+              <div className="flex justify-end space-x-2">
                 <button
                   onClick={() => setViewMode("table")}
                   className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
                 >
                   <FiList className="w-5 h-5 text-[#D3423E] font-bold" />
                 </button>
-
                 <button
                   onClick={() => setViewMode("cards")}
                   className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
@@ -369,7 +351,6 @@ const OrderPaymentView = () => {
                               </svg>
                             </button>
                           </td>
-
                         </tr>
                       ))
                     ) : (
@@ -396,7 +377,6 @@ const OrderPaymentView = () => {
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
-                          fetchProducts(page);
                         }}
                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
                       >

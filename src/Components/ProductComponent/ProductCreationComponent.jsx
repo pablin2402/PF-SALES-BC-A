@@ -6,13 +6,12 @@ import { useNavigate } from "react-router-dom";
 const SalesView = () => {
     const defaultImage = "https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg";
 
-    const [imagePreview, setImagePreview] = useState(defaultImage);
+    const [imagePreview] = useState(defaultImage);
     const [categoriesList, setCategoriesList] = useState([]);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
     const [imageFile, setImageFile] = useState(null);
-    const [uploadedUrl, setUploadedUrl] = useState("");
     const navigate = useNavigate();
 
     const handleFileChange = (e) => {
@@ -27,10 +26,6 @@ const SalesView = () => {
                 "Content-Type": "multipart/form-data",
             },
         });
-        setUploadedUrl(res.data.imageUrl);
-        console.log("URL de imagen:", res.data.imageUrl);
-
-
         return res.data.imageUrl;
     };
     const fetchCategories = async () => {

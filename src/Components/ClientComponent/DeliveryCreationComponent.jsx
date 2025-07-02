@@ -41,7 +41,6 @@ const DeliveryCreationComponent = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const [imageFile, setImageFile] = useState(null);
-  const [uploadedUrl, setUploadedUrl] = useState("");
 
   const handleFileChange = (e) => {
     setImageFile(e.target.files[0]);
@@ -55,10 +54,6 @@ const DeliveryCreationComponent = () => {
         "Content-Type": "multipart/form-data",
       },
     });
-    setUploadedUrl(res.data.imageUrl);
-    console.log("URL de imagen:", res.data.imageUrl);
-
-
     return res.data.imageUrl;
   };
   const fetchAddress = async (lat, lng) => {
@@ -226,7 +221,7 @@ const DeliveryCreationComponent = () => {
                     name={name}
                     value={formData[name]}
                     onChange={handleChange}
-                    className="p-2.5 rounded-2xl text-sm text-gray-900 bg-gray-50 border border-gray-900"
+                    className="p-2.5 rounded-2xl text-sm text-gray-900 bg-gray-50 border border-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                     placeholder={label}
                     required
                   />
@@ -236,7 +231,7 @@ const DeliveryCreationComponent = () => {
               <div className="flex flex-col">
                 <label className="mb-1 text-left text-sm font-medium text-gray-900">Ciudad de trabajo</label>
                 <select
-                  className="text-gray-900 rounded-2xl p-2.5 bg-gray-50 border border-gray-900"
+                  className="text-gray-900 rounded-2xl p-2.5 bg-gray-50 border border-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                   name="region"
                   value={formData.region}
                   onChange={handleChange}
@@ -265,7 +260,7 @@ const DeliveryCreationComponent = () => {
                     value={address[name]}
                     onChange={handleAddressChange}
                     type="text"
-                    className="p-2.5 rounded-2xl text-sm text-gray-900 bg-gray-50 border border-gray-900"
+                    className="p-2.5 rounded-2xl text-sm text-gray-900 bg-gray-50 border border-gray-900 focus:outline-none focus:ring-0 focus:border-red-500"
                     placeholder={label}
                     required
                   />

@@ -7,9 +7,7 @@ import tiendaIcon from "../../icons/tienda.png";
 import { HiFilter } from "react-icons/hi";
 import { MdDelete } from "react-icons/md";
 import { DirectionsRenderer } from "@react-google-maps/api";
-import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
-import { FaFileExport } from "react-icons/fa6";
+import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 
 export default function ShowRouteComponent() {
 
@@ -198,53 +196,13 @@ export default function ShowRouteComponent() {
             );
         }
     }, [selectedMarkers]);
-
-    const exportToExcel = (data) => {
-        const flatData = [];
-
-        data.forEach((item) => {
-            const vendedor = `${item.salesMan?.fullName || ""} ${item.salesMan?.lastName || ""}`;
-            const nombreRuta = item.details || "";
-
-            item.route?.forEach((client) => {
-                flatData.push({
-                    Vendedor: vendedor,
-                    "Nombre de ruta": nombreRuta,
-                    Sucursal: client.client_location?.sucursalName || "",
-                    Cliente: `${client.name || ""} ${client.lastName || ""}` || "",
-                    Ciudad: client.client_location?.city || "",
-                    Dirección: client.client_location?.direction || "",
-                    Visitado: client.visitStatus ? "Sí" : "No",
-                    "Tiempo de visita": client.visitTime || "",
-                    "Fecha de visita": client.visitEndTime
-                        ? new Date(client.visitEndTime).toLocaleString("es-ES", {
-                            timeZone: "America/La_Paz",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                        })
-                        : "",
-                    "Orden tomada": client.orderTaken ? "Sí" : "No",
-                });
-            });
-        });
-
-        const ws = XLSX.utils.json_to_sheet(flatData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Rutas por cliente");
-
-        const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-        saveAs(new Blob([excelFile], { type: "application/octet-stream" }), "visitas_por_cliente.xlsx");
-    };
-
     return (
         <div className="h-screen w-full flex overflow-hidden">
             <div className="w-2/6 h-[calc(100vh-4rem)] overflow-auto border-r-2 border-gray-200">
-                <div className="px-4 py-4">
+            <div className="px-4 py-4">
                     <div className="bg-white p-4 rounded-xl shadow-md w-full mb-4 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col">
                             <select
                                 className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 name="vendedor"
@@ -260,7 +218,8 @@ export default function ShowRouteComponent() {
                                     </option>
                                 ))}
                             </select>
-
+                            </div>
+                            <div className="flex flex-col">
                             <select
                                 className="w-full p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                                 name="estado"
@@ -274,9 +233,10 @@ export default function ShowRouteComponent() {
                                 <option value="En progreso">En progreso</option>
                                 <option value="Finalizado">Finalizado</option>
                             </select>
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                             <input
                                 type="date"
                                 value={startDate}
@@ -289,23 +249,12 @@ export default function ShowRouteComponent() {
                                 onChange={(e) => setEndDate(e.target.value)}
                                 className="flex-1 p-2 text-m text-gray-900 border border-gray-400 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
                             />
-                             <button
-                                onClick={() => exportToExcel(listRoutes)}
-                                className="w-10 h-10 flex items-center justify-center text-green-600 hover:text-green-600 transition rounded-md"
-                            >
-                                <FaFileExport className="text-xl" />
-                            </button>
-                            <button
-                                onClick={() => loadRoute(startDate, endDate, selectedSaler)}
-                                className="w-10 h-10 flex items-center justify-center text-red-700 hover:text-red-600 transition rounded-md"
-                            >
-                                <HiFilter className="text-2xl" />
-                            </button>
+                              <PrincipalBUtton onClick={() => loadRoute(startDate, endDate,selectedSaler)} icon={HiFilter}>
+                                Filtrar
+                            </PrincipalBUtton>       
                         </div>
                     </div>
-
-
-
+                    <div className="bg-white p-6 rounded-xl shadow-md w-full mb-6 space-y-6">
                     <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white dark:bg-gray-900 text-gray-900 dark:text-white" data-inactive-classes="text-gray-500 dark:text-gray-400">
                         {listRoutes.length > 0 ? (
                             <>
@@ -390,10 +339,7 @@ export default function ShowRouteComponent() {
                                                     <span className="font-semibold text-gray-500">Fecha programada de fin:</span>
                                                     <span className="text-gray-900">{formatDateToLocal(client.endDate)}</span>
                                                 </div>
-                                                <div className="flex justify-between">
-                                                    <span className="font-semibold text-gray-500">Fecha de inicio vendedor:</span>
-                                                    <span className="text-gray-900">{formatDateToLocalHour(client.startDateRouteSales)}</span>
-                                                </div>
+                                              
 
                                                 <div className="flex justify-between items-center mt-3">
                                                     <span className="font-semibold text-gray-500">Progreso:</span>
@@ -517,7 +463,7 @@ export default function ShowRouteComponent() {
                             </div>
                         )}
                     </div>
-
+                    </div>
                 </div>
             </div>
             <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">
@@ -527,7 +473,6 @@ export default function ShowRouteComponent() {
                         center={center}
                         zoom={mapZoom}
                     >
-
                         {selectedMarkers.length > 0 && (() => {
                             const allVisited = selectedMarkers[0].route.every(client => client.visitStatus);
 
@@ -627,7 +572,7 @@ export default function ShowRouteComponent() {
                                     >
                                         <img
                                             className="w-16 h-16 object-cover rounded-md"
-                                            src={client.profilePicture || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
+                                            src={client.identificationImage || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
                                             alt={client.name}
                                         />
 

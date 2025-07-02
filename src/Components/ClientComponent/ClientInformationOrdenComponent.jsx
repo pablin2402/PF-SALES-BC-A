@@ -1,15 +1,28 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ClientPaymentDialog from "./ClientPaymentDialog";
 import axios from "axios";
-import { API_URL } from "../../config";
+import { API_URL, GOOGLE_API_KEY } from "../../config";
 import { FaFilePdf } from "react-icons/fa6";
+
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+
+import tiendaIcon from "../../icons/tienda.png";
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
+const containerStyle = {
+    width: "100%",
+    height: "300px",
+};
+
 export default function ClientInformationOrdenComponent() {
     const { state } = useLocation();
     const navigate = useNavigate();
+    const [isMapLoaded, setIsMapLoaded] = useState(false);
+    const [location, setLocation] = useState({ lat: -17.3835, lng: -66.1568 });
+    const [address, setAddress] = useState({ road: "", state: "" });
 
     const [totalGeneral, setTotalGeneral] = useState(0);
     const [totalDescuentos, setTotalDescuentos] = useState(0);
@@ -23,16 +36,38 @@ export default function ClientInformationOrdenComponent() {
     const tabRefs = useRef(new Array(tabs.length).fill(null));
     const [setIndicatorStyle] = useState({ left: 0, width: 0 });
     const [selectedImage, setSelectedImage] = useState(null);
+    const [deliveryData, setOrderPickUP] = useState(null);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
+    const [iconReady, setIconReady] = useState(false);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = tiendaIcon;
+        img.onload = () => setIconReady(true);
+    }, []);
+
+    const { isLoaded } = useJsApiLoader({
+        id: "google-map-script", 
+        googleMapsApiKey: GOOGLE_API_KEY,
+        libraries: ['maps'],
+      });
+      
     useEffect(() => {
         if (tabRefs.current[activeTab]) {
             const { offsetLeft, offsetWidth } = tabRefs.current[activeTab];
             setIndicatorStyle({ left: offsetLeft, width: offsetWidth });
         }
     }, [activeTab, setIndicatorStyle]);
-
+    const handleMapClick = useCallback((event) => {
+        const newLocation = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng(),
+        };
+        setLocation(newLocation);
+        // fetchAddress(newLocation.lat, newLocation.lng);
+    }, []);
     const exportToPDF = () => {
         const pdf = new jsPDF();
         pdf.addImage("/camacho.jpeg", "PNG", 160, 10, 30, 30);
@@ -125,14 +160,39 @@ export default function ClientInformationOrdenComponent() {
             console.error("Error al obtener los pagos", error);
         }
     };
+    const fetchOrderPickUpDetails = async () => {
+        try {
+            const response = await axios.post(API_URL + "/whatsapp/delivery/order/id", {
+                orderId: state.files._id,
+                id_owner: user,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const data = response.data || null;
+
+            if (data && data.latitud && data.longitud) {
+                setOrderPickUP(data);
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                return;
+            }
+            console.error("Error inesperado al obtener datos de entrega:", error);
+        }
+    };
+
+
     useEffect(() => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         fetchPayments();
         // eslint-disable-next-line react-hooks/exhaustive-deps
         fetchOrderTracks();
         // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchOrderPickUpDetails();
     }, []);
-
     const handleSavePayment = () => {
         fetchPayments();
     };
@@ -143,7 +203,6 @@ export default function ClientInformationOrdenComponent() {
             </div>
         );
     }
-
     const handleOpenDialog = () => setIsDialogOpen(true);
     const handleCloseDialog = () => setIsDialogOpen(false);
     const formatAccountStatus = (status) => {
@@ -185,6 +244,8 @@ export default function ClientInformationOrdenComponent() {
         const index = hash % colorClasses.length;
         return colorClasses[index];
     };
+
+
     return (
         <div className="bg-white min-h-screen p-5">
             <div className="relative overflow-x-auto">
@@ -533,16 +594,16 @@ export default function ClientInformationOrdenComponent() {
                                                         ha ingresado un pago
                                                     </div>
                                                 )}
-                                                 {event.eventType === "Ha aprobado un pago" && (
+                                                {event.eventType === "Ha aprobado un pago" && (
                                                     <div>
-                                                    <strong>
-                                                        {event.triggeredBySalesman?.fullName && event.triggeredBySalesman?.lastName
-                                                            ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
-                                                            : "Un administrador"}
-                                                    </strong>{" "}
-                                                    ha aprobado un pago
+                                                        <strong>
+                                                            {event.triggeredBySalesman?.fullName && event.triggeredBySalesman?.lastName
+                                                                ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                                                                : "Un administrador"}
+                                                        </strong>{" "}
+                                                        ha aprobado un pago
 
-                                                </div>
+                                                    </div>
                                                 )}
                                                 {event.eventType === "Ha sido asignado como repartidor" && (
                                                     <div>
@@ -552,6 +613,28 @@ export default function ClientInformationOrdenComponent() {
                                                                 : "Un repartidor"}
                                                         </strong>{" "}
                                                         ha sido asignado como repartidor.
+
+                                                    </div>
+                                                )}
+                                                {event.eventType === "ha llegado al destino" && (
+                                                    <div>
+                                                        <strong>
+                                                            {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                                                                ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                                                                : "Un repartidor"}
+                                                        </strong>{" "}
+                                                        ha llegado al destino de entrega.
+
+                                                    </div>
+                                                )}
+                                                {event.eventType === "está en camino al destino" && (
+                                                    <div>
+                                                        <strong>
+                                                            {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                                                                ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                                                                : "Un repartidor"}
+                                                        </strong>{" "}
+                                                        está en camino al punto de entrega.
 
                                                     </div>
                                                 )}
@@ -568,6 +651,72 @@ export default function ClientInformationOrdenComponent() {
                     </ol>
 
                 </div>
+
+                {deliveryData && deliveryData.latitud && deliveryData.longitud ? (
+                    <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                        <div className="space-y-4 mb-5">
+                            <div className="flex justify-between pb-2">
+                                <span className="text-xl font-bold text-gray-900">
+                                    Información del Punto de Entrega
+                                </span>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-xl font-bold text-gray-900">Persona que recibió el pedido:</span>
+                                <span className="text-lg text-gray-900">{deliveryData.clientName}</span>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-xl font-bold text-gray-900">Repartidor:</span>
+                                <span className="text-lg text-gray-900">
+                                    {deliveryData.delivery.fullName + " " + deliveryData.delivery.lastName}
+                                </span>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-xl font-bold text-gray-900">Fecha:</span>
+                                <span className="text-lg text-gray-900">
+                                    {new Date(deliveryData.creationDate).toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <img
+                                    src={deliveryData.image}
+                                    alt="Foto del recibo"
+                                    className="w-25 h-20 object-cover rounded-md"
+                                />
+                            </div>
+                        </div>
+                        {isLoaded && window.google?.maps?.Size && (
+                            <GoogleMap
+                                mapContainerStyle={containerStyle}
+                                center={{
+                                    lat: deliveryData.latitud,
+                                    lng: deliveryData.longitud,
+                                }}
+                                zoom={15}
+                            >
+                               {iconReady && (
+                                    <Marker
+                                        position={{
+                                        lat: deliveryData.latitud,
+                                        lng: deliveryData.longitud,
+                                        }}
+                                        icon={{
+                                        url: tiendaIcon,
+                                        scaledSize: new window.google.maps.Size(40, 40),
+                                        }}
+                                    />
+                                    )}
+
+                                </GoogleMap>
+                        )}
+
+
+                    </div>
+                ) : (
+                    <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                        <p className="text-gray-700 text-center">Todavía no se tienen datos de la entrega.</p>
+                    </div>
+                )}
+
             </div>
         </div>
     );
