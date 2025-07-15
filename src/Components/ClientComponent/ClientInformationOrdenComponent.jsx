@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import ClientPaymentDialog from "./ClientPaymentDialog";
 import axios from "axios";
 import { API_URL, GOOGLE_API_KEY } from "../../config";
@@ -20,9 +20,6 @@ const containerStyle = {
 export default function ClientInformationOrdenComponent() {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const [isMapLoaded, setIsMapLoaded] = useState(false);
-    const [location, setLocation] = useState({ lat: -17.3835, lng: -66.1568 });
-    const [address, setAddress] = useState({ road: "", state: "" });
 
     const [totalGeneral, setTotalGeneral] = useState(0);
     const [totalDescuentos, setTotalDescuentos] = useState(0);
@@ -60,14 +57,7 @@ export default function ClientInformationOrdenComponent() {
             setIndicatorStyle({ left: offsetLeft, width: offsetWidth });
         }
     }, [activeTab, setIndicatorStyle]);
-    const handleMapClick = useCallback((event) => {
-        const newLocation = {
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng(),
-        };
-        setLocation(newLocation);
-        // fetchAddress(newLocation.lat, newLocation.lng);
-    }, []);
+
     const exportToPDF = () => {
         const pdf = new jsPDF();
         pdf.addImage("/camacho.jpeg", "PNG", 160, 10, 30, 30);
@@ -247,6 +237,7 @@ export default function ClientInformationOrdenComponent() {
 
 
     return (
+        <div className="w-full p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
         <div className="bg-white min-h-screen p-5">
             <div className="relative overflow-x-auto">
                 <div className="flex mt-4 mb-4 justify-start space-x-2">
@@ -256,7 +247,7 @@ export default function ClientInformationOrdenComponent() {
                                 <li className="inline-flex items-center" >
                                     <button
                                         onClick={() => navigate(-1)}
-                                        className="inline-flex items-center text-sm font-medium text-gray-400 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
+                                        className="inline-flex items-center text-lg font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
                                     >
                                         <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
@@ -270,7 +261,7 @@ export default function ClientInformationOrdenComponent() {
                                         <svg className="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                                         </svg>
-                                        <span className="ms-1 text-m font-bold  text-[#D3423E] md:ms-2 dark:text-gray-400">Detalle del pago</span>
+                                        <span className="ms-1 text-lg font-bold text-[#D3423E] md:ms-2 dark:text-gray-400">Detalle del pago</span>
                                     </div>
                                 </li>
                             </ol>
@@ -730,5 +721,6 @@ export default function ClientInformationOrdenComponent() {
 
             </div>
         </div>
+</div>
     );
 }

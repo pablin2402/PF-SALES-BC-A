@@ -14,6 +14,13 @@ import { FaFileExport } from "react-icons/fa6";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ObjectiveSalesManComponent from "../Components/ObjectiveComponent/ObjectiveSalesManComponent";
+import { HiOutlineShoppingCart, HiOutlineCurrencyDollar, HiOutlineUserGroup } from 'react-icons/hi';
+import { MdLocalShipping } from 'react-icons/md';
+import VentasChart from "../Components/charts/VentasChart";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { useNavigate } from 'react-router-dom';
+import TrendLineChart from "../Components/charts/TrendLineChart";
+import Spinner from "../Components/LittleComponents/Spinner";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -22,6 +29,7 @@ const HomeView = () => {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
+  const navigate = useNavigate();
 
   const [salesData, setSalesData] = useState([]);
   const [numberOfOrders, setNumberOfOrders] = useState([]);
@@ -35,7 +43,47 @@ const HomeView = () => {
   const [filterType, setFilterType] = useState("monthYear");
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const [itemsPerPage] = useState(5);
+  const [labels, setLabels] = useState([]);
+  const [values, setValues] = useState([]);
+  const [page, setPage] = useState(1);
+  const [products, setProducts] = useState([]);
+  const [loading2, setLoading2] = useState(true);
 
+  const fetchChart = async (pages) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(API_URL + "/whatsapp/order/products/stadistics",
+        {
+          year: selectedYear,
+          month: selectedMonth,
+          page: pages,
+          itemsPerPage: itemsPerPage
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      const fetchedData = response.data.data || [];
+      const chartLabels = fetchedData.map((item) => item._id?.slice(0, 12) || "Sin nombre");
+      const chartValues = fetchedData.map((item) => item.totalCantidad || 0);
+
+      setSalesData(fetchedData);
+      setLabels(chartLabels);
+      setValues(chartValues);
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchChart(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, selectedYear, selectedMonth, itemsPerPage]);
   const colorClasses = [
     'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
     'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
@@ -148,6 +196,17 @@ const HomeView = () => {
   };
   const totalOrdersSum = salesBySeller.reduce((sum, seller) => sum + seller.totalOrders, 0);
   const totalAmountSum = salesBySeller.reduce((sum, seller) => sum + seller.totalAmount, 0);
+  useEffect(() => {
+    axios.post(API_URL + "/whatsapp/order/products/analysis")
+      .then((res) => {
+        setProducts(res.data.data);
+        setLoading2(false);
+      })
+      .catch((err) => {
+        console.error('Error al obtener predicciones:', err);
+        setLoading2(false);
+      });
+  }, []);
 
   const fetchNumber = async () => {
     setLoading(true);
@@ -187,12 +246,11 @@ const HomeView = () => {
           <p className="text-center text-red-500">{error}</p>
         ) : (
           <div className="flex flex-col space-y-6">
-            <div className="w-full p-6 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
+            <div className="w-full p-6 bg-white border border-gray-300 rounded-2xl shadow-md">
               <div className="flex justify-between items-start sm:items-center mt-2 sm:mt-5">
                 <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Reporte de ventas</h2>
               </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col mt-8 sm:flex-row sm:items-center justify-between gap-4">
                 <select
                   className="p-2 text-sm text-gray-900 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                   value={filterType}
@@ -201,7 +259,6 @@ const HomeView = () => {
                   <option value="monthYear">Filtrar por Mes y Año</option>
                   <option value="dateRange">Filtrar por Rango de Fechas</option>
                 </select>
-
                 {filterType === "monthYear" ? (
                   <div className="flex gap-2 flex-wrap">
                     <select
@@ -247,8 +304,7 @@ const HomeView = () => {
                   </div>
                 )}
               </div>
-
-              <div className="mt-5 border border-gray-300 rounded-xl overflow-x-auto">
+              <div className="mt-8 border border-gray-300 rounded-xl overflow-x-auto">
                 <table className="min-w-full text-xs text-left text-gray-500">
                   <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200">
                     <tr>
@@ -298,29 +354,80 @@ const HomeView = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <p className="text-gray-500 text-sm">Pedidos del mes</p>
-                <h2 className="text-2xl font-bold text-gray-800 mt-2">{totalOrdersSum}</h2>
+              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
+                <div className="p-3 bg-red-100 text-red-500 rounded-full">
+                  <HiOutlineShoppingCart size={28} />
+                </div>
+                <div>
+                  <p className="text-gray-900 text-sm">Pedidos del mes</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mt-1">{totalOrdersSum}</h2>
+                </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <p className="text-gray-500 text-sm">Total vendido</p>
-                <h2 className="text-2xl font-bold text-gray-800 mt-2">Bs. {totalAmountSum.toFixed(2)}</h2>
+              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
+                <div className="p-3 bg-green-100 text-green-500 rounded-full">
+                  <HiOutlineCurrencyDollar size={28} />
+                </div>
+                <div>
+                  <p className="text-gray-500 text-sm">Total vendido</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mt-1">Bs. {totalAmountSum.toFixed(2)}</h2>
+                </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <p className="text-gray-500 text-sm">Clientes nuevos</p>
-                <h2 className="text-2xl font-bold text-gray-800 mt-2">150</h2>
+              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
+                <div className="p-3 bg-blue-100 text-blue-500 rounded-full">
+                  <HiOutlineUserGroup size={28} />
+                </div>
+                <div>
+                  <p className="text-gray-500 text-sm">Clientes nuevos</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mt-1">150</h2>
+                </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <p className="text-gray-500 text-sm">Pedidos en camino</p>
-                <h2 className="text-2xl font-bold text-gray-800 mt-2">{numberOfOrders}</h2>
+              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
+                <div className="p-3 bg-yellow-100 text-yellow-500 rounded-full">
+                  <MdLocalShipping size={28} />
+                </div>
+                <div>
+                  <p className="text-gray-500 text-sm">Pedidos aceptados</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mt-1">{numberOfOrders}</h2>
+                </div>
               </div>
             </div>
-            <div className="w-full p-6 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex space-x-4">
+              <div className="relative w-1/2 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <button
+                  onClick={() => navigate("/stadistics")}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-[#D3423E] transition-colors"
+                >
+                  <HiOutlineDotsVertical size={20} />
+                </button>
+                <VentasChart labels={labels} values={values} year={selectedYear} />
+              </div>
 
-            <ObjectiveSalesManComponent region="TOTAL CBB" />
+              <div className="relative w-1/2 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                {loading2 ? (
+                  <div className="flex justify-center items-center h-96">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <div>
+                    <button
+                      onClick={() => navigate("/stadistics")}
+                      className="absolute top-4 right-4 text-gray-500 hover:text-[#D3423E] transition-colors"
+                    >
+                      <HiOutlineDotsVertical size={20} />
+                    </button>
+                    <TrendLineChart products={products} limit={5}/>
+
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+            <div className="w-full p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
+              <ObjectiveSalesManComponent region="TOTAL CBB" />
             </div>
           </div>
         )}

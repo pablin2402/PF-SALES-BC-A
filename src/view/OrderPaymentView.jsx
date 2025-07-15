@@ -271,17 +271,17 @@ const OrderPaymentView = () => {
               </div>
               <div className="mt-5 border border-gray-400 rounded-xl">
                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                  <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
                     <tr>
-                      <th className="px-6 py-3 uppercase">Número de Nota</th>
-                      <th className="px-6 py-3 uppercase">Fecha</th>
-                      <th className="px-6 py-3 uppercase">Vendedor</th>
-                      <th className="px-6 py-3 uppercase">Cliente</th>
-                      <th className="px-6 py-3 uppercase">Monto</th>
-                      <th className="px-6 py-3 uppercase">Total </th>
-                      <th className="px-6 py-3 uppercase">Deuda a la Fecha</th>
-                      <th className="px-6 py-3 uppercase">Estado de pago</th>
-                      <th className="px-6 py-3 uppercase"></th>
+                      <th className="px-4 py-3 uppercase">Número de Nota</th>
+                      <th className="px-4 py-3 uppercase">Fecha</th>
+                      <th className="px-4 py-3 uppercase">Vendedor</th>
+                      <th className="px-4 py-3 uppercase">Cliente</th>
+                      <th className="px-4 py-3 uppercase">Monto</th>
+                      <th className="px-4 py-3 uppercase">Total </th>
+                      <th className="px-4 py-3 uppercase">Deuda a la Fecha</th>
+                      <th className="px-4 py-3 uppercase">Estado de pago</th>
+                      <th className="px-4 py-3 uppercase"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -289,13 +289,13 @@ const OrderPaymentView = () => {
                       salesData.map((item) => (
                         <tr
                           key={item._id}
-                          className="bg-white text-sm border-b border-gray-200 hover:bg-gray-50"
+                          className="bg-white border-b hover:bg-gray-50"
                           onClick={() => {
                             setSelectedItem(item);
                           }}
                         >
-                          <td className="px-6 py-4 text-gray-900">{item.orderId.receiveNumber}</td>
-                          <td className="px-6 py-4 text-gray-900">
+                          <td className="px-4 py-3 text-gray-900">{item.orderId.receiveNumber}</td>
+                          <td className="px-4 py-3 text-gray-900">
                             {item.creationDate
                               ? new Date(item.creationDate).toLocaleString("es-ES", {
                                 weekday: 'long',
@@ -309,16 +309,16 @@ const OrderPaymentView = () => {
                               }).toUpperCase()
                               : ''}
                           </td>
-                          <td className="px-6 py-4 text-gray-900">
+                          <td className="px-4 py-3 text-gray-900">
                             {(item.sales_id || item.delivery_id)?.fullName + " " + (item.sales_id || item.delivery_id)?.lastName}
                           </td>
-                          <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                          <td className="px-6 py-4 text-gray-900">Bs. {item.total}</td>
-                          <td className="px-6 py-4 text-gray-900">Bs. {item.orderId.totalAmount}</td>
-                          <td className="px-6 py-4 text-gray-900">
+                          <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                          <td className="px-4 py-3 text-gray-900">Bs. {item.total}</td>
+                          <td className="px-4 py-3 text-gray-900">Bs. {item.orderId.totalAmount}</td>
+                          <td className="px-4 py-3 text-gray-900">
                             {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "N/A"}
                           </td>
-                          <td className="px-6 py-4 font-medium text-gray-900">
+                          <td className="px-4 py-3 font-medium text-gray-900">
                             {item.paymentStatus === "paid" && (
                               <span className="bg-blue-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
                                 INGRESADO
@@ -335,7 +335,7 @@ const OrderPaymentView = () => {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             <button
                               onClick={() => {
                                 setShowEditModal(true);

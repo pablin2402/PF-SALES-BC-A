@@ -25,7 +25,7 @@ const VentasChart = ({ labels = [], values = [], year }) => {
         },
       },
       title: {
-        text: `Productos Vendidos en ${year}`,
+        text: `Productos Vendidos`,
         align: 'left',
         style: {
           fontSize: '18px',
@@ -45,7 +45,7 @@ const VentasChart = ({ labels = [], values = [], year }) => {
       dataLabels: {
         enabled: true,
         style: {
-          fontSize: '12px',
+          fontSize: '30px',
         },
       },
       xaxis: {
@@ -54,6 +54,8 @@ const VentasChart = ({ labels = [], values = [], year }) => {
           rotate: -45,
           style: {
             fontSize: "12px",
+            color: '#fff'
+
           },
         },
       },
@@ -69,10 +71,18 @@ const VentasChart = ({ labels = [], values = [], year }) => {
         },
       ],
       tooltip: {
-        y: {
-          formatter: (val) => `${val} unidades`,
-        },
-      },
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          const category = w.globals.labels[dataPointIndex];
+          const value = series[seriesIndex][dataPointIndex];
+      
+          return `
+            <div style="background:#fff; padding:8px 12px; border-radius:8px;">
+              <span style="color:black; font-weight:bold;">${category}</span><br/>
+              <span style="color:black;">${value} unidades</span>
+            </div>
+          `;
+        }
+      },      
       responsive: [
         {
           breakpoint: 768,

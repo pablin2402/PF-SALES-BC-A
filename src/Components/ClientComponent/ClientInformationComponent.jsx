@@ -256,8 +256,8 @@ export default function ClientInformationComponent() {
       {loading ? (
         <Spinner />
       ) : (
-        <div>
-          <div className="w-full max-w-5xl gap-6">
+        <div className="p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
+        <div className="w-full max-w-5xl gap-6">
             <div className="flex mt-4 mb-4 justify-start space-x-2">
               <nav className="flex" aria-label="Breadcrumb">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
@@ -286,7 +286,7 @@ export default function ClientInformationComponent() {
                       </svg>
                       <button
                         onClick={() => navigate(-1)}
-                        className="ms-1 text-lg font-medium text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                        className="ms-1 text-lg font-bold text-[#D3423E] hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                       >
                         {client[0].name} {client[0].lastName}
                       </button>

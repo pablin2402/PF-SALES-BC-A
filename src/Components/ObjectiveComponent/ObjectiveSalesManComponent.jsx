@@ -88,13 +88,18 @@ const ObjectiveSalesManComponent = ({ region }) => {
     };
     const fetchObjectiveDataRegion = async (customFilters = {}) => {
         setLoading(true);
+        const now = new Date();
+        const firstDay = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        const lastDayDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const lastDay = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDayDate.getDate()).padStart(2, '0')}`;
         
         const filters = {
             region,
-            startDate: "2025-06-01",
-            endDate: "2025-06-31",
+            startDate: firstDay,
+            endDate: lastDay,
             ...customFilters,
         };
+        
 
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/objective/list", filters);

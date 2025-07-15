@@ -250,8 +250,8 @@ export default function ProfileView() {
       {loading ? (
        <Spinner/>
       ) : (
-        <div>
-          <div className="w-full max-w-5xl gap-6">
+        <div className="p-6 mt-5 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
+        <div className="w-full max-w-5xl gap-6">
           <div className="w-full mt-10 relative pt-40 bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
           <div className="absolute top-10 w-40 h-40 rounded-full overflow-hidden">
                 <img

@@ -7,8 +7,9 @@ import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
-import { FaCheckCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 
 import Spinner from "../Components/LittleComponents/Spinner";
 
@@ -44,6 +45,7 @@ const OrderView = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showCancelCheck, setShowCancelCheck] = useState(null);
 
   const handleNewOrderClick = () => {
     navigate("/order/creation");
@@ -228,15 +230,20 @@ const OrderView = () => {
         }
       );
 
-      if (response.status === 200) {
-        setShowSuccessCheck(true); // Mostrar el check
+      if (selectedItem.confirmed === "aproved") {
+        setShowSuccessCheck(true);
         fetchOrders(1);
-
-        // Esperar 3 segundos y cerrar modal
         setTimeout(() => {
           setShowEditModal(false);
           setShowSuccessCheck(false);
-        }, 3000);
+        }, 2000);
+      } else if (selectedItem.confirmed === "cancelled") {
+        setShowCancelCheck(true);
+        fetchOrders(1);
+        setTimeout(() => {
+          setShowEditModal(false);
+          setShowCancelCheck(false);
+        }, 2000);
       }
     } catch (error) {
       console.error("Error al actualizar el estado de pago:", error);
@@ -405,25 +412,26 @@ const OrderView = () => {
             <div className="mt-5 border border-gray-400 rounded-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                  <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
                     <tr>
-                      <th className="px-6 py-3 uppercase">Fecha de creación</th>
-                      <th className="px-6 py-3 uppercase">Ciudad</th>
-                      <th className="px-6 py-3 uppercase">Nombre</th>
-                      <th className="px-6 py-3 uppercase">Tipo de Pago</th>
-                      <th className="px-6 py-3 uppercase">Vendedor</th>
-                      <th className="px-6 py-3 uppercase">Estado de pago</th>
-                      <th className="px-6 py-3 uppercase">Total</th>
-                      <th className="px-6 py-3 uppercase">Saldo por pagar</th>
-                      <th className="px-6 py-3 uppercase">Días de mora</th>
-                      <th className="px-6 py-3 uppercase"></th>
+                      <th className="px-4 py-3 uppercase">Fecha de creación</th>
+                      <th className="px-4 py-3 uppercase">Ciudad</th>
+                      <th className="px-4 py-3 uppercase">Nombre</th>
+                      <th className="px-4 py-3 uppercase">Tipo de Pago</th>
+                      <th className="px-4 py-3 uppercase">Vendedor</th>
+                      <th className="px-4 py-3 uppercase">Estado de pago</th>
+                      <th className="px-4 py-3 uppercase">Total</th>
+                      <th className="px-4 py-3 uppercase">Saldo por pagar</th>
+                      <th className="px-4 py-3 uppercase">Días de mora</th>
+                      <th className="px-4 py-3 uppercase"></th>
+                      <th className="px-4 py-3 uppercase"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {salesData.length > 0 ? (
                       salesData.map((item) => (
                         <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
-                          <td className="px-6 py-4 text-gray-900">
+                          <td className="px-4 py-3 text-gray-900">
                             {item.creationDate
                               ? new Date(item.creationDate).toLocaleString("es-ES", {
                                 weekday: 'long',
@@ -437,9 +445,9 @@ const OrderView = () => {
                               }).toUpperCase()
                               : ''}
                           </td>
-                          <td className="px-6 py-4 text-gray-900">{item.region}</td>
-                          <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                          <td className="px-6 py-4 text-gray-900 font-bold">
+                          <td className="px-4 py-3 text-gray-900">{item.region}</td>
+                          <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                          <td className="px-4 py-3 text-gray-900 font-bold">
                             {item.accountStatus === "Crédito" && (
                               <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
                                 CRÉDITO
@@ -456,8 +464,8 @@ const OrderView = () => {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
-                          <td className="px-6 py-4 text-gray-900 font-bold">
+                          <td className="px-4 py-3 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
+                          <td className="px-4 py-3 text-gray-900 font-bold">
                             {item.payStatus === "Pagado" && (
                               <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
                                 PAGADO
@@ -469,11 +477,11 @@ const OrderView = () => {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
-                          <td className="px-6 py-4 text-gray-900">
+                          <td className="px-4 py-3 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
+                          <td className="px-4 py-3 text-gray-900">
                             {item.restante}
                           </td>
-                          <td className="px-6 py-4 text-gray-900">
+                          <td className="px-4 py-3 text-gray-900">
                             {item.diasMora}
                           </td>
                           {/*
@@ -492,7 +500,21 @@ const OrderView = () => {
                               )}
                             </td>
                             */}
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3 text-gray-900">
+                            {item.orderStatus === "aproved" && (
+                              <FaCheckCircle className="text-green-500 text-lg" />
+                            )}
+
+                            {item.orderStatus === "cancelled" && (
+                              <FaTimesCircle className="text-red-500 text-lg" />
+                            )}
+
+                            {item.orderStatus === "created" && (
+                              <FaExclamationCircle className="text-yellow-500 text-lg" />
+                            )}
+                          </td>
+
+                          <td className="px-4 py-3">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -625,6 +647,18 @@ const OrderView = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-green-600">Pedido Confirmado</h2>
               </motion.div>
+            ) : showCancelCheck ? (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="flex flex-col items-center justify-center"
+              >
+                <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+                  <FaTimesCircle className="text-red-500" size={80} />
+                </div>
+                <h2 className="text-2xl font-bold text-red-600">Pedido Rechazado</h2>
+              </motion.div>
             ) : (
               <>
                 {selectedItem.orderStatus === "created" && (
@@ -646,27 +680,41 @@ const OrderView = () => {
                     </motion.div>
                   </>
                 )}
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">Número de Nota:</label>
-                    <input
-                      type="text"
-                      disabled
-                      value={selectedItem.receiveNumber}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">Monto a Pagar:</label>
-                    <input
-                      type="text"
-                      disabled
-                      value={selectedItem.totalAmount}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
-                    />
-                  </div>
-                  {selectedItem.orderStatus === "created" && (
+                {selectedItem.orderStatus === "cancelled" && (
+                  <>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex flex-col items-center justify-center"
+                    >
+                      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+                        <FaTimesCircle className="text-red-500" size={80} />
+                      </div>
+                      <h2 className="text-2xl font-bold text-red-600">Pedido Denegado</h2>
+                    </motion.div>
+                  </>
+                )}
+                {selectedItem.orderStatus === "created" && (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="block mb-1 text-sm font-medium text-gray-700">Número de Nota:</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={selectedItem.receiveNumber}
+                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 text-sm font-medium text-gray-700">Monto a Pagar:</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={selectedItem.totalAmount}
+                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      />
+                    </div>
                     <div className="col-span-2">
                       <label className="block mb-1 text-sm font-medium text-gray-700">¿Quiere aprobar el pedido?</label>
                       <select
@@ -679,9 +727,9 @@ const OrderView = () => {
                         <option value="cancelled">Rechazado</option>
                       </select>
                     </div>
-                  )}
-                </div>
 
+                  </div>
+                )}
                 {selectedItem.orderStatus === "created" && (
                   <div className="flex gap-4 mt-6">
                     <button
@@ -701,6 +749,16 @@ const OrderView = () => {
                 )}
 
                 {selectedItem.orderStatus === "aproved" && (
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="w-full px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                )}
+                {selectedItem.orderStatus === "cancelled" && (
                   <div className="flex gap-4 mt-6">
                     <button
                       onClick={() => setShowEditModal(false)}

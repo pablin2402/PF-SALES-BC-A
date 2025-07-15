@@ -250,18 +250,18 @@ export default function SalesManInformationComponent() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6">
       {loading ? (
-       <Spinner/>
+        <Spinner />
       ) : (
-        <div>
-          <div className="w-full max-w-5xl gap-6">
-            <div className="flex mt-4 mb-4 justify-start space-x-2">
+        <div className="p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
+          <div className="w-full max-w-5xl mx-auto flex flex-col gap-6">
+            <div className="flex flex-wrap items-center mt-4 mb-4 space-x-2">
 
-              <nav className="flex" aria-label="Breadcrumb">
+              <nav className="flex flex-wrap items-center" aria-label="Breadcrumb">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                   <li className="inline-flex items-center" onClick={() => navigate(-1)}>
                     <button
                       onClick={() => navigate(-2)}
-                      className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"
+                      className="inline-flex items-center text-lg font-medium text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     >
                       <svg
                         className="w-3 h-3 me-2.5"
@@ -283,7 +283,7 @@ export default function SalesManInformationComponent() {
                       </svg>
                       <button
                         onClick={() => navigate(-1)}
-                        className="ms-1 text-sm font-medium text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                        className="ms-1 text-lg font-bold text-[#D3423E] hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                       >
                         {client.fullName} {client.lastName}
                       </button>
@@ -330,12 +330,12 @@ export default function SalesManInformationComponent() {
             <div className="flex items-center justify-between w-full mb-4">
               <div className="flex gap-2">
                 <div className="flex items-center space-x-2">
-                <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+                  <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
 
                 </div>
 
                 <div className="flex items-center space-x-2">
-                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+                  <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
 
                 </div>
                 <PrincipalBUtton onClick={() => handleFilterClick()} icon={HiFilter}>Filtrar</PrincipalBUtton>
@@ -350,16 +350,16 @@ export default function SalesManInformationComponent() {
                   <FaFileExport color="##726E6E" />
                   CSV
                 </button>
-             
+
                 <button
-                    onClick={exportToPDF}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                  >
-                    <FaFileExport color="##726E6E" /> PDF
-                  </button>
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                >
+                  <FaFileExport color="##726E6E" /> PDF
+                </button>
 
               </div>
-              
+
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {dateFilterActive && (
@@ -373,25 +373,25 @@ export default function SalesManInformationComponent() {
                 </span>
               )}
             </div>
-            <div className="mt-5 border border-gray-400 rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+              <table className="min-w-full text-xs sm:text-sm text-left text-gray-500">
+                <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
-                    <th className="px-6 py-3 uppercase">Referencia</th>
-                    <th className="px-6 py-3 uppercase">Fecha de creación</th>
-                    <th className="px-6 py-3 uppercase">Cliente</th>
-                    <th className="px-6 py-3 uppercase">Tipo de Pago</th>
-                    <th className="px-6 py-3 uppercase">Total</th>
-                    <th className="px-6 py-3 uppercase">Total Cobrado</th>
-                    <th className="px-6 py-3 uppercase">Saldo por cobrar</th>
-                    <th className="px-6 py-3 uppercase">Días de mora</th>
+                    <th className="px-4 py-3 uppercase">Referencia</th>
+                    <th className="px-4 py-3 uppercase">Fecha de creación</th>
+                    <th className="px-4 py-3 uppercase">Cliente</th>
+                    <th className="px-4 py-3 uppercase">Tipo de Pago</th>
+                    <th className="px-4 py-3 uppercase">Total</th>
+                    <th className="px-4 py-3 uppercase">Total Cobrado</th>
+                    <th className="px-4 py-3 uppercase">Saldo por cobrar</th>
+                    <th className="px-4 py-3 uppercase">Días de mora</th>
                   </tr>
                 </thead>
                 <tbody>
                   {salesData.map((item) => (
                     <tr key={item._id} onClick={() => handleRowClick(item)} className="bg-white border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-900">{item.receiveNumber}</td>
-                      <td className="px-6 py-4 text-gray-900">
+                      <td className="px-4 py-3 text-gray-900">{item.receiveNumber}</td>
+                      <td className="px-4 py-3 text-gray-900">
                         {item.creationDate
                           ? new Date(item.creationDate).toLocaleString("es-ES", {
                             weekday: 'long',
@@ -405,8 +405,8 @@ export default function SalesManInformationComponent() {
                           }).toUpperCase()
                           : ''}
                       </td>
-                      <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                      <td className="px-6 py-4 text-gray-900 font-bold">
+                      <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                      <td className="px-4 py-3 text-gray-900 font-bold">
                         {item.accountStatus === "Crédito" && (
                           <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
                             CRÉDITO
@@ -423,17 +423,17 @@ export default function SalesManInformationComponent() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.totalAmount}</td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.totalPagado}</td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.restante}</td>
-                      <td className="px-6 py-4 text-gray-900">
+                      <td className="px-4 py-3 text-gray-900">Bs. {item.totalAmount}</td>
+                      <td className="px-4 py-3 text-gray-900">Bs. {item.totalPagado}</td>
+                      <td className="px-4 py-3 text-gray-900">Bs. {item.restante}</td>
+                      <td className="px-4 py-3 text-gray-900">
                         {calculateDaysRemaining(item.dueDate, item.creationDate)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
+              <div className="flex justify-end px-4 py-3 text-lg text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
                 <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
               </div>
               {totalPages > 1 && (
