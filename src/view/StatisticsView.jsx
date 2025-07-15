@@ -15,6 +15,7 @@ const StatisticsView = () => {
     const [totalPages] = useState(1);
     const [searchTerm] = useState("");
     const [selectedMonth, setSelectedMonth] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState('');
 
 
     const [selectedStatus] = useState("");
@@ -31,6 +32,7 @@ const StatisticsView = () => {
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const [products, setProducts] = useState([]);
+    const allRows = [];
 
 
     useEffect(() => {
@@ -44,12 +46,29 @@ const StatisticsView = () => {
     }, []);
 
     useEffect(() => {
-        axios.post(API_URL + "/whatsapp/order/products/analysis")
+        axios.post(API_URL + "/whatsapp/sales/prediction")
             .then((res) => {
-                setProducts(res.data);
+                console.log(res.data.predicciones)
+                setProducts(res.data.predicciones);
             })
             .catch((err) => console.error('Error al obtener predicciones:', err));
     }, []);
+    const rows = [];
+
+    Object.keys(products).forEach(product => {
+        products[product].forEach(item => {
+            allRows.push({
+                producto: product,
+                fecha: item.ds.split('T')[0],
+                prediccion: item.yhat.toFixed(2)
+            });
+        });
+    });
+    const filteredRows = selectedProduct
+        ? allRows.filter(row => row.producto === selectedProduct)
+        : allRows;
+
+    const productOptions = Object.keys(products);
 
     const fetchOrders = async (pages) => {
         setLoading(true);
@@ -66,13 +85,13 @@ const StatisticsView = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                const fetchedData = response.data.data || [];
-                const chartLabels = fetchedData.map((item) => item._id?.slice(0, 12) || "Sin nombre");
-                const chartValues = fetchedData.map((item) => item.totalCantidad || 0);
-          
-                setSalesData(fetchedData);
-                setLabels(chartLabels);
-                setValues(chartValues);
+            const fetchedData = response.data.data || [];
+            const chartLabels = fetchedData.map((item) => item._id?.slice(0, 12) || "Sin nombre");
+            const chartValues = fetchedData.map((item) => item.totalCantidad || 0);
+
+            setSalesData(fetchedData);
+            setLabels(chartLabels);
+            setValues(chartValues);
 
         } catch (error) {
             console.error(error);
@@ -177,29 +196,29 @@ const StatisticsView = () => {
                                             </div>
                                         </div>
                                     </div>
-                                        <div className="flex justify-end items-center space-x-4">
-                                            <button
-                                                onClick={exportToExcel}
-                                                className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                                            >
-                                                <FaFileExport color="##726E6E" />
-                                            </button>
-                                        </div>
-                                
+                                    <div className="flex justify-end items-center space-x-4">
+                                        <button
+                                            onClick={exportToExcel}
+                                            className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                                        >
+                                            <FaFileExport color="##726E6E" />
+                                        </button>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-4 px-4 py-4">
                             <div className="max-w p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                            <VentasChart labels={labels} values={values} year={selectedYear} />
+                                <VentasChart labels={labels} values={values} year={selectedYear} />
 
                             </div>
 
                             <div className="w-full overflow-x-auto">
                                 <div className="border border-gray-400 rounded-xl">
 
-                                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
-                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-xl overflow-hidden">
+                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b rounded-2xl border-gray-300">
                                             <tr>
                                                 <th className="px-6 py-3 uppercase">Nombre</th>
                                                 <th className="px-6 py-3 uppercase">Producto</th>
@@ -303,42 +322,48 @@ const StatisticsView = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="p-4">
-                            <h2 className="text-2xl font-bold mb-4">Predicción de ventas por producto</h2>
-                            <table className="w-full border">
-                                <thead>
-                                    <tr className="bg-gray-200">
-                                        <th className="p-2 border">Producto</th>
-                                        <th className="p-2 border">Ventas anteriores</th>
-                                        <th className="p-2 border">Predicción siguiente mes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {Array.isArray(products) && products.length > 0 ? (
-                                        products.map((prod, index) => (
-                                            <tr key={index}>
-                                                <td className="border px-4 py-2">{prod.nombre}</td>
-                                                <td className="border px-4 py-2">{prod.totalCantidad}</td>
-                                                <td className="border px-4 py-2">
-                                                    {prod.forecast.length > 0 ? (
-                                                        prod.forecast.map((f, i) => (
-                                                            <div key={i}>{f.mes}: {f.valor}</div>
-                                                        ))
-                                                    ) : (
-                                                        <span className="text-red-600 font-semibold">{prod.error}</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3" className="text-center py-4">Cargando o sin datos...</td>
-                                        </tr>
-                                    )}
+                        <div className="mb-2 mt-10 px-6">
+                        <h2 className="text-2xl text-gray-900 font-bold mb-4">Predicción de ventas por producto</h2>
 
-                                </tbody>
-                            </table>
+                                    <select
+                                        id="productFilter"
+                                        value={selectedProduct}
+                                        onChange={(e) => setSelectedProduct(e.target.value)}
+                                        className="py-2 text-sm text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                                    >
+                                        <option value="">Todos</option>
+                                        {productOptions.map((product, index) => (
+                                            <option key={index} value={product}>{product}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                        <div className="p-4">
+                            <div className="w-full">
+                                <div className="border border-gray-400 rounded-xl overflow-x-auto">
+                                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-xl overflow-hidden">
+                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b rounded-2xl border-gray-300">
+                                            <tr className="bg-gray-200">
+                                                <th className="px-6 py-3 uppercase">Producto</th>
+                                                <th className="px-6 py-3 uppercase">Fecha</th>
+                                                <th className="px-6 py-3 uppercase">Predicción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredRows.map((row, index) => (
+                                                <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-m text-gray-900">{row.producto}</td>
+                                                    <td className="px-6 py-4 text-m text-gray-900">{row.fecha}</td>
+                                                    <td className="px-6 py-4 text-m text-gray-900">{row.prediccion}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
+
+
+
                     </div>
                 )}
             </div>

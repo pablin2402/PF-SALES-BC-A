@@ -61,7 +61,7 @@ export default function DeliveryRouteView() {
       console.error("Error fetching products:", error);
     } finally {
     }
-  }, [user, token,page]);
+  }, [user, token, page]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
@@ -75,7 +75,7 @@ export default function DeliveryRouteView() {
         limit: 5,
         fullName: searchTerm,
         salesId: selectedSaler,
-        status: "deliver",
+        status: "aproved",
         region: "TOTAL CBB"
       };
 
@@ -90,13 +90,13 @@ export default function DeliveryRouteView() {
     } catch (error) {
     } finally {
     }
-  }, [user, searchTerm, token,selectedSaler,page]);
+  }, [user, searchTerm, token, selectedSaler, page]);
 
   useEffect(() => {
     fetchProducts();
     loadMarkersFromAPI();
   }, [fetchProducts, loadMarkersFromAPI]);
-  
+
   const validateForm = () => {
     const newErrors = {};
     if (!routeName) newErrors.routeName = "El nombre es obligatorio.";
@@ -127,7 +127,7 @@ export default function DeliveryRouteView() {
   };
   const handleCreateRoute = async () => {
     if (!validateForm()) return;
-  
+
     const routeData = {
       details: routeName,
       delivery: selectedSaler,
@@ -138,14 +138,14 @@ export default function DeliveryRouteView() {
       endDate: endDate,
       progress: 0
     };
-  
+
     try {
       const response = await axios.post(API_URL + "/whatsapp/delivert/route", routeData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-  
+
       if (response.status === 200) {
         const updatePromises = selectedMarkers.map(async (marker) => {
           const orderUpdate = {
@@ -155,16 +155,16 @@ export default function DeliveryRouteView() {
             orderTrackId: selectedSaler,
             orderStatus: "En Ruta"
           };
-  
+
           const res = await axios.put(API_URL + "/whatsapp/order/status/id", orderUpdate, {
             headers: {
               Authorization: `Bearer ${token}`
             }
           });
-  
+
           if (res.status === 200) {
             await axios.post(API_URL + "/whatsapp/order/track", {
-              orderId: marker._id, 
+              orderId: marker._id,
               eventType: "Ha sido asignado como repartidor",
               triggeredBySalesman: "",
               triggeredByDelivery: selectedSaler,
@@ -176,12 +176,12 @@ export default function DeliveryRouteView() {
               }
             });
           }
-  
+
           return res;
         });
-  
+
         const results = await Promise.all(updatePromises);
-  
+
         const allSuccessful = results.every(r => r.status === 200);
         if (allSuccessful) {
           loadMarkersFromAPI();
@@ -189,12 +189,12 @@ export default function DeliveryRouteView() {
           cleanData();
         }
       }
-  
+
     } catch (error) {
       console.error("Error al crear la ruta o actualizar las órdenes:", error);
     }
   };
-  
+
   const handleDelete = (clientId) => {
     setSelectedMarkers((prev) => prev.filter(client => client._id !== clientId));
   };
@@ -287,13 +287,14 @@ export default function DeliveryRouteView() {
           profilePicture: location.id_client.identificationImage,
           client_location: location.id_client.client_location,
           visitStatus: false,
+          visitStatus1: "Sin visitar",
           visitTime: null,
           orderTaken: false,
           visitStartTime: null,
           visitEndTime: null,
           tripTime: null,
           distanceTrip: null,
-          timeToPlace:null
+          timeToPlace: null
         };
         return [...prev, newLocation];
       }
@@ -326,11 +327,11 @@ export default function DeliveryRouteView() {
                   tabIndex={0}
                   style={{ minHeight: "280px" }}
                 >
-                 
+
                   <span className="absolute top-2 left-2 text-gray-900 font-bold">
-                    {client.orderStatus === "deliver" && (
+                    {client.orderStatus === "aproved" && (
                       <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                        ÓRDEN CREADA
+                        ÓRDEN APROBADA
                       </span>
                     )}
                     {client.orderStatus === "En Ruta" && (
@@ -365,30 +366,30 @@ export default function DeliveryRouteView() {
                       {client.id_client.name} {client.id_client.lastName}
                     </h5>
                     <h5 className="text-l mt-2 mb-2 font-bold tracking-tight text-gray-900 flex items-center">
-                    {client.accountStatus === "Crédito" && (
-                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                              CRÉDITO
-                            </span>
-                          )}
-                          {client.accountStatus === "Contado" && (
-                            <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                              CONTADO
-                            </span>
-                          )}
-                          {client.accountStatus === "Cheque" && (
-                            <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
-                              CHEQUE
-                            </span>
-                          )}
+                      {client.accountStatus === "Crédito" && (
+                        <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                          CRÉDITO
+                        </span>
+                      )}
+                      {client.accountStatus === "Contado" && (
+                        <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                          CONTADO
+                        </span>
+                      )}
+                      {client.accountStatus === "Cheque" && (
+                        <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
+                          CHEQUE
+                        </span>
+                      )}
                     </h5>
                     <h5 className="text-l mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
                       #{client.receiveNumber}
                     </h5>
-                    
+
                     <h5 className="text-l mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
                       {client.id_client.company}
                     </h5>
-                   
+
                     <p className="text-m mt-2 mb-2 font-normal text-gray-700 flex items-center">
                       <FaMapMarkerAlt className="text-red-500 mr-2" />
                       {client.id_client.client_location?.direction || "No disponible"}
@@ -511,7 +512,6 @@ export default function DeliveryRouteView() {
                 )}
               </Marker>
             ))}
-
             {directionsResponse && (
               <DirectionsRenderer
                 directions={directionsResponse}
@@ -599,7 +599,12 @@ export default function DeliveryRouteView() {
             </select>
           </div>
           <div className="w-1/2">
-            <PrincipalBUtton onClick={() => setIsOpen(true)}>CREAR RUTA</PrincipalBUtton>
+            <PrincipalBUtton
+              onClick={() => setIsOpen(true)}
+              disabled={selectedMarkers.length === 0}
+            >
+              CREAR RUTA
+            </PrincipalBUtton>
           </div>
         </div>
       </div>
@@ -633,7 +638,7 @@ export default function DeliveryRouteView() {
                   </div>
                   <div className="text-left">
                     <label className="block mb-2 text-m font-medium text-gray-900 dark:text-white">Fecha de inicio</label>
-                      <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+                    <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
                   </div>
                   <div className="text-left">
                     <label className="block mb-2 text-m font-medium text-gray-900 ">Fecha de fin</label>
@@ -641,7 +646,7 @@ export default function DeliveryRouteView() {
 
                   </div>
                   <div className="w-full">
-                  <button
+                    <button
                       type="button"
                       onClick={() => handleCreateRoute()}
                       disabled={!routeName || !startDate || !endDate}

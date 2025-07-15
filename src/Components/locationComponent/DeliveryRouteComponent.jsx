@@ -67,6 +67,7 @@ export default function DeliveryRouteComponent() {
                 endDate,
                 delivery: selectedSaler2,
                 page,
+                excludeComplete: false,
                 status: selectedStatus === "todos" ? null : selectedStatus,
             }, {
                 headers: {
@@ -117,20 +118,6 @@ export default function DeliveryRouteComponent() {
         const year = date.getUTCFullYear();
 
         return `${day}/${month}/${year}`;
-    };
-    const formatDateToLocalHour = (isoDate) => {
-        if (!isoDate) return "";
-        const date = new Date(isoDate);
-
-        const day = String(date.getUTCDate()).padStart(2, "0");
-        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-        const year = date.getUTCFullYear();
-
-        const hours = String(date.getUTCHours()).padStart(2, "0") - 4;
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     };
     const deleteRoutes = async (value) => {
         try {
@@ -366,16 +353,16 @@ export default function DeliveryRouteComponent() {
                                                                     <span className="font-semibold text-m text-gray-500">Estado:</span>
                                                                     <span
                                                                         className={`
-                                                                        ${route.visitStatus === true ? "bg-green-500 uppercase font-bold text-white" : ""}
-                                                                        ${route.visitStatus === false ? "bg-red-600 uppercase font-bold text-white" : ""}
-                                                                        px-2.5 py-0.5 rounded-full font-bold text-sm font-medium
+                                                                            ${route.visitStatus1 === "LLego al destino" ? "bg-green-500 uppercase font-bold text-white" : ""}
+                                                                            ${route.visitStatus1 === "Sin visitar" ? "bg-red-600 uppercase font-bold text-white" : ""}
+                                                                            ${route.visitStatus1 === "En camino" ? "bg-yellow-500 uppercase font-bold text-white" : ""}
+                                                                            ${route.visitStatus1 === "Pedido entregado" ? "bg-green-500 uppercase font-bold text-white" : ""}
+                                                                            px-2.5 py-0.5 rounded-full font-bold text-sm font-medium
                                                                         `}
-                                                                    >
-                                                                        {route.visitStatus === true ? "Visitado" : "Sin visitar"}
-                                                                    </span>
+                                                                        >
+                                                                        {route.visitStatus1}
+                                                                        </span>
                                                                 </div>
-
-
                                                             </div>
                                                         ))
                                                     ) : (

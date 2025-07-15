@@ -638,6 +638,17 @@ export default function ClientInformationOrdenComponent() {
 
                                                     </div>
                                                 )}
+                                                 {event.eventType === "Pedido Entregado" && (
+                                                    <div>
+                                                        <strong>
+                                                            {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                                                                ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                                                                : "Un repartidor"}
+                                                        </strong>{" "}
+                                                        ha entregado el pedido
+
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

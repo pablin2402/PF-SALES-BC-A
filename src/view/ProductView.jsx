@@ -126,7 +126,7 @@ const ProductView = () => {
             </div>
           </div>
         ) : (
-          <div>
+          <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
             <div className="flex flex-col w-full gap-4">
               <div className="flex justify-end gap-4">
                 <PrincipalBUtton onClick={() => navigate("/product/creation")} >                  

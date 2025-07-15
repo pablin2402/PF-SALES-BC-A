@@ -3,11 +3,12 @@ import axios from "axios";
 import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 import { FaFileExport } from "react-icons/fa6";
-import { HiOutlineTrash } from "react-icons/hi";
 import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import { FaCheckCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 import Spinner from "../Components/LittleComponents/Spinner";
 
@@ -27,6 +28,7 @@ const OrderView = () => {
   const [selectedSaler, setSelectedSaler] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("");
   const [dateFilterActive, setDateFilterActive] = useState(false);
+  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
 
   const [vendedores, setVendedores] = useState([]);
 
@@ -40,6 +42,8 @@ const OrderView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const handleNewOrderClick = () => {
     navigate("/order/creation");
@@ -69,7 +73,6 @@ const OrderView = () => {
     try {
       const filters = {
         id_owner: user,
-        region: "TOTAL CBB",
         page: pageNumber,
         limit: itemsPerPage,
         fullName: inputValue,
@@ -186,6 +189,7 @@ const OrderView = () => {
     setDateFilterActive(false);
 
   };
+  /*
   const handleDelete = async (id) => {
     try {
       const response = await axios.delete(`${API_URL}/whatsapp/order/id`, {
@@ -207,6 +211,37 @@ const OrderView = () => {
       console.error("Error al eliminar:", error.response?.data || error.message);
     }
   };
+  */
+  const uploadProducts = async (id) => {
+    try {
+      const response = await axios.put(
+        API_URL + "/whatsapp/order/status/confirm/id",
+        {
+          _id: id,
+          id_owner: user,
+          orderStatus: selectedItem.confirmed,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setShowSuccessCheck(true); // Mostrar el check
+        fetchOrders(1);
+
+        // Esperar 3 segundos y cerrar modal
+        setTimeout(() => {
+          setShowEditModal(false);
+          setShowSuccessCheck(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error al actualizar el estado de pago:", error);
+    }
+  };
 
 
   return (
@@ -215,7 +250,7 @@ const OrderView = () => {
         {loading ? (
           <Spinner />
         ) : (
-          <div>
+          <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
             <div className="flex flex-col w-full">
               <div className="flex items-center justify-between w-full mb-4">
                 <h1 className="text-gray-900 font-bold text-2xl">Órdenes de venta</h1>
@@ -227,7 +262,7 @@ const OrderView = () => {
                   >
                     <FaFileExport color="##726E6E" />
                   </button>
-                  <PrincipalBUtton onClick={() => handleNewOrderClick()} icon={HiFilter}>Nuevo Pedido</PrincipalBUtton>
+                  <PrincipalBUtton onClick={() => handleNewOrderClick()}>Nuevo Pedido</PrincipalBUtton>
                 </div>
               </div>
 
@@ -368,185 +403,318 @@ const OrderView = () => {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                  <tr>
-                    <th className="px-6 py-3 uppercase">Fecha de creación</th>
-                    <th className="px-6 py-3 uppercase">Ciudad</th>
-                    <th className="px-6 py-3 uppercase">Nombre</th>
-                    <th className="px-6 py-3 uppercase">Tipo de Pago</th>
-                    <th className="px-6 py-3 uppercase">Vendedor</th>
-                    <th className="px-6 py-3 uppercase">Estado de pago</th>
-                    <th className="px-6 py-3 uppercase">Total</th>
-                    <th className="px-6 py-3 uppercase">Saldo por pagar</th>
-                    <th className="px-6 py-3 uppercase">Días de mora</th>
-                    <th className="px-6 py-3 uppercase"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesData.length > 0 ? (
-                    salesData.map((item) => (
-                      <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
-                        <td className="px-6 py-4 text-gray-900">
-                          {item.creationDate
-                            ? new Date(item.creationDate).toLocaleString("es-ES", {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              second: "2-digit",
-                              hour12: false,
-                            }).toUpperCase()
-                            : ''}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900">{item.region}</td>
-                        <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                        <td className="px-6 py-4 text-gray-900 font-bold">
-                          {item.accountStatus === "Crédito" && (
-                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                              CRÉDITO
-                            </span>
-                          )}
-                          {item.accountStatus === "Contado" && (
-                            <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                              CONTADO
-                            </span>
-                          )}
-                          {item.accountStatus === "Cheque" && (
-                            <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
-                              CHEQUE
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
-                        <td className="px-6 py-4 text-gray-900 font-bold">
-                          {item.payStatus === "Pagado" && (
-                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                              PAGADO
-                            </span>
-                          )}
-                          {item.payStatus === "Pendiente" && (
-                            <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
-                              PENDIENTE
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
-                        <td className="px-6 py-4 text-gray-900">
-                          {item.restante}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900">
-                          {item.diasMora}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900">
-                          {item.totalAmount === item.restante && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 uppercase">Fecha de creación</th>
+                      <th className="px-6 py-3 uppercase">Ciudad</th>
+                      <th className="px-6 py-3 uppercase">Nombre</th>
+                      <th className="px-6 py-3 uppercase">Tipo de Pago</th>
+                      <th className="px-6 py-3 uppercase">Vendedor</th>
+                      <th className="px-6 py-3 uppercase">Estado de pago</th>
+                      <th className="px-6 py-3 uppercase">Total</th>
+                      <th className="px-6 py-3 uppercase">Saldo por pagar</th>
+                      <th className="px-6 py-3 uppercase">Días de mora</th>
+                      <th className="px-6 py-3 uppercase"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.length > 0 ? (
+                      salesData.map((item) => (
+                        <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
+                          <td className="px-6 py-4 text-gray-900">
+                            {item.creationDate
+                              ? new Date(item.creationDate).toLocaleString("es-ES", {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                hour12: false,
+                              }).toUpperCase()
+                              : ''}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">{item.region}</td>
+                          <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                          <td className="px-6 py-4 text-gray-900 font-bold">
+                            {item.accountStatus === "Crédito" && (
+                              <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                                CRÉDITO
+                              </span>
+                            )}
+                            {item.accountStatus === "Contado" && (
+                              <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                                CONTADO
+                              </span>
+                            )}
+                            {item.accountStatus === "Cheque" && (
+                              <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
+                                CHEQUE
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
+                          <td className="px-6 py-4 text-gray-900 font-bold">
+                            {item.payStatus === "Pagado" && (
+                              <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                                PAGADO
+                              </span>
+                            )}
+                            {item.payStatus === "Pendiente" && (
+                              <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
+                                PENDIENTE
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
+                          <td className="px-6 py-4 text-gray-900">
+                            {item.restante}
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">
+                            {item.diasMora}
+                          </td>
+                          {/*
+                            <td className="px-6 py-4 text-gray-900">
+                              {item.totalAmount === item.restante && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(item._id)
+                                  }}
+                                  className="text-red-600 hover:text-red-800"
+                                  title="Eliminar"
+                                >
+                                  <HiOutlineTrash className="w-5 h-5" />
+                                </button>
+                              )}
+                            </td>
+                            */}
+                          <td className="px-6 py-4">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDelete(item._id)
+                                setSelectedItem(item);
+                                setShowEditModal(true);
                               }}
-                              className="text-red-600 hover:text-red-800"
-                              title="Eliminar"
+                              className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
+                              aria-label="Opciones"
                             >
-                              <HiOutlineTrash className="w-5 h-5" />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <circle cx="10" cy="4" r="2" />
+                                <circle cx="10" cy="10" r="2" />
+                                <circle cx="10" cy="16" r="2" />
+                              </svg>
                             </button>
-                          )}
+                          </td>
+
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center uppercase text-gray-500">
+                          No se encontraron coincidencias.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center uppercase text-gray-500">
-                        No se encontraron coincidencias.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
-                <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
-              </div>
-              {totalPages > 1 && (
-                <div className="flex justify-between items-center px-6 pb-4">
-                  <div className="flex mb-4 justify-end items-center pt-4">
-                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                      Ítems por página:
-                    </label>
-                    <select
-                      id="itemsPerPage"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        const selectedValue = Number(e.target.value);
-                        setItemsPerPage(selectedValue);
-                        setPage(1);
-                      }}
-                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500"
-                    >
-                      {[5, 10, 20].map((option) => (
+                    )}
+                  </tbody>
+                </table>
+                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
+                  <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-between items-center px-6 pb-4">
+                    <div className="flex mb-4 justify-end items-center pt-4">
+                      <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                        Ítems por página:
+                      </label>
+                      <select
+                        id="itemsPerPage"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          const selectedValue = Number(e.target.value);
+                          setItemsPerPage(selectedValue);
+                          setPage(1);
+                        }}
+                        className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500"
+                      >
+                        {[5, 10, 20].map((option) => (
                           <option key={option} value={option}>
                             {option}
                           </option>
                         ))}
-                    </select>
-                  </div>
+                      </select>
+                    </div>
 
-                  <nav className="flex items-center justify-center pt-4 space-x-2">
-                    <button
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={page === 1}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
-                    >
-                      ◀
-                    </button>
-
-                    <button
-                      onClick={() => setPage(1)}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                    >
-                      1
-                    </button>
-
-                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                      .filter((p) => p > 1 && p < totalPages)
-                      .map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setPage(p)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-
-                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
-                    {totalPages > 1 && (
+                    <nav className="flex items-center justify-center pt-4 space-x-2">
                       <button
-                        onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
                       >
-                        {totalPages}
+                        ◀
                       </button>
-                    )}
 
-                    <button
-                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={page === totalPages}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                    >
-                      ▶
-                    </button>
-                  </nav>
-                </div>
-              )}
+                      <button
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                      >
+                        1
+                      </button>
+
+                      {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                        .filter((p) => p > 1 && p < totalPages)
+                        .map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+
+                      {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                      {totalPages > 1 && (
+                        <button
+                          onClick={() => setPage(totalPages)}
+                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={page === totalPages}
+                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                      >
+                        ▶
+                      </button>
+                    </nav>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-[700px]">
+
+            {showSuccessCheck ? (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="flex flex-col items-center justify-center"
+              >
+                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+                  <FaCheckCircle className="text-green-500" size={80} />
+                </div>
+                <h2 className="text-2xl font-bold text-green-600">Pedido Confirmado</h2>
+              </motion.div>
+            ) : (
+              <>
+                {selectedItem.orderStatus === "created" && (
+                  <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Aprobar Pedido</h2>
+                )}
+
+                {selectedItem.orderStatus === "aproved" && (
+                  <>
+                    <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Pedido aprobado</h2>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex justify-center mb-4"
+                    >
+                      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center shadow-lg">
+                        <FaCheckCircle className="text-green-500" size={60} />
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Número de Nota:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.receiveNumber}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Monto a Pagar:</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={selectedItem.totalAmount}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                    />
+                  </div>
+                  {selectedItem.orderStatus === "created" && (
+                    <div className="col-span-2">
+                      <label className="block mb-1 text-sm font-medium text-gray-700">¿Quiere aprobar el pedido?</label>
+                      <select
+                        value={selectedItem.confirmed || ""}
+                        onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                      >
+                        <option value="">Seleccione una opción</option>
+                        <option value="aproved">Confirmado</option>
+                        <option value="cancelled">Rechazado</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {selectedItem.orderStatus === "created" && (
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      onClick={() => uploadProducts(selectedItem._id)}
+                      className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                )}
+
+                {selectedItem.orderStatus === "aproved" && (
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="w-full px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

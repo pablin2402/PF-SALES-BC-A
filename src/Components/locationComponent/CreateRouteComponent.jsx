@@ -165,6 +165,7 @@ export default function CreateRouteComponent() {
           identificationImage: location.identificationImage,
           client_location: location.client_location,
           visitStatus: false,
+          visitStatus1: "Sin visitar",
           visitTime: null,
           orderTaken: false,
           visitStartTime: null,

@@ -50,7 +50,6 @@ const OrderCreateComponent = () => {
   const [tempSearchTerm] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [errorModal, setErrorModal] = useState(false);
-
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const id_user = localStorage.getItem("id_user");  
@@ -60,6 +59,8 @@ const OrderCreateComponent = () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/list/id", {
         id_owner: user,
+        limit:10000,
+        page: page
       }, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -315,6 +316,14 @@ const OrderCreateComponent = () => {
       setLoading(false);
     }
   };
+  const isFormValid = selectedCliente &&
+    formData.tipoPago &&
+    (formData.tipoPago !== "Crédito" || formData.plazoCredito) &&
+    formData.vendedor &&
+    formData.direccion &&
+    formData.region &&
+    formData.telefono;
+
   return (
     <div className="bg-white min-h-screen rounded-lg p-5">
       <div className="relative overflow-x-auto">
@@ -355,20 +364,37 @@ const OrderCreateComponent = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                           </svg>
                           <button
-                            onClick={() => setViewMode("form")}                            
-                            className="ms-1 text-sm font-medium text-gray-900 hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                            onClick={() => setViewMode("form")}
+                            disabled={cart.length < 1}
+                            className={`
+                              ms-1 text-sm font-medium md:ms-2 
+                              ${cart.length < 1 
+                                ? "text-gray-400 cursor-not-allowed" 
+                                : "text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"}
+                            `}
                           >
                             Detalle del pedido
                           </button>
 
+
                         </div>
                       </li>
                       <li aria-current="page">
-                        <div className="flex items-center" onClick={() => setViewMode("table")}>
+                        <div className="flex items-center">
                           <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                           </svg>
-                          <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
+                          <button
+                            disabled={cart.length < 1}
+                            className={`
+                              ms-1 text-sm font-medium md:ms-2 
+                              ${cart.length < 1 
+                                ? "text-gray-400 cursor-not-allowed" 
+                                : "text-gray-900 hover:text-[#D3423E] dark:text-gray-400 dark:hover:text-white"}
+                            `}
+                          >
+                            Confirmación del pedido
+                            </button>
                         </div>
                       </li>
                     </ol>
@@ -389,7 +415,6 @@ const OrderCreateComponent = () => {
                           </svg>
                           Lista de productos
                         </button>
-
                       </li>
                       <li>
                         <div className="flex items-center">
@@ -405,12 +430,39 @@ const OrderCreateComponent = () => {
                         </div>
                       </li>
                       <li aria-current="page">
-                        <div className="flex items-center" onClick={() => setViewMode("table")}>
-                          <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
+                      <div
+                          className="flex items-center"
+                          onClick={() => {
+                            if (isFormValid) setViewMode("table");
+                          }}
+                        >
+                          <svg
+                            className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 6 10"
+                          >
+                            <path
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="m1 9 4-4-4-4"
+                            />
                           </svg>
-                          <span className="ms-1 text-sm font-medium text-gray-900 md:ms-2 dark:text-gray-400">Confirmación del pedido</span>
+                          <span
+                            className={`
+                              ms-1 text-sm font-medium md:ms-2
+                              ${isFormValid
+                                ? "text-gray-900 dark:text-gray-400 cursor-pointer hover:text-[#D3423E]"
+                                : "text-gray-400 cursor-not-allowed"}
+                            `}
+                          >
+                            Confirmación del pedido
+                          </span>
                         </div>
+
                       </li>
                     </ol>
                   </nav>
@@ -430,11 +482,9 @@ const OrderCreateComponent = () => {
                       </svg>
                       Lista de productos
                     </button>
-
                     </li>
                     <li>
-                      <div className="flex items-center"
-                      >
+                      <div className="flex items-center">
                         <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
                         </svg>
@@ -444,7 +494,6 @@ const OrderCreateComponent = () => {
                         >
                           Detalle del pedido
                         </button>
-
                       </div>
                     </li>
                     <li aria-current="page">

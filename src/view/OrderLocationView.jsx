@@ -81,7 +81,7 @@ export default function OrderLocationView() {
                 id_owner: user,
                 page: pageNumber,
                 limit: limit,
-                status_order:"deliver"
+                status_order:"aproved"
             };
 
             const response = await axios.post(API_URL + "/whatsapp/order/id", filters,

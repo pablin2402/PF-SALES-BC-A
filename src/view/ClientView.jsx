@@ -143,7 +143,6 @@ const ClientView = () => {
     if (type === "region") setSelectedRegion("");
     fetchProducts(1);
   };
-
   const clearAllFilters = () => {
     setSelectedFilter("");
     setSelectedSaler("");
@@ -156,8 +155,8 @@ const ClientView = () => {
         {loading ? (
           <Spinner />
         ) : (
+          <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
           <div>
-            <div>
               <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between w-full mb-4">
                   <div className="flex items-center w-full max-w-2xl gap-2">

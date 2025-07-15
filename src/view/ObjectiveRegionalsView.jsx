@@ -255,8 +255,8 @@ const ObjectiveRegionalsView = () => {
                     </div>
                 </div>
             ) : (
-                <div>
-                    <div className="flex mt-4 justify-start space-x-2">
+                <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex mt-4 justify-start space-x-2">
                         {viewMode === "card" ? (
                             <div className="flex mt-4 mb-4 justify-start space-x-2">
                                 <nav className="flex" aria-label="Breadcrumb">

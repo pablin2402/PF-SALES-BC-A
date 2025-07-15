@@ -61,6 +61,7 @@ const OrderPaymentView = () => {
           }
         }
       );
+      console.log(response.data.data)
       setSalesData(response.data.data);
       setItems(response.data.pagination.totalRecords);
       setTotalPages(response.data.pagination.totalPages || 1);
@@ -187,6 +188,7 @@ const OrderPaymentView = () => {
       {loading ? (
         <Spinner />
       ) : (
+        <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
         <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
           {viewMode === "table" ? (
             <div>
@@ -307,7 +309,9 @@ const OrderPaymentView = () => {
                               }).toUpperCase()
                               : ''}
                           </td>
-                          <td className="px-6 py-4 text-gray-900">{item.sales_id.fullName + " " + item.sales_id.lastName}</td>
+                          <td className="px-6 py-4 text-gray-900">
+                            {(item.sales_id || item.delivery_id)?.fullName + " " + (item.sales_id || item.delivery_id)?.lastName}
+                          </td>
                           <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
                           <td className="px-6 py-4 text-gray-900">Bs. {item.total}</td>
                           <td className="px-6 py-4 text-gray-900">Bs. {item.orderId.totalAmount}</td>
@@ -598,6 +602,7 @@ const OrderPaymentView = () => {
             </div>
           )}
 
+        </div>
         </div>
       )}
     </div>

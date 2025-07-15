@@ -135,6 +135,7 @@ export default function LocalizationView() {
   };
 
   return (
+    <div>
     <div className="h-screen w-full flex">
       <div className="w-2/6 overflow-y-auto border-r-2 border-gray-200">
         <div className="w-full max-w-screen-lg mx-auto px-4">
@@ -301,6 +302,7 @@ export default function LocalizationView() {
           <div className="text-center text-gray-500 text-sm">Cargando mapa...</div>
         )}
       </div>
+    </div>
     </div>
   );
 }

@@ -87,12 +87,12 @@ const CategoryView = () => {
   }, [searchTerm, salesData]);
 
   return (
-    <div className="bg-white min-h-screen shadow-lg rounded-lg p-4 sm:p-6">
-      <div className="mx-auto w-full max-w-full sm:max-w-5xl">
+    <div className="bg-white min-h-screen rounded-lg p-5">
+      <div className="relative overflow-x-auto">
         {loading ? (
           <Spinner />
         ) : (
-          <>
+          <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
             <div className="flex flex-col space-y-4">
               <div>
                 <h1 className="text-gray-900 font-bold text-2xl">Categorías</h1>
@@ -108,7 +108,6 @@ const CategoryView = () => {
                 <PrincipalBUtton onClick={() => setShowModal(true)}>Crear Categoría</PrincipalBUtton>
               </div>
             </div>
-
             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
               <table className="min-w-full text-sm text-left text-gray-500">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -174,7 +173,7 @@ const CategoryView = () => {
                 </button>
               </nav>
             )}
-          </>
+          </div>
         )}
       </div>
 

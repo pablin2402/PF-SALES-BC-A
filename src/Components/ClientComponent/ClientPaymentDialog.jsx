@@ -45,7 +45,7 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
     setPaymentData({ ...paymentData, [name]: value });
   };
 
-  /*      
+      /*
   const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
       try {
           if (!window.ethereum) {
@@ -64,7 +64,7 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
 
           console.log("✅ Pago registrado en blockchain:", tx.hash);
       } catch (error) {
-          console.error("❌ Error al registrar pago en blockchain:", error);
+          console.error("Error al registrar pago en blockchain:", error);
       }
   }*/
       const handleSavePayment = async () => {
@@ -79,22 +79,22 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
               return; 
             }
           }
-      
-          const formData = new FormData();
-          formData.append("saleImage", imageUrl);
-          formData.append("total", paymentData.amount);
-          formData.append("note", paymentData.payer);
-          formData.append("orderId", orderId);
-          formData.append("numberOrden", "");
-          formData.append("paymentStatus", "paid");
-          formData.append("id_client", idClient);
-          formData.append("sales_id", salesID);
-          formData.append("id_owner", user);
-      
+          const jsonData = {
+            saleImage: imageUrl,
+            total: paymentData.amount,
+            note: paymentData.payer,
+            orderId: orderId,
+            numberOrden: "",
+            paymentStatus: "paid",
+            id_client: idClient,
+            sales_id: salesID,
+            delivery_id: null,
+            id_owner: user
+          };
+
           const orderResponse = await Promise.race([
-            axios.post(API_URL + "/whatsapp/order/pay", formData, {
+            axios.post(API_URL + "/whatsapp/order/pay", jsonData, {
               headers: {
-                "Content-Type": "multipart/form-data",
                 Authorization: `Bearer ${token}`
               }
             }),

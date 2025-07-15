@@ -171,7 +171,6 @@ export default function ActivityRouteComponent() {
                             ))}
                         </select>
 
-                        {/* Línea de filtros: Fecha + Botón */}
                         <div className="flex w-full gap-2">
                             <input
                                 type="date"
