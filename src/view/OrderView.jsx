@@ -30,6 +30,7 @@ const OrderView = () => {
   const [selectedPayment, setSelectedPayment] = useState("");
   const [dateFilterActive, setDateFilterActive] = useState(false);
   const [showSuccessCheck, setShowSuccessCheck] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const [vendedores, setVendedores] = useState([]);
 
@@ -191,7 +192,7 @@ const OrderView = () => {
     setDateFilterActive(false);
 
   };
-  /*
+  
   const handleDelete = async (id) => {
     try {
       const response = await axios.delete(`${API_URL}/whatsapp/order/id`, {
@@ -213,10 +214,10 @@ const OrderView = () => {
       console.error("Error al eliminar:", error.response?.data || error.message);
     }
   };
-  */
+  
   const uploadProducts = async (id) => {
     try {
-      const response = await axios.put(
+      await axios.put(
         API_URL + "/whatsapp/order/status/confirm/id",
         {
           _id: id,
@@ -484,22 +485,7 @@ const OrderView = () => {
                           <td className="px-4 py-3 text-gray-900">
                             {item.diasMora}
                           </td>
-                          {/*
-                            <td className="px-6 py-4 text-gray-900">
-                              {item.totalAmount === item.restante && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(item._id)
-                                  }}
-                                  className="text-red-600 hover:text-red-800"
-                                  title="Eliminar"
-                                >
-                                  <HiOutlineTrash className="w-5 h-5" />
-                                </button>
-                              )}
-                            </td>
-                            */}
+                         
                           <td className="px-4 py-3 text-gray-900">
                             {item.orderStatus === "aproved" && (
                               <FaCheckCircle className="text-green-500 text-lg" />
@@ -517,9 +503,9 @@ const OrderView = () => {
                           <td className="px-4 py-3">
                             <button
                               onClick={(e) => {
+
                                 e.stopPropagation();
-                                setSelectedItem(item);
-                                setShowEditModal(true);
+                                setOpenMenuId(openMenuId === item._id ? null : item._id);
                               }}
                               className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
                               aria-label="Opciones"
@@ -535,6 +521,32 @@ const OrderView = () => {
                                 <circle cx="10" cy="16" r="2" />
                               </svg>
                             </button>
+                            {openMenuId === item._id && (
+                              <div
+                                className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={() => {
+                                    setSelectedItem(item);
+                                    setShowEditModal(true);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  Confirmar pedido
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleDelete(item._id);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                >
+                                  Eliminar pedido
+                                </button>
+                              </div>
+                            )}
                           </td>
 
                         </tr>

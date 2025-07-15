@@ -15,7 +15,6 @@ const TrendLineChart = ({ products, limit }) => {
 
     const meses = [obtenerMes(1), obtenerMes(2), obtenerMes(3)];
 
-    // Aplicar límite
     const limitedProducts = limit ? products.slice(0, limit) : products;
 
     const series = limitedProducts.map((prod) => ({

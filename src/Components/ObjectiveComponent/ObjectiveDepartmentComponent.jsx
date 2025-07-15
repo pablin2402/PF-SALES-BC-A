@@ -256,7 +256,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.totalCajas}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.objective) * 100).toFixed(2) + "%"}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{(item.totalCajas / 14) * 31}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / 14) * 31).toFixed(2)}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{(item.objective - item.totalCajas).toFixed(2)}</td>
 
                                         </tr>

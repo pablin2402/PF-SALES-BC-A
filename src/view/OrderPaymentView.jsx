@@ -61,7 +61,6 @@ const OrderPaymentView = () => {
           }
         }
       );
-      console.log(response.data.data)
       setSalesData(response.data.data);
       setItems(response.data.pagination.totalRecords);
       setTotalPages(response.data.pagination.totalPages || 1);

@@ -1,4 +1,3 @@
-// SuccessModal.js
 import React from "react";
 
 const SuccessModal = ({ show, onClose, message }) => {

@@ -46,7 +46,7 @@ const HomeView = () => {
   const [itemsPerPage] = useState(5);
   const [labels, setLabels] = useState([]);
   const [values, setValues] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const [products, setProducts] = useState([]);
   const [loading2, setLoading2] = useState(true);
 

@@ -292,7 +292,6 @@ const OrderCalendarView = () => {
                         <button
                             className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-4xl"
                             onClick={() => {
-                                //setSelectedItem(getEvent);
                                 setShowModal1(false);
                             }}
                         >

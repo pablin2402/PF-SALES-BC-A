@@ -24,7 +24,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
     const [itemsPerPage, setItemsPerPage] = useState(5);
-    const [items, setItems] = useState();
+    const [setItems] = useState();
 
 
     const handleChange = (e) => {
@@ -42,7 +42,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
             endDate.setDate(endDate.getDate() + 1);
 
             const response = await axios.post(
-                API_URL + "/whatsapp//sales/objective/sales",
+                API_URL + "/whatsapp/sales/objective/sales",
                 {
                     region: formData.ciudad,
                     lyne: formData.categoria,
@@ -77,7 +77,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
         setLoading(true);
         const filters = {
             region,
-            id_owner: "CL-01",
+            id_owner:user,
             lyne,
             page: pageNumber,
             limit: itemsPerPage,
@@ -139,10 +139,9 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
             return;
         }
         if (selectedFilter === "payment" && selectedPayment === "") {
-            // Quitar filtros
             setDateFilterActive(false);
             setPaymentActive(false);
-            fetchObjectiveDataRegion(1); // Sin filtros
+            fetchObjectiveDataRegion(1); 
             return;
         }
         if (selectedPayment) {
@@ -337,7 +336,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                                                 }).toUpperCase() : ''}
                                             </td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.totalBotellas}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.cantidadVendida.toFixed(3)}</td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">{item.cantidadVendida.toFixed(2)}</td>
                                         </tr>
                                     ))
                                 ) : (
@@ -362,10 +361,10 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                                     <td className="px-6 py-3">
                                     </td>
                                     <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.totalBotellas || 0), 0).toFixed(3)}
+                                        {objectiveData.reduce((sum, item) => sum + (item.totalBotellas || 0), 0).toFixed(2)}
                                     </td>
                                     <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.cantidadVendida || 0), 0).toFixed(3)}
+                                        {objectiveData.reduce((sum, item) => sum + (item.cantidadVendida || 0), 0).toFixed(2)}
                                     </td>
                                 </tr>
                             </tfoot>
