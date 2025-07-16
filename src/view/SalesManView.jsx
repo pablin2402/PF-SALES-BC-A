@@ -11,7 +11,6 @@ import Spinner from "../Components/LittleComponents/Spinner";
 const SalesManView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -27,7 +26,6 @@ const SalesManView = () => {
 
   const fetchProducts = async (pageNumber) => {
     setLoading(true);
-    setError(null);
     try {
       const filters = {
         id_owner: user,
@@ -46,7 +44,6 @@ const SalesManView = () => {
       setTotalPages(response.data.totalPages);
       setItems(response.data.items);
     } catch (error) {
-      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -74,8 +71,6 @@ const SalesManView = () => {
   const goToClientDetails = (client) => {
     navigate(`/sales/${client._id}`, { state: { client } });
   };
-  if (loading) return <p className="text-center">Cargando datos...</p>;
-  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
   const getInitials = (name, lastName) => {
     const firstInitial = name?.charAt(0).toUpperCase() || '';
     const lastInitial = lastName?.charAt(0).toUpperCase() || '';
@@ -156,7 +151,6 @@ const SalesManView = () => {
                 <th className="px-6 py-3 uppercase">Ciudad Asignada</th>
                 <th className="px-6 py-3 uppercase">Estado</th>
                 <th className="px-6 py-3 uppercase"></th>
-
               </tr>
             </thead>
             <tbody>
@@ -214,8 +208,14 @@ const SalesManView = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No se encontraron clientes.
+                  <td colSpan="11" className="px-6 py-10 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                      </svg>
+                      <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                      <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                    </div>
                   </td>
                 </tr>
               )}

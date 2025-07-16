@@ -172,9 +172,7 @@ const ProductView = () => {
                 <FiGrid className="w-5 h-5 text-gray-900" />
               </button>
             </div>
-            {salesData.length === 0 ? (
-              <p className="text-center text-gray-500 mt-5">No hay productos disponibles.</p>
-            ) : viewMode === "table" ? (
+            {viewMode === "table" ? (
               <div className="mt-5 border border-gray-400 rounded-xl">
                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
                   <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
@@ -187,8 +185,9 @@ const ProductView = () => {
                       <th className="px-6 py-3 uppercase"></th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {salesData.map((item) => (
+                  <tbody>                      
+                  {salesData.length > 0 ? (
+                    salesData.map((item) => (
                       <tr key={item._id} className="bg-white border-b border-gray-200">
                         <td className="px-6 py-4 font-medium text-gray-900">{item.productName || "Sin nombre"}</td>
                         <td className="px-6 py-4">{item.priceId?.price || "N/A"}</td>
@@ -211,7 +210,20 @@ const ProductView = () => {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                   ))
+                   ) : (
+                     <tr>
+                       <td colSpan="11" className="px-6 py-10 text-center">
+                         <div className="flex flex-col items-center justify-center text-gray-500">
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                           </svg>
+                           <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                           <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                         </div>
+                       </td>
+                     </tr>
+                   )}
                   </tbody>
                 </table>
                 <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t border-b mb-2 mt-2 border-gray-300">

@@ -72,9 +72,9 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
         if (!item?.region) {
             return;
         }
-    
+
         setLoading(true);
-    
+
         const filters = {
             region: item.region,
             salesId: "",
@@ -84,7 +84,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
             endDate: date2,
             ...customFilters,
         };
-    
+
         try {
             const response = await axios.post(API_URL + "/whatsapp/order/objective/region/id", filters);
             setObjectiveData(response.data);
@@ -94,7 +94,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
             setLoading(false);
         }
     };
-    
+
     const fetchCategories = async () => {
         setLoading(true);
         try {
@@ -140,7 +140,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
     return (
         <div className="bg-white min-h-screen rounded-lg p-5">
             {loading ? (
-               <Spinner/>
+                <Spinner />
             ) : (
                 <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
                     <div className="flex flex-col w-full space-y-4">
@@ -227,7 +227,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                         <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
                             <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                 <tr>
-                               
+
                                     <th className="px-6 py-3 uppercase">Region</th>
                                     <th className="px-6 py-3 uppercase">Linea</th>
                                     <th className="px-6 py-3 uppercase">Objetivo</th>
@@ -248,7 +248,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                                             setViewMode("sales");
                                         }}
                                             key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                                                                                         
+
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                                             <td className="px-6 py-4 text-gray-900">{item.categoria}</td>
                                             <td className="px-6 py-4 font-medium text-gray-900">{item.objective}</td>
@@ -263,15 +263,21 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                                            No se encontraron registros con esa fecha.
+                                        <td colSpan="11" className="px-6 py-10 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                                </svg>
+                                                <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                             <tfoot>
                                 <tr className="bg-gray-200 font-semibold text-gray-900">
-                                 
+
                                     <td className="px-6 py-3" ></td>
                                     <td className="px-6 py-3"></td>
                                     <td className="px-6 py-3">

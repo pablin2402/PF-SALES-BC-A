@@ -272,12 +272,12 @@ export default function CreateRouteComponent() {
 
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-4">
           <div className="relative w-1/2">
-          <TextInputFilter
-                      value={searchTerm}
-                      onChange={setSearchTerm}
-                      onEnter={() => loadMarkersFromAPI()}
-                      placeholder="Buscar por nombre..."
-                    />
+            <TextInputFilter
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onEnter={() => loadMarkersFromAPI()}
+              placeholder="Buscar por nombre..."
+            />
           </div>
 
           <div className="w-1/2">
@@ -385,19 +385,18 @@ export default function CreateRouteComponent() {
                     />
                   </div>
                   <div className="w-full">
-  <button
-    type="button"
-    onClick={() => handleCreateRoute()}
-    disabled={!routeName || !startDate || !endDate}
-    className={`w-full px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${
-      !routeName || !startDate || !endDate
-        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-        : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
-    }`}
-  >
-    Crear
-  </button>
-</div>
+                    <button
+                      type="button"
+                      onClick={() => handleCreateRoute()}
+                      disabled={!routeName || !startDate || !endDate}
+                      className={`w-full px-4 py-2 font-semibold uppercase rounded-3xl transition-colors ${!routeName || !startDate || !endDate
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-[#D3423E] text-white hover:bg-[#c73a36]'
+                        }`}
+                    >
+                      Crear
+                    </button>
+                  </div>
 
                 </form>
               </div>
@@ -406,7 +405,7 @@ export default function CreateRouteComponent() {
           </div>
         </div>
       )}
-       <AlertModal
+      <AlertModal
         show={successModal}
         onClose={() => setSuccessModal(false)}
         message="Porfavor seleccione un vendedor antes de agregar clientes a la ruta"

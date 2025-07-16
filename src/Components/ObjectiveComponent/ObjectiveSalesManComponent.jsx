@@ -308,19 +308,19 @@ const ObjectiveSalesManComponent = ({ region }) => {
                         </div>
 
                         <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
-                            <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                            <table className="w-full text-xs text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                                <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
                                     <tr>
-                                        <th className="px-6 py-3 uppercase">Fecha de Inicio</th>
-                                        <th className="px-6 py-3 uppercase">Fecha de Fin</th>
-                                        <th className="px-6 py-3 uppercase">Region</th>
-                                        <th className="px-6 py-3 uppercase">Linea</th>
-                                        <th className="px-6 py-3 uppercase">Objetivo</th>
-                                        <th className="px-6 py-3 uppercase">VTA AA</th>
-                                        <th className="px-6 py-3 uppercase">VTA ACUM</th>
-                                        <th className="px-6 py-3 uppercase">VS AA</th>
-                                        <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
-                                        <th className="px-6 py-3 uppercase">VENDEDOR</th>
+                                        <th className="px-4 py-3 uppercase">Fecha de Inicio</th>
+                                        <th className="px-4 py-3 uppercase">Fecha de Fin</th>
+                                        <th className="px-4 py-3 uppercase">Region</th>
+                                        <th className="px-4 py-3 uppercase">Linea</th>
+                                        <th className="px-4 py-3 uppercase">Objetivo</th>
+                                        <th className="px-4 py-3 uppercase">VTA AA</th>
+                                        <th className="px-4 py-3 uppercase">VTA ACUM</th>
+                                        <th className="px-4 py-3 uppercase">VS AA</th>
+                                        <th className="px-4 py-3 uppercase">VS OBJETIVO</th>
+                                        <th className="px-4 py-3 uppercase">VENDEDOR</th>
                                         <th className="px-10 py-3 uppercase min-w-[200px]">PROGRESO</th>
 
                                     </tr>
@@ -331,26 +331,26 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                             const salesman = salesmen[item.salesManId || item._id];
                                             return (
                                                 <tr key={item.objetivoId || item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                    <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.startDate
                                                             ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
                                                             : "-"}
                                                     </td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                    <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.endDate
                                                             ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
                                                             : "-"}
                                                     </td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{region}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.lyne}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{region}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{item.lyne}</td>
 
-                                                    <td className="px-6 py-4 text-gray-900">{item.numberOfBoxes}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.caja.toFixed(2)}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.caja / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.caja / item.numberOfBoxes) * 100).toFixed(2) + "%"}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{salesman ? `${salesman.fullName} ${salesman.lastName}` : "Sin vendedor"}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                    <td className="px-4 py-3 text-gray-900">{item.numberOfBoxes}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{item.saleLastYear}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{item.caja.toFixed(2)}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{((item.caja / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{((item.caja / item.numberOfBoxes) * 100).toFixed(2) + "%"}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{salesman ? `${salesman.fullName} ${salesman.lastName}` : "Sin vendedor"}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">
 
                                                         <div className="flex justify-between mb-1">
                                                             <span className="text-base font-medium text-green-700 dark:text-white"></span>
@@ -375,29 +375,35 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                         })
                                     ) : (
                                         <tr>
-                                            <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
-                                                No se encontraron registros con esa fecha.
-                                            </td>
-                                        </tr>
+                                        <td colSpan="11" className="px-6 py-10 text-center">
+                                          <div className="flex flex-col items-center justify-center text-gray-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                            </svg>
+                                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                          </div>
+                                        </td>
+                                      </tr>
                                     )}
                                 </tbody>
 
                                 <tfoot>
                                     <tr className="bg-gray-200 font-semibold text-gray-900">
-                                        <td className="px-6 py-3"></td>
-                                        <td className="px-6 py-3"></td>
-                                        <td className="px-6 py-3"></td>
-                                        <td className="px-6 py-3"></td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3"></td>
+                                        <td className="px-4 py-3"></td>
+                                        <td className="px-4 py-3"></td>
+                                        <td className="px-4 py-3"></td>
+                                        <td className="px-4 py-3">
                                             {objectiveData.reduce((sum, item) => sum + (item.numberOfBoxes || 0), 0).toFixed(2)}
                                         </td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3">
                                             {objectiveData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0).toFixed(2)}
                                         </td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3">
                                             {objectiveData.reduce((sum, item) => sum + (item.caja || 0), 0).toFixed(2)}
                                         </td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3">
                                             {
                                                 (
                                                     objectiveData.reduce((sum, item) => sum + ((item.caja / item.saleLastYear) * 100), 0) /
@@ -405,7 +411,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                                 ).toFixed(2) + "%"
                                             }
                                         </td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3">
                                             {
                                                 (
                                                     objectiveData.reduce((sum, item) => sum + ((item.caja / item.numberOfBoxes) * 100), 0) /
@@ -413,10 +419,10 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                                 ).toFixed(2) + "%"
                                             }
                                         </td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3">
 
                                         </td>
-                                        <td className="px-6 py-3">
+                                        <td className="px-4 py-3">
 
                                         </td>
                                     </tr>

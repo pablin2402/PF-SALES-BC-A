@@ -421,24 +421,24 @@ const ObjectiveRegionalsView = () => {
                                     )}
                                 </div>
                                 <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
-                                    <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
+                                    <table className="w-full text-xs text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                                        <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
                                             <tr>
-                                                <th className="px-6 py-3 uppercase">Fecha de Inicio</th>
-                                                <th className="px-6 py-3 uppercase">Fecha de Fin</th>
-                                                <th className="px-6 py-3 uppercase">Region</th>
-                                                <th className="px-6 py-3 uppercase">Linea</th>
-                                                <th className="px-6 py-3 uppercase">Objetivo</th>
-                                                <th className="px-6 py-3 uppercase">VTA AA</th>
-                                                <th className="px-6 py-3 uppercase">VTA ACUM</th>
-                                                <th className="px-6 py-3 uppercase">VS AA</th>
-                                                <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
-                                                <th className="px-6 py-3 uppercase">TENDENCIA</th>
-                                                <th className="px-6 py-3 uppercase">POR VENDER</th>
-                                                <th className="px-6 py-3 uppercase">%AVANCE</th>
-                                                <th className="px-6 py-3 uppercase">PROYECCIÓN</th>
-                                                <th className="px-6 py-3 uppercase"></th>
-                                                <th className="px-6 py-3 uppercase"></th>
+                                                <th className="px-4 py-2 uppercase">Fecha de Inicio</th>
+                                                <th className="px-4 py-2 uppercase">Fecha de Fin</th>
+                                                <th className="px-4 py-2 uppercase">Region</th>
+                                                <th className="px-4 py-2 uppercase">Linea</th>
+                                                <th className="px-4 py-2 uppercase">Objetivo</th>
+                                                <th className="px-4 py-3 uppercase">VTA AA</th>
+                                                <th className="px-4 py-3 uppercase">VTA ACUM</th>
+                                                <th className="px-4 py-3 uppercase">VS AA</th>
+                                                <th className="px-4 py-3 uppercase">VS OBJETIVO</th>
+                                                <th className="px-4 py-3 uppercase">TENDENCIA</th>
+                                                <th className="px-4 py-3 uppercase">POR VENDER</th>
+                                                <th className="px-4 py-3 uppercase">%AVANCE</th>
+                                                <th className="px-4 py-3 uppercase">PROYECCIÓN</th>
+                                                <th className="px-4 py-3 uppercase"></th>
+                                                <th className="px-4 py-3 uppercase"></th>
 
                                             </tr>
                                         </thead>
@@ -450,7 +450,7 @@ const ObjectiveRegionalsView = () => {
                                                         setSelectedItem(item)
                                                     }}
                                                         key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                                        <td className="px-4 py-3 font-medium text-gray-900">
                                                             {item.startDate
                                                                 ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
                                                                 : "-"}
@@ -461,18 +461,18 @@ const ObjectiveRegionalsView = () => {
                                                                 : "-"}
                                                         </td>
 
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
-                                                        <td className="px-6 py-4 text-gray-900">{item.lyne}</td>
-                                                        <td className="px-6 py-4 text-gray-900">{item.objetivo}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{item.cajasVendidas.toFixed(2)}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2)}</td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{item.region}</td>
+                                                        <td className="px-4 py-3 text-gray-900">{item.lyne}</td>
+                                                        <td className="px-4 py-3 text-gray-900">{item.objetivo}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{item.saleLastYear}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{item.cajasVendidas.toFixed(2)}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
+                                                        <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2)}</td>
+                                                        <td className="px-4 py-3">
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -485,7 +485,7 @@ const ObjectiveRegionalsView = () => {
 
                                                             </button>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-4 py-3">
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -507,29 +507,35 @@ const ObjectiveRegionalsView = () => {
                                                 ))
                                             ) : (
                                                 <tr>
-                                                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                                                        No se encontraron registros con esa fecha.
+                                                    <td colSpan="11" className="px-6 py-10 text-center">
+                                                        <div className="flex flex-col items-center justify-center text-gray-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                                        </svg>
+                                                        <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                                        <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                                        </div>
                                                     </td>
-                                                </tr>
+                                                    </tr>
                                             )}
                                         </tbody>
                                         <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-xl">
                                             <tr className="bg-gray-200 font-semibold text-gray-900">
-                                                <td className="px-6 py-3"></td>
-                                                <td className="px-6 py-3"></td>
+                                                <td className="px-4 py-3"></td>
+                                                <td className="px-4 py-3"></td>
 
-                                                <td className="px-6 py-3"></td>
-                                                <td className="px-6 py-3"></td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3"></td>
+                                                <td className="px-4 py-3"></td>
+                                                <td className="px-4 py-3">
                                                     {salesData.reduce((sum, item) => sum + (item.objetivo || 0), 0)}
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {salesData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0)}
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {salesData.reduce((sum, item) => sum + (item.cajasVendidas || 0), 0).toFixed(2)}
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {
                                                         (
                                                             salesData.reduce((sum, item) => sum + ((item.cajasVendidas / item.saleLastYear) * 100), 0) /
@@ -537,7 +543,7 @@ const ObjectiveRegionalsView = () => {
                                                         ).toFixed(2) + "%"
                                                     }
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {
                                                         (
                                                             salesData.reduce((sum, item) => sum + ((item.cajasVendidas / item.objetivo) * 100), 0) /
@@ -545,28 +551,28 @@ const ObjectiveRegionalsView = () => {
                                                         ).toFixed(2) + "%"
                                                     }
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {
                                                         (salesData.reduce((sum, item) => sum + ((item.cajasVendidas / 14) * 31), 0) / salesData.length).toFixed(2) + "%"
                                                     }
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {
                                                         (salesData.reduce((sum, item) => sum + ((item.objetivo - item.cajasVendidas) || 0), 0).toFixed(2))
                                                     }
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {
                                                         (salesData.reduce((sum, item) => sum + ((item.cajasVendidas / item.saleLastYear) * 100 || 0), 0).toFixed(2) + "%")
                                                     }
                                                 </td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3">
                                                     {
                                                         (salesData.reduce((sum, item) => sum + ((item.cajasVendidas / item.saleLastYear) * 100 || 0), 0).toFixed(2))
                                                     }
                                                 </td>
-                                                <td className="px-6 py-3"></td>
-                                                <td className="px-6 py-3"></td>
+                                                <td className="px-4 py-3"></td>
+                                                <td className="px-4 py-3"></td>
 
                                             </tr>
                                         </tfoot>
@@ -673,21 +679,21 @@ const ObjectiveRegionalsView = () => {
                                 )}
                             </div>
                             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
-                                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                    <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
+                                <table className="w-full text-xs text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                                    <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
                                         <tr>
-                                            <th className="px-6 py-3 uppercase">Fecha de Inicio</th>
-                                            <th className="px-6 py-3 uppercase">Fecha de Fin</th>
-                                            <th className="px-6 py-3 uppercase">Linea</th>
-                                            <th className="px-6 py-3 uppercase">Objetivo</th>
-                                            <th className="px-6 py-3 uppercase">VTA AA</th>
-                                            <th className="px-6 py-3 uppercase">VTA ACUM</th>
-                                            <th className="px-6 py-3 uppercase">VS AA</th>
-                                            <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
-                                            <th className="px-6 py-3 uppercase">TENDENCIA</th>
-                                            <th className="px-6 py-3 uppercase">POR VENDER</th>
-                                            <th className="px-6 py-3 uppercase"></th>
-                                            <th className="px-6 py-3 uppercase"></th>
+                                            <th className="px-4 py-3 uppercase">Fecha de Inicio</th>
+                                            <th className="px-4 py-3 uppercase">Fecha de Fin</th>
+                                            <th className="px-4 py-3 uppercase">Linea</th>
+                                            <th className="px-4 py-3 uppercase">Objetivo</th>
+                                            <th className="px-4 py-3 uppercase">VTA AA</th>
+                                            <th className="px-4 py-3 uppercase">VTA ACUM</th>
+                                            <th className="px-4 py-3 uppercase">VS AA</th>
+                                            <th className="px-4 py-3 uppercase">VS OBJETIVO</th>
+                                            <th className="px-4 py-3 uppercase">TENDENCIA</th>
+                                            <th className="px-4 py-3 uppercase">POR VENDER</th>
+                                            <th className="px-4 py-3 uppercase"></th>
+                                            <th className="px-4 py-3 uppercase"></th>
 
                                         </tr>
                                     </thead>
@@ -697,25 +703,25 @@ const ObjectiveRegionalsView = () => {
                                                 <tr
                                                    
                                                     key={item._id + item.saleLastYear} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                    <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.startDate
                                                             ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
                                                             : "-"}
                                                     </td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                    <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.endDate
                                                             ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
                                                             : "-"}
                                                     </td>
-                                                    <td className="px-6 py-4 text-gray-900">{item.lyne}</td>
-                                                    <td className="px-6 py-4 text-gray-900">{item.objetivo}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{item.cajasVendidas.toFixed(2)}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3 text-gray-900">{item.lyne}</td>
+                                                    <td className="px-4 py-3 text-gray-900">{item.objetivo}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{item.saleLastYear}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{item.cajasVendidas.toFixed(2)}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
+                                                    <td className="px-4 py-3">
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -728,7 +734,7 @@ const ObjectiveRegionalsView = () => {
 
                                                         </button>
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-3">
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -749,28 +755,34 @@ const ObjectiveRegionalsView = () => {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                                                    No se encontraron registros con esa fecha.
-                                                </td>
-                                            </tr>
+                                            <td colSpan="11" className="px-6 py-10 text-center">
+                                              <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                                </svg>
+                                                <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                              </div>
+                                            </td>
+                                          </tr>
                                         )}
                                     </tbody>
                                     <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-2xl">
                                         <tr className="bg-gray-200 font-semibold text-gray-900">
-                                            <td className="px-6 py-3"></td>
-                                            <td className="px-6 py-3"></td>
+                                            <td className="px-4 py-3"></td>
+                                            <td className="px-4 py-3"></td>
 
-                                            <td className="px-6 py-3"></td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3"></td>
+                                            <td className="px-4 py-3">
                                                 {salesNationalData.reduce((sum, item) => sum + (item.objetivo || 0), 0)}
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3">
                                                 {salesNationalData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0)}
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3">
                                                 {salesNationalData.reduce((sum, item) => sum + (item.cajasVendidas || 0), 0).toFixed(2)}
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3">
                                                 {
                                                     (
                                                         salesNationalData.reduce((sum, item) => sum + ((item.cajasVendidas / item.saleLastYear) * 100), 0) /
@@ -778,7 +790,7 @@ const ObjectiveRegionalsView = () => {
                                                     ).toFixed(2) + "%"
                                                 }
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3">
                                                 {
                                                     (
                                                         salesNationalData.reduce((sum, item) => sum + ((item.cajasVendidas / item.objetivo) * 100), 0) /
@@ -786,7 +798,7 @@ const ObjectiveRegionalsView = () => {
                                                     ).toFixed(2) + "%"
                                                 }
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3">
                                                 {
                                                     (
                                                         salesNationalData.reduce((sum, item) => sum + ((item.cajasVendidas / 14) * 31), 0) /
@@ -794,14 +806,14 @@ const ObjectiveRegionalsView = () => {
                                                     ).toFixed(2) + "%"
                                                 }
                                             </td>
-                                            <td className="px-6 py-3">
+                                            <td className="px-4 py-3">
                                                 {
                                                     (
                                                         salesNationalData.reduce((sum, item) => sum + ((item.objetivo - item.cajasVendidas) || 0), 0).toFixed(2))
                                                 }
                                             </td>
-                                            <td className="px-6 py-3"></td>
-                                            <td className="px-6 py-3"></td>
+                                            <td className="px-4 py-3"></td>
+                                            <td className="px-4 py-3"></td>
                                         </tr>
                                     </tfoot>
 
@@ -906,7 +918,6 @@ const ObjectiveRegionalsView = () => {
                                 </div>
                             )}
                         </div>
-
                     ) : viewMode === "form" ? (
                         <div>
                             <ObjectiveDepartmentComponent
@@ -929,10 +940,7 @@ const ObjectiveRegionalsView = () => {
                         </div>
                     ) : null}
                 </div>
-
-
             )}
-
         </div>
     );
 };

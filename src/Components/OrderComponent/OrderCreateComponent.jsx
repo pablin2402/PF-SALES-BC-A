@@ -9,9 +9,11 @@ import { API_URL } from "../../config";
 import { MdDelete } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { HiFilter } from "react-icons/hi";
+import { FaCheckCircle } from "react-icons/fa";
 
 import AlertModal from "../modal/AlertModal";
 import ErrorModal from "../modal/ErrorModal";
+import { motion } from "framer-motion";
 
 import OrderDetailsComponent from "./OrderDetailsComponent";
 import PrincipalBUtton from "../LittleComponents/PrincipalButton";
@@ -25,6 +27,7 @@ const OrderCreateComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("card");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [categoriesList, setCategoriesList] = useState([]);
   const [cart, setCart] = useState([]);
@@ -269,7 +272,12 @@ const OrderCreateComponent = () => {
       ]);
       if (orderResponse.status === 200) {
         setCart([]);
-        navigate("/order");
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          navigate("/order");
+        }, 2000);        
         setFormData({ nombre: "", apellido: "", email: "", direccion: "", telefono: 0, punto: "", vendedor: "", tipopago: '', plazoCredito: 0, vendedorId: '' });
         setSelectedCliente(null);
         const clientId = orderResponse.data._id;
@@ -848,6 +856,21 @@ const OrderCreateComponent = () => {
           message="Porfavor seleccione un producto"
         />
         <ErrorModal show={errorModal} onClose={() => setErrorModal(false)} message="Error al crear el pedido" />
+        {showSuccessModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="flex flex-col items-center justify-center bg-white p-8 rounded-2xl shadow-2xl"
+    >
+      <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+        <FaCheckCircle className="text-green-500" size={80} />
+      </div>
+      <h2 className="text-2xl font-bold text-green-600">Pedido Confirmado</h2>
+    </motion.div>
+  </div>
+)}
 
       </div>
     </div>

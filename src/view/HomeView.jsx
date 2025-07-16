@@ -32,7 +32,8 @@ const HomeView = () => {
   const navigate = useNavigate();
 
   const [salesData, setSalesData] = useState([]);
-  const [numberOfOrders, setNumberOfOrders] = useState([]);
+  const [numberOfOrdersNew, setNumberOfOrdersNew] = useState([]);
+
   const [salesBySeller, setSalesBySeller] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -207,26 +208,24 @@ const HomeView = () => {
         setLoading2(false);
       });
   }, []);
-
-  const fetchNumber = async () => {
-    setLoading(true);
+  const fetchNumber2 = async (status) => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/order/status/count",
         {
           id_owner: user,
+          status:status
         }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setNumberOfOrders(response.data.count);
+      setNumberOfOrdersNew(response.data.count);
     } catch (error) {
     } finally {
-      setLoading(false);
     }
   };
   useEffect(() => {
-    fetchNumber();
+    fetchNumber2("En Ruta")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
@@ -344,10 +343,16 @@ const HomeView = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="px-4 py-4 text-center text-gray-500">
-                          No hay datos disponibles.
-                        </td>
-                      </tr>
+                          <td colSpan="11" className="px-6 py-10 text-center">
+                            <div className="flex flex-col items-center justify-center text-gray-500">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                              </svg>
+                              <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                              <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                            </div>
+                          </td>
+                        </tr>
                     )}
                   </tbody>
                 </table>
@@ -389,8 +394,8 @@ const HomeView = () => {
                   <MdLocalShipping size={28} />
                 </div>
                 <div>
-                  <p className="text-gray-500 text-sm">Pedidos aceptados</p>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-1">{numberOfOrders}</h2>
+                  <p className="text-gray-500 text-sm">Pedidos en camino</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mt-1">{numberOfOrdersNew}</h2>
                 </div>
               </div>
             </div>
