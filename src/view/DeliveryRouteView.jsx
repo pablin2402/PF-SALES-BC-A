@@ -330,18 +330,8 @@ export default function DeliveryRouteView() {
 
                   <span className="absolute top-2 left-2 text-gray-900 font-bold">
                     {client.orderStatus === "aproved" && (
-                      <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                      <span className="bg-yellow-100 text-sm text-yellow-800 px-2.5 py-0.5 rounded-full">
                         ÓRDEN APROBADA
-                      </span>
-                    )}
-                    {client.orderStatus === "En Ruta" && (
-                      <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                        ÓRDEN ASIGNADA
-                      </span>
-                    )}
-                    {client.orderStatus === "pending" && (
-                      <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
-                        ÓRDEN EN CAMINO
                       </span>
                     )}
                   </span>

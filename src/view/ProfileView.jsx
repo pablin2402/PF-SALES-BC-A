@@ -18,7 +18,7 @@ export default function ProfileView() {
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
   const [idClient, setClientId] = useState("");
-  const [itemsPerPage, setItemsPerPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

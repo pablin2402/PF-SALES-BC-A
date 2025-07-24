@@ -321,7 +321,7 @@ export default function CreateRouteComponent() {
                   <h5
                     onClick={(e) => {
                       e.stopPropagation();
-                      goToClientDetails(client);
+                      handleMarkerClick(client)
                     }}
                     className="text-l font-bold tracking-tight text-gray-900 flex items-center"
                   >
