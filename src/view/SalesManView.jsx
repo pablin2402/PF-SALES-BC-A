@@ -110,12 +110,12 @@ const SalesManView = () => {
     }
   };
   return (
-    <div className="bg-white min-h-screen rounded-lg p-5">
+<div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
     {loading ? (
       <Spinner />
     ) : (
       <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-      <div className="flex flex-col w-full">
+<div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
         <div className="flex items-center justify-between w-full mb-4">
           <div className="flex items-center w-full max-w-2xl gap-2">
               <h1 className="text-gray-900 font-bold text-2xl">Personal de Ventas</h1>
@@ -140,8 +140,8 @@ const SalesManView = () => {
           </div>
         </div>
       <div>
-        <div className="mt-5 border border-gray-400 rounded-xl">
-          <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
+      <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+      <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
             <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
               <tr>
                 <th className="px-6 py-3"></th>
@@ -347,7 +347,7 @@ const SalesManView = () => {
               </div>
               <button
                 onClick={handleSubmit}
-                className={"mt-4 w-full px-5 py-2.5 text-lg font-bold rounded-2xl bg-[#D3423E] text-white"}
+                className={"mt-4 w-full px-5 py-2.5 text-lg font-bold uppercase rounded-2xl bg-[#D3423E] text-white"}
               >
                 Cambiar contraseña
                 </button>

@@ -71,6 +71,21 @@ const DeliveryView = () => {
   const goToClientDetails = (client) => {
     navigate(`/client/${client._id}`, { state: { client, flag: false } });
   };
+  const handleToggle = async (newStatus, id) => {
+    try {
+      await axios.put(API_URL + "/whatsapp/delivery/status", {
+        _id: id,
+        active: newStatus,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      fetchProducts(1);
+    } catch (error) {
+      console.error("Error al cambiar estado", error);
+    }
+  };
   const exportToExcel = async () => {
     const filters = {
       id_owner: user,
@@ -102,12 +117,12 @@ const DeliveryView = () => {
     saveAs(data, "Lista_Clientes.xlsx");
   };
   return (
-    <div className="bg-white min-h-screen rounded-lg p-5">
+<div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
       {loading ? (
         <Spinner />
       ) : (
         <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex flex-col w-full">
+<div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
               <div className="flex items-center justify-between w-full mb-4">
                   <div className="flex items-center w-full max-w-2xl gap-2">
                     <h1 className="text-gray-900 font-bold text-2xl">Personal de Reparto</h1>
@@ -141,9 +156,9 @@ const DeliveryView = () => {
                 </div>
             </div>
             <div>
-              <div className="mt-5 border border-gray-400 rounded-xl">
-                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+              <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                     <tr>
                       <th className="px-6 py-3"></th>
                       <th className="px-6 py-3 uppercase">Nombre</th>
@@ -151,6 +166,7 @@ const DeliveryView = () => {
                       <th className="px-6 py-3 uppercase">Dirección</th>
                       <th className="px-6 py-3 uppercase">Telefono Celular</th>
                       <th className="px-6 py-3 uppercase">Ciudad Asignada</th>
+                      <th className="px-6 py-3 uppercase">Estado</th>
 
                     </tr>
                   </thead>
@@ -174,7 +190,19 @@ const DeliveryView = () => {
                           <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                           <td className="px-6 py-4 font-medium text-gray-900">{item.phoneNumber}</td>
                           <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            <label onClick={(e) => e.stopPropagation()} className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={item.active}
+                                onChange={() => handleToggle(!item.active, item._id)}
 
+                              />
+                              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-400 rounded-full peer peer-checked:bg-green-500 transition-colors duration-300">
+                                <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
+                              </div>                    </label>
+                          </td>
                         </tr>
                       ))
                     ) : (
@@ -191,10 +219,19 @@ const DeliveryView = () => {
                         </tr>
                     )}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={7}>
+                        <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                          <div className="text-m font-bold">
+                            Total de Ítems: <span className="font-semibold">{items}</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
-                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t border-b lg mt-2 border-gray-300">
-                  <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
-                </div>
+              
                 {searchTerm === "" && (
                   <div className="flex justify-between items-center px-6 pb-4">
                     <div className="flex mb-4 justify-end items-center pt-4">

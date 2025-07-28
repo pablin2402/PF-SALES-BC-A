@@ -248,7 +248,7 @@ export default function SalesManInformationComponent() {
     }
   };
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-6">
+    <div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
       {loading ? (
         <Spinner />
       ) : (
@@ -327,7 +327,7 @@ export default function SalesManInformationComponent() {
           </div>
 
           <div className="mt-10 w-full max-w-5xl">
-            <div className="flex items-center justify-between w-full mb-4">
+          <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
               <div className="flex gap-2">
                 <div className="flex items-center space-x-2">
                   <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
@@ -374,7 +374,7 @@ export default function SalesManInformationComponent() {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-              <table className="min-w-full text-xs sm:text-sm text-left text-gray-500">
+            <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                 <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-4 py-3 uppercase">Referencia</th>
@@ -432,10 +432,18 @@ export default function SalesManInformationComponent() {
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                    <tr>
+                      <td colSpan={8}>
+                        <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                        <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
+
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
               </table>
-              <div className="flex justify-end px-4 py-3 text-lg text-gray-700 bg-gray-100 border-t border-b mb-2 mt-2 border-gray-300">
-                <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
-              </div>
+            
               {totalPages > 1 && (
                 <div className="flex justify-between items-center px-6 pb-4">
                   <div className="flex mb-4 justify-end items-center pt-4">

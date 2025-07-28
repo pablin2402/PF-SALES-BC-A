@@ -21,14 +21,12 @@ export default function LocalizationView() {
 
   const [center, setCenter] = useState({ lat: -17.3835, lng: -66.1568 });
   const [mapZoom, setMapZoom] = useState(13);
-  const [mapInstance, setMapInstance] = useState(null);
 
   const [selectedCategories, setSelectedCategories] = useState("");
   const [selectedSalesmen, setSelectedSalesmen] = useState("");
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const [googleMaps, setGoogleMaps] = useState(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
@@ -136,15 +134,15 @@ export default function LocalizationView() {
 
   return (
     <div>
-    <div className="h-screen w-full flex">
-      <div className="w-2/6 overflow-y-auto border-r-2 border-gray-200">
+    <div className="h-screen w-full flex overflow-hidden">
+    <div className="w-full lg:w-2/6 overflow-y-auto border-r-2 border-gray-200 max-h-screen">
         <div className="w-full max-w-screen-lg mx-auto px-4">
           <div className="relative w-full mt-4 mb-4">
             <TextInputFilter
               value={searchTerm}
               onChange={setSearchTerm}
               onEnter={() => loadMarkersFromAPI()}
-              placeholder="Buscar por Nombre, apellido"
+              placeholder="Buscar por nombre, apellido"
             />
           </div>
           <div className="flex flex-wrap gap-4 mb-6">
@@ -181,18 +179,17 @@ export default function LocalizationView() {
 
           <div className="w-full">
             {markers.map((client) => (
-              <div
-                key={client._id}
-                onClick={() => findLocation(client)}
-                className="flex flex-col md:flex-row items-center gap-x-4 bg-white w-full border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative cursor-pointer"
-                role="button"
-                tabIndex={0}
-                aria-label={`Ver detalles de ${client.name} ${client.lastName}`}
-                style={{ minHeight: "280px" }}
-              >
+             <div
+             key={client._id}
+             onClick={() => findLocation(client)}
+             className="flex flex-col sm:flex-row w-full h-auto bg-white border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative overflow-hidden"
+             role="button"
+             tabIndex={0}
+           >
+           
                 <img
-                  className="w-[150px] h-[280px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
-                  src={
+                    className="w-full sm:w-[150px] h-[200px] sm:h-[280px] object-cover rounded-t-lg sm:rounded-none sm:rounded-s-lg"
+                    src={
                     client.identificationImage ||
                     "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
                   }
@@ -232,18 +229,13 @@ export default function LocalizationView() {
 
 
       </div>
-      <div className="w-4/6 bg-white overflow-y-auto">
+      <div className="w-full lg:w-4/6 h-[calc(105vh-4rem)] bg-white relative">
         {isLoaded ? (
-
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
-            zoom={mapZoom}
-            onLoad={(map) => {
-              setMapInstance(map);
-              setGoogleMaps(window.google);
-            }}          >
-            {mapInstance &&
+            zoom={mapZoom}>
+            {markers.length > 0 &&
               markers.map((location, index) => (
                 <Marker
                   key={index}

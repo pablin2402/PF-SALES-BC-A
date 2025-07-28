@@ -380,8 +380,9 @@ export default function ClientInformationOrdenComponent() {
                         </div>
                         {showPayments ? (
                             <div>
-                                <div className="mt-5 border border-gray-400 rounded-xl">
-                                    <table className="w-full text-sm text-left border border-black shadow-xl rounded-2xl overflow-hidden">
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+            <div className="min-w-[900px]">
+                                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                                         <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                             <tr>
                                                 <th className="px-6 py-3 uppercase">Foto del Recibo</th>
@@ -430,6 +431,7 @@ export default function ClientInformationOrdenComponent() {
                                         </tbody>
                                     </table>
                                 </div>
+                                </div>
                                 {selectedImage && (
                                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={closeModal}>
                                         <div className="relative">
@@ -464,8 +466,10 @@ export default function ClientInformationOrdenComponent() {
 
                         ) : (
                             <div>
-                                <div className="mt-5 border border-gray-400 rounded-xl">
-                                    <table className="w-full text-sm text-left border border-black rounded-2xl overflow-hidden">
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+            <div className="min-w-[900px]">
+
+                                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                                         <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                             <tr>
                                                 <th className="px-6 py-3 uppercase"></th>
@@ -508,6 +512,8 @@ export default function ClientInformationOrdenComponent() {
                                             })}
                                         </tbody>
                                     </table>
+                                    </div>
+
                                 </div>
                                 <div className="mt-4 flex flex-col items-end gap-2">
                                     <p className="text-m font-semibold text-gray-600 flex justify-between w-full max-w-xs">

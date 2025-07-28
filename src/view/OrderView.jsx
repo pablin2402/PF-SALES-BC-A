@@ -396,6 +396,7 @@ const OrderView = () => {
 
                         <option value="Crédito">Crédito</option>
                         <option value="Contado">Contado</option>
+                        <option value="Cheque">Cheque</option>
                       </select>
                     </div>
                   )}
@@ -490,7 +491,8 @@ const OrderView = () => {
               </div>
               <div className="mt-5 border border-gray-400 rounded-xl">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                <div className="min-w-[900px]">
+                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                     <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
                       <tr>
                         <th className="px-4 py-3 uppercase">Fecha de creación</th>
@@ -663,10 +665,19 @@ const OrderView = () => {
                         ))
                       )}
                     </tbody>
+                    <tfoot>
+                    <tr>
+                      <td colSpan={11}>
+                        <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                          <div className="text-m font-bold">
+                            Total de Ítems: <span className="font-semibold">{items}</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
                   </table>
-                  <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-100 border-t mb-2 mt-2 border-gray-300">
-                    <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
-                  </div>
+    
                   {totalPages > 1 && (
                     <div className="flex justify-between items-center px-6 pb-4">
                       <div className="flex mb-4 justify-end items-center pt-4">
@@ -742,6 +753,7 @@ const OrderView = () => {
                       </nav>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             </div>

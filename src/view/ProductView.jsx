@@ -113,7 +113,7 @@ const ProductView = () => {
     }
   };
   return (
-    <div className="bg-white min-h-screenrounded-lg p-5">
+<div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
       <div className="relative overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -173,8 +173,8 @@ const ProductView = () => {
               </button>
             </div>
             {viewMode === "table" ? (
-              <div className="mt-5 border border-gray-400 rounded-xl">
-                <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+            <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                   <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                     <tr>
                       <th className="px-6 py-3 uppercase">Producto</th>
@@ -225,10 +225,19 @@ const ProductView = () => {
                      </tr>
                    )}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                          <div className="text-m font-bold">
+                            Total de Ítems: <span className="font-semibold">{items}</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
-                <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t border-b mb-2 mt-2 border-gray-300">
-                  <div className="text-m">Total de Ítems: <span className="font-semibold">{items}</span></div>
-                </div>
+              
                 {totalPages > 1 && searchTerm === "" && (
                   <div className="flex justify-between items-center px-6 pb-4">
                     <div className="flex mb-4 justify-end items-center pt-4">

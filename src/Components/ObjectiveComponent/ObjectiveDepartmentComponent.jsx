@@ -32,6 +32,14 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
             [name]: name === "saleLastYear1" ? Number(value) : value
         });
     };
+    const initialFormData = {
+        ciudad: "",
+        categoria: "",
+        numberOfBoxes: "",
+        saleLastYear1: "",
+        startDate: "",
+        endDate: ""
+    };
     const handleSubmit = async () => {
         try {
             const endDate = new Date(formData.endDate);
@@ -58,6 +66,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
 
             if (response.status === 200) {
                 fetchObjectiveDataRegion();
+                setFormData(initialFormData); 
                 setModalOpen(false);
             }
 
@@ -223,9 +232,9 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                         )}
                     </div>
 
-                    <div className="mt-5 border border-gray-400 rounded-xl">
-                        <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                    <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+                    <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                    <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                 <tr>
 
                                     <th className="px-6 py-3 uppercase">Region</th>

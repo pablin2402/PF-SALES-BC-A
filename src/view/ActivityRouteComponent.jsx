@@ -344,7 +344,6 @@ export default function ActivityRouteComponent() {
                                                 scaledSize: new window.google.maps.Size(70, 70),
                                             }}
                                         />
-
                                     </React.Fragment>
                                 );
                             })}

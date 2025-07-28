@@ -300,8 +300,8 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                             </span>
                         )}
                     </div>
-                    <div className="mt-5 border border-gray-400 rounded-xl">
-                        <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+                    <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                             <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                                 <tr>
                                     <th className="px-6 py-3 uppercase">Region</th>
@@ -376,82 +376,85 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                             </tfoot>
                         </table>
                         {totalPages > 1 && (
-                            <div className="flex justify-between items-center px-6 pb-4">
+  <div className="w-full overflow-x-auto">
+    <div className="min-w-[900px] flex justify-between items-center px-6 pb-4">
 
-                                <div className="flex mb-4 justify-end items-center pt-4">
-                                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                                        Ítems por página:
-                                    </label>
-                                    <select
-                                        id="itemsPerPage"
-                                        value={itemsPerPage}
-                                        onChange={(e) => {
-                                            const selectedValue = Number(e.target.value);
-                                            setItemsPerPage(selectedValue);
-                                            setPage(1);
-                                            fetchObjectiveDataRegion(1);
-                                        }}
-                                        className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
-                                    >
-                                            {[5, 10, 20].map((option) => (
-                                            <option key={option} value={option}>
-                                                {option}
-                                            </option>
-                                            ))}
-                                    </select>
-                                </div>
+      <div className="flex mb-4 justify-end items-center pt-4">
+        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+          Ítems por página:
+        </label>
+        <select
+          id="itemsPerPage"
+          value={itemsPerPage}
+          onChange={(e) => {
+            const selectedValue = Number(e.target.value);
+            setItemsPerPage(selectedValue);
+            setPage(1);
+            fetchObjectiveDataRegion(1);
+          }}
+          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+        >
+          {[5, 10, 20].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                                <nav className="flex items-center justify-center pt-4 space-x-2">
-                                    <button
-                                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                                        disabled={page === 1}
-                                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
-                                    >
-                                        ◀
-                                    </button>
+      <nav className="flex items-center justify-center pt-4 space-x-2">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
+        >
+          ◀
+        </button>
 
-                                    <button
-                                        onClick={() => setPage(1)}
-                                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                                    >
-                                        1
-                                    </button>
+        <button
+          onClick={() => setPage(1)}
+          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+        >
+          1
+        </button>
 
-                                    {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+        {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
-                                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                                        .filter((p) => p > 1 && p < totalPages)
-                                        .map((p) => (
-                                            <button
-                                                key={p}
-                                                onClick={() => setPage(p)}
-                                                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                                            >
-                                                {p}
-                                            </button>
-                                        ))}
+        {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+          .filter((p) => p > 1 && p < totalPages)
+          .map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+            >
+              {p}
+            </button>
+          ))}
 
-                                    {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+        {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
-                                    {totalPages > 1 && (
-                                        <button
-                                            onClick={() => setPage(totalPages)}
-                                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                                        >
-                                            {totalPages}
-                                        </button>
-                                    )}
+        {totalPages > 1 && (
+          <button
+            onClick={() => setPage(totalPages)}
+            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+          >
+            {totalPages}
+          </button>
+        )}
 
-                                    <button
-                                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                                        disabled={page === totalPages}
-                                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                                    >
-                                        ▶
-                                    </button>
-                                </nav>
-                            </div>
-                        )}
+        <button
+          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+        >
+          ▶
+        </button>
+      </nav>
+    </div>
+  </div>
+)}
+
                     </div>
                     {modalOpen && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">

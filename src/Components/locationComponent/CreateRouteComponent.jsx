@@ -187,8 +187,8 @@ export default function CreateRouteComponent() {
     return Object.keys(newErrors).length === 0;
   };
   return (
-    <div className="h-screen w-full flex overflow-hidden">
-      <div className="w-2/6 h-full overflow-auto border-r-2 border-gray-200">
+    <div className="min-h-screen w-full flex flex-col sm:flex-row overflow-hidden">
+      <div className="w-full sm:w-2/6 sm:h-screen overflow-auto border-b sm:border-b-0 sm:border-r-2 border-gray-200">
         <div className="px-4 py-4">
           <div className="space-y-4 mt-4">
             {selectedMarkers.length > 0 ? (
@@ -205,23 +205,21 @@ export default function CreateRouteComponent() {
                   <div
                     key={client._id}
                     onClick={() => findLocation(client)}
-                    className="flex flex-col items-center bg-white md:flex-row gap-x-4 w-full max-w-screen-lg h-auto border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative"
+                    className="flex flex-col sm:flex-row items-center bg-white gap-x-4 w-full h-auto sm:h-[160px] border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative"
                     style={{ minHeight: "120px" }}
 
                   >
                     <img
-                      className="w-[120px] h-[120px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
+                      className="w-full sm:w-[120px] sm:h-full h-[200px] object-cover rounded-t-lg sm:rounded-none sm:rounded-s-lg"
                       src={client.identificationImage || "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"}
                       alt={client.name || "Cliente"}
                     />
-                    <div className="flex flex-col justify-between leading-normal">
-                      <h5
-                        onClick={() => goToClientDetails(client)}
-                        className="text-l font-bold tracking-tight text-gray-900 flex items-center"
-                      >
+  <div className="flex flex-col justify-between p-2 flex-grow">
+  <h5 onClick={() => goToClientDetails(client)} className="text-l font-bold text-gray-900">
+
                         {client.name} {client.lastName}
                       </h5>
-                      <p className="text-m font-normal text-gray-700 flex items-center">
+                      <p className="text-m text-gray-700 flex items-center">
                         <FaMapMarkerAlt className="text-red-500 mr-2" />
                         {client.client_location?.direction || "No disponible"}
                       </p>
@@ -246,7 +244,7 @@ export default function CreateRouteComponent() {
           </div>
         </div>
       </div>
-      <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">
+      <div className="w-full sm:w-4/6 flex-1 bg-white relative min-h-[400px]">
         <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
           <GoogleMap
             mapContainerStyle={containerStyle}
@@ -270,8 +268,7 @@ export default function CreateRouteComponent() {
           </GoogleMap>
         </LoadScript>
 
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex justify-center items-center gap-x-4">
-          <div className="relative w-1/2">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex flex-col sm:flex-row justify-center items-center gap-4 w-full px-4 sm:px-0">          <div className="relative w-1/2">
             <TextInputFilter
               value={searchTerm}
               onChange={setSearchTerm}
@@ -303,7 +300,7 @@ export default function CreateRouteComponent() {
         </div>
 
 
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-11/12 z-10">
+        <div className="fixed bottom-0 left-0 w-full z-10 sm:absolute sm:bottom-4 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:w-11/12 bg-white sm:bg-transparent p-2 sm:p-0 overflow-x-auto">
           <div className="flex overflow-x-auto space-x-4 p-2 rounded-2xl">
             {filteredData.map((client) => (
               <div

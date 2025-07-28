@@ -48,7 +48,8 @@ export default function DeliveryRouteView() {
       id_owner: user,
       page: page,
       limit: 1000,
-      searchTerm: ""
+      searchTerm: "",
+      active: true
     };
     try {
       const response = await axios.post(API_URL + "/whatsapp/delivery/list", filters, {
@@ -303,7 +304,7 @@ export default function DeliveryRouteView() {
   };
   return (
     <div className="h-screen w-full flex overflow-hidden">
-      <div className="w-2/6 overflow-y-auto border-r-2 border-gray-200">
+<div className="w-full lg:w-2/6 overflow-y-auto border-r-2 border-gray-200 max-h-screen">
         <div className="px-4 py-4 w-full">
           <div className="relative w-full mb-4">
             <TextInputFilter
@@ -319,14 +320,14 @@ export default function DeliveryRouteView() {
           {markers.length > 0 ? (
             <>
               {markers.map((client, index) => (
-                <div
-                  key={client._id}
-                  onClick={() => findLocation(client)}
-                  className="flex flex-col items-center bg-white md:flex-row gap-x-4 w-full max-w-screen-lg h-auto border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative"
-                  role="button"
-                  tabIndex={0}
-                  style={{ minHeight: "280px" }}
-                >
+               <div
+               key={client._id}
+               onClick={() => findLocation(client)}
+               className="flex flex-col sm:flex-row w-full h-auto bg-white border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative overflow-hidden"
+               role="button"
+               tabIndex={0}
+             >
+             
 
                   <span className="absolute top-2 left-2 text-gray-900 font-bold">
                     {client.orderStatus === "aproved" && (
@@ -337,7 +338,7 @@ export default function DeliveryRouteView() {
                   </span>
 
                   <img
-                    className="w-[150px] h-[280px] object-cover rounded-t-lg md:rounded-none md:rounded-s-lg"
+                    className="w-full sm:w-[150px] h-[200px] sm:h-[280px] object-cover rounded-t-lg sm:rounded-none sm:rounded-s-lg"
                     src={
                       client.id_client.identificationImage ||
                       "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg"
@@ -345,7 +346,7 @@ export default function DeliveryRouteView() {
                     alt={client.id_client.name}
                   />
 
-                  <div className="flex flex-col justify-between p-4 leading-normal w-full">
+                  <div className="flex flex-col justify-between p-4 w-full text-sm sm:text-base break-words">
                     <h5
                       onClick={(e) => {
                         e.stopPropagation();
@@ -376,14 +377,18 @@ export default function DeliveryRouteView() {
                       #{client.receiveNumber}
                     </h5>
 
-                    <h5 className="text-l mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
-                      {client.id_client.company}
-                    </h5>
+                    <h5 className="text-sm sm:text-base mt-2 mb-2 font-normal text-gray-900">
+  {client.id_client.company || "Sin empresa"}
+</h5>
 
-                    <p className="text-m mt-2 mb-2 font-normal text-gray-700 flex items-center">
-                      <FaMapMarkerAlt className="text-red-500 mr-2" />
-                      {client.id_client.client_location?.direction || "No disponible"}
-                    </p>
+
+<p className="text-sm sm:text-base mt-2 mb-2 font-normal text-gray-700 flex items-center truncate">
+  <FaMapMarkerAlt className="text-red-500 mr-2 shrink-0" />
+  <span className="whitespace-normal break-words">
+    {client.id_client.client_location?.direction || "No disponible"}
+  </span>
+</p>
+
                     <h5 className="text-m mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
                       {client.creationDate
                         ? "Fecha de creación: " + new Date(client.creationDate).toLocaleDateString()
@@ -452,7 +457,7 @@ export default function DeliveryRouteView() {
         </div>
 
       </div>
-      <div className="w-4/6 h-[calc(105vh-4rem)] bg-white relative">
+      <div className="w-full lg:w-4/6 h-[calc(105vh-4rem)] bg-white relative">
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={containerStyle}

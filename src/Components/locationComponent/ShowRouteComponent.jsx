@@ -185,7 +185,7 @@ export default function ShowRouteComponent() {
     }, [selectedMarkers]);
     return (
         <div className="h-screen w-full flex overflow-hidden">
-            <div className="w-2/6 h-[calc(100vh-4rem)] overflow-auto border-r-2 border-gray-200">
+<div className="w-full lg:w-2/6 overflow-y-auto border-r-2 border-gray-200 max-h-screen">
             <div className="px-4 py-4">
                     <div className="bg-white p-4 rounded-xl shadow-md w-full mb-4 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -453,7 +453,7 @@ export default function ShowRouteComponent() {
                     </div>
                 </div>
             </div>
-            <div className="w-4/6 h-[calc(100vh-4rem)] bg-white relative">
+            <div className="w-full lg:w-4/6 h-[calc(105vh-4rem)] bg-white relative">
                 <LoadScript googleMapsApiKey={GOOGLE_API_KEY} libraries={["marker"]}>
                     <GoogleMap
                         mapContainerStyle={containerStyle}

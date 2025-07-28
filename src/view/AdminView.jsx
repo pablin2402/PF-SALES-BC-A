@@ -64,12 +64,12 @@ const AdminView = () => {
     return colorClasses[index];
   };
   return (
-    <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-    <div className="flex flex-col w-full">
+<div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
+<div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
         <div className="flex items-center justify-between w-full mb-4">
-          <div className="flex items-center w-full max-w-2xl gap-2">
-              <h1 className="text-gray-900 font-bold text-2xl">Personal de Administración</h1>
-          </div>
+        <div className="flex items-center w-full max-w-2xl gap-2">
+                    <h1 className="text-gray-900 font-bold text-2xl">Personal de Administración</h1>
+                  </div>
           <div className="flex justify-end items-center space-x-4">
             <PrincipalBUtton onClick={() => navigate("/admin/create")} icon={IoPersonAdd}>           
               Nuevo Administrador
@@ -88,8 +88,8 @@ const AdminView = () => {
             <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
           </div>
         </div>
-      <div className="mt-5 border border-gray-400 rounded-xl">
-          <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-3xl overflow-hidden">
+        <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+      <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
           <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
           <tr>
                 <th className="px-6 py-3"></th>

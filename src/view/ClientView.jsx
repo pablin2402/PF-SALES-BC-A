@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { FaFileExport } from "react-icons/fa6";
 import { HiFilter } from "react-icons/hi";
+import { FaUserEdit } from "react-icons/fa";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
@@ -21,16 +22,24 @@ const ClientView = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const [selectedSaler, setSelectedSaler] = useState("");
   const [vendedores, setVendedores] = useState([]);
+  const [selectedSaler1, setSelectedSaler1] = useState("");
 
   const [items, setItems] = useState();
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const [openDialog, setOpenDialog] = useState(false);
 
+  const handleOpenDialog = (item) => {
+    setSelectedItem(item);
+    setSelectedSaler1(item.sales_id?._id || "");
+    setOpenDialog(true);
+  };
   const navigate = useNavigate();
   const getInitials = (name, lastName) => {
     const firstInitial = name?.charAt(0).toUpperCase() || '';
@@ -61,7 +70,7 @@ const ClientView = () => {
             }
           }
         );
-        setVendedores(response.data.data); 
+        setVendedores(response.data.data);
       } catch (error) {
         console.error("Error obteniendo vendedores", error);
         setVendedores([]);
@@ -148,16 +157,37 @@ const ClientView = () => {
     setSelectedSaler("");
     setSelectedRegion("");
   };
+  const handleUpdateClient = async (client) => {
+    try {
+      console.log(client, selectedSaler1)
+      await axios.put(API_URL + "/whatsapp/client/user/id", {
+        _id: client._id,
+        id_owner: "CL-01",
+        name: client.name,
+        lastName: client.lastName,
+        sales_id: selectedSaler1,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      alert("Cliente actualizado correctamente");
+      setOpenDialog(false);
+      fetchProducts(1);
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar el cliente");
+    }
+  };
   return (
-
-    <div className="bg-white max-h-screen rounded-lg p-5">
+    <div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
       <div className="relative overflow-x-auto">
         {loading ? (
           <Spinner />
         ) : (
           <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-          <div>
-              <div className="flex flex-col w-full">
+            <div>
+              <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
                 <div className="flex items-center justify-between w-full mb-4">
                   <div className="flex items-center w-full max-w-2xl gap-2">
                     <h1 className="text-gray-900 font-bold text-2xl">Clientes</h1>
@@ -169,20 +199,21 @@ const ClientView = () => {
                     >
                       <FaFileExport color="##726E6E" />
                     </button>
-                      <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>                      Nuevo Cliente
-                      </PrincipalBUtton>                    
+                    <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>
+                      Nuevo Cliente
+                    </PrincipalBUtton>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 mt-20 mb-4">
-                <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
-                   <div className="relative flex-grow">
+                <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
+                  <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
+                    <div className="relative flex-grow">
                       <TextInputFilter
                         value={searchTerm}
                         onChange={setSearchTerm}
                         onEnter={() => fetchProducts(1)}
                         placeholder="Buscar por Nombre, apellido, teléfono..."
                       />
-                   
+
                     </div>
                     <select
                       value={selectedFilter}
@@ -193,7 +224,7 @@ const ClientView = () => {
                       <option value="seller">Filtrar por vendedores: </option>
                       <option value="region">Filtrar por region:</option>
                     </select>
-                </div>
+                  </div>
                   {selectedFilter === "region" && (
                     <div className="flex gap-2">
                       <select
@@ -209,7 +240,7 @@ const ClientView = () => {
                         <option value="La Paz">La Paz</option>
                         <option value="Oruro">Oruro</option>
                       </select>
-                     
+
                     </div>
                   )}
                   {selectedFilter === "seller" && (
@@ -230,7 +261,7 @@ const ClientView = () => {
                           </option>
                         ))}
                       </select>
-                    
+
                     </div>
                   )}
                   <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>FILTRAR</PrincipalBUtton>
@@ -259,60 +290,83 @@ const ClientView = () => {
                 )}
               </div>
             </div>
-            <div className="mt-5 border border-gray-400 rounded-xl">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                  <tr>
-                    <th className="px-6 py-3"></th>
-                    <th className="px-6 py-3 uppercase">Nombre</th>
-                    <th className="px-6 py-3 uppercase">Categoría</th>
-                    <th className="px-6 py-3 uppercase">Dirección</th>
-                    <th className="px-6 py-3 uppercase">Telefono Celular</th>
-                    <th className="px-6 py-3 uppercase">Vendedor</th>
-                    <th className="px-6 py-3 uppercase">Ciudad asignada</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesData.length > 0 ? (
-                    salesData.map((item) => (
-                      <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          <div
-                            className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
-                          >
-                            <span className="font-medium text-white">
-                              {getInitials(item.name, item.lastName)}
-                            </span>
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+              <div className="min-w-[900px]">
+
+                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3"></th>
+                      <th className="px-6 py-3 uppercase">Nombre</th>
+                      <th className="px-6 py-3 uppercase">Categoría</th>
+                      <th className="px-6 py-3 uppercase">Dirección</th>
+                      <th className="px-6 py-3 uppercase">Telefono Celular</th>
+                      <th className="px-6 py-3 uppercase">Vendedor</th>
+                      <th className="px-6 py-3 uppercase">Ciudad asignada</th>
+                      <th className="px-6 py-3 uppercase"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.length > 0 ? (
+                      salesData.map((item) => (
+                        <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            <div
+                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
+                            >
+                              <span className="font-medium text-white">
+                                {getInitials(item.name, item.lastName)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {item.name + " " + item.lastName}
+                          </td>
+
+                          <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
+                          <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenDialog(item);
+                              }}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <FaUserEdit size={22} />
+
+                            </button>
+                          </td>                      </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="11" className="px-6 py-10 text-center">
+                          <div className="flex flex-col items-center justify-center text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                            </svg>
+                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          {item.name + " " + item.lastName}
-                        </td>
-
-                        <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
-                        <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
                       </tr>
-                    ))
-                  ) : (
+                    )}
+                  </tbody>
+                  <tfoot>
                     <tr>
-                      <td colSpan="11" className="px-6 py-10 text-center">
-                        <div className="flex flex-col items-center justify-center text-gray-500">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                          </svg>
-                          <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                          <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                      <td colSpan={8}>
+                        <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                          <div className="text-m font-bold">
+                            Total de Ítems: <span className="font-semibold">{items}</span>
+                          </div>
                         </div>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-              <div className="flex justify-between px-6 py-4 text-sm text-gray-700 rounded-b-2xl bg-gray-200 border-t lg mt-2 border-gray-300">
-                <div className="text-m font-bold">Total de Ítems: <span className="font-semibold">{items}</span></div>
+                  </tfoot>
+                </table>
               </div>
               {totalPages > 1 && searchTerm === "" && (
                 <div className="flex justify-between items-center px-6 pb-4">
@@ -392,6 +446,80 @@ const ClientView = () => {
           </div>
         )}
       </div>
+      {openDialog && (
+    <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] overflow-y-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+              Editar Datos del Cliente
+            </h2>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Nombre:
+                </label>
+                <input
+                  type="text"
+                  value={selectedItem?.name || ""}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Apellido:
+                </label>
+                <input
+                  type="text"
+                  value={selectedItem?.lastName || ""}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, lastName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Seleccione un vendedor:
+                </label>
+                <select
+                  value={selectedSaler1}
+                  onChange={(e) => setSelectedSaler1(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  <option value="">Vendedor</option>
+                  <option value="">Mostrar Todos</option>
+                  {vendedores.map((vendedor) => (
+                    <option key={vendedor._id} value={vendedor._id}>
+                      {vendedor.fullName + " " + vendedor.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => setOpenDialog(false)}
+                className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleUpdateClient(selectedItem)}
+                className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

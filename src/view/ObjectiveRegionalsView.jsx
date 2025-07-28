@@ -91,6 +91,15 @@ const ObjectiveRegionalsView = () => {
         }
         fetchProducts(1);
     };
+    const initialFormData = {
+        ciudad: "",
+        numberOfBoxes: "",
+        saleLastYear1: "",
+        startDate: "",
+        endDate: "",
+        region: ""
+    };
+    
     const handleSubmit = async () => {
         try {
             const response = await axios.post(
@@ -118,6 +127,7 @@ const ObjectiveRegionalsView = () => {
 
             if (response.status === 200) {
                 fetchProducts();
+                setFormData(initialFormData); 
                 setModalOpen(false);
             }
 
