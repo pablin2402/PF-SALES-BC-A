@@ -34,7 +34,7 @@ const ErrorModal = ({ show, onClose, message }) => {
           </h3>
           <button
             onClick={onClose}
-            className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5"
+            className="text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-0 focus:border-red-500 font-medium rounded-lg text-sm px-5 py-2.5"
           >
             Cerrar
           </button>

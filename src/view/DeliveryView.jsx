@@ -69,7 +69,7 @@ const DeliveryView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, itemsPerPage]);
   const goToClientDetails = (client) => {
-    navigate(`/client/${client._id}`, { state: { client, flag: false } });
+    navigate(`/deliver/${client._id}`, { state: { client, flag: false } });
   };
   const handleToggle = async (newStatus, id) => {
     try {
@@ -122,7 +122,7 @@ const DeliveryView = () => {
         <Spinner />
       ) : (
         <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-<div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
+            <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
               <div className="flex items-center justify-between w-full mb-4">
                   <div className="flex items-center w-full max-w-2xl gap-2">
                     <h1 className="text-gray-900 font-bold text-2xl">Personal de Reparto</h1>

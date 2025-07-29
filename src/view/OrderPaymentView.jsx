@@ -494,7 +494,7 @@ const OrderPaymentView = () => {
                       type="text"
                       disabled
                       value={selectedItem.orderId?.receiveNumber}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
 
@@ -504,7 +504,7 @@ const OrderPaymentView = () => {
                       type="text"
                       disabled
                       value={selectedItem.total}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
 
@@ -514,7 +514,7 @@ const OrderPaymentView = () => {
                       type="text"
                       disabled
                       value={selectedItem.id_client?.name + " " + selectedItem.id_client?.lastName}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
 
@@ -535,7 +535,7 @@ const OrderPaymentView = () => {
                           hour12: false,
                         }).toUpperCase()
                         : ''}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
 
@@ -545,7 +545,7 @@ const OrderPaymentView = () => {
                       type="text"
                       disabled
                       value={selectedItem.debt !== undefined ? `Bs. ${selectedItem.debt.toFixed(2)}` : "N/A"}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
 
@@ -555,7 +555,7 @@ const OrderPaymentView = () => {
                       type="text"
                       disabled
                       value={selectedItem.orderId.totalAmount}
-                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                     />
                   </div>
                   {selectedItem.saleImage && (

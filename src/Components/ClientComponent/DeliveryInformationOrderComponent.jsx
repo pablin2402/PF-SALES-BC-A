@@ -13,8 +13,8 @@ import {
     FaDollarSign,
     FaMapMarkerAlt,
     FaBoxOpen
-} from "react-icons/fa";
-
+  } from "react-icons/fa";
+  
 import tiendaIcon from "../../icons/tienda.png";
 
 import jsPDF from "jspdf";
@@ -25,7 +25,7 @@ const containerStyle = {
     height: "300px",
 };
 
-export default function ClientInformationOrdenComponent() {
+export default function DeliveryInformationOrderComponent() {
     const { state } = useLocation();
     const navigate = useNavigate();
 
@@ -259,7 +259,7 @@ export default function ClientInformationOrdenComponent() {
                                             <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
                                             </svg>
-                                            Lista de clientes
+                                            Lista de repartidores
                                         </button>
                                     </li>
                                     <li>
@@ -271,7 +271,7 @@ export default function ClientInformationOrdenComponent() {
                                                 onClick={() => navigate(-1)}
                                                 className="ms-1 text-m font-medium text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                                             >
-                                                {state.files.id_client.name + " " + state.files.id_client.lastName}
+                                                {state.files.orderTrackId.fullName + " " + state.files.orderTrackId.lastName}
                                             </button>
                                         </div>
                                     </li>
@@ -377,57 +377,57 @@ export default function ClientInformationOrdenComponent() {
                         </div>
                         {showPayments ? (
                             <div>
-                                <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-                                    <div className="min-w-[900px]">
-                                        <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                                            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                                                <tr>
-                                                    <th className="px-6 py-3 uppercase">Foto del Recibo</th>
-                                                    <th className="px-6 py-3 uppercase">Fecha de Pago</th>
-                                                    <th className="px-6 py-3 uppercase">Vendedor</th>
-                                                    <th className="px-6 py-3 uppercase">Nota</th>
-                                                    <th className="px-6 py-3 uppercase">Monto</th>
-                                                    <th className="px-6 py-3 uppercase"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {paymentsData?.map((payment, index) => (
-                                                    <tr key={index} className="bg-white border-b hover:bg-gray-50">
-                                                        <td className="px-6 py-4 text-gray-900">
-                                                            {payment.saleImage ? (
-                                                                <img
-                                                                    src={payment.saleImage}
-                                                                    alt="Foto del recibo"
-                                                                    onClick={() => handleImageClick(payment.saleImage)}
-                                                                    className="w-20 h-20 object-cover rounded-md"
-                                                                />
-                                                            ) : (
-                                                                "No disponible"
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-gray-900">
-                                                            {new Date(payment.creationDate).toLocaleDateString("es-ES")}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-gray-900">{payment.sales_id.fullName + " " + payment.sales_id.lastName}</td>
-                                                        <td className="px-6 py-4 text-gray-900">{payment.note}</td>
-                                                        <td className="px-6 py-4 text-gray-900">Bs. {payment.total.toFixed(2)}</td>
-                                                        <td className="px-4 py-3 text-gray-900">
-                                                            {payment.paymentStatus === "confirmado" && (
-                                                                <FaCheckCircle className="text-green-500 text-lg" />
-                                                            )}
-                                                            {payment.paymentStatus === "rechazado" && (
-                                                                <FaTimesCircle className="text-red-500 text-lg" />
-                                                            )}
-                                                            {payment.paymentStatus === "paid" && (
-                                                                <FaExclamationCircle className="text-yellow-400 text-lg" />
-                                                            )}
-                                                        </td>
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+            <div className="min-w-[900px]">
+                                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                                            <tr>
+                                                <th className="px-6 py-3 uppercase">Foto del Recibo</th>
+                                                <th className="px-6 py-3 uppercase">Fecha de Pago</th>
+                                                <th className="px-6 py-3 uppercase">Vendedor</th>
+                                                <th className="px-6 py-3 uppercase">Nota</th>
+                                                <th className="px-6 py-3 uppercase">Monto</th>
+                                                <th className="px-6 py-3 uppercase"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {paymentsData?.map((payment, index) => (
+                                                <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-gray-900">
+                                                        {payment.saleImage ? (
+                                                            <img
+                                                                src={payment.saleImage}
+                                                                alt="Foto del recibo"
+                                                                onClick={() => handleImageClick(payment.saleImage)}
+                                                                className="w-20 h-20 object-cover rounded-md"
+                                                            />
+                                                        ) : (
+                                                            "No disponible"
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-gray-900">
+                                                        {new Date(payment.creationDate).toLocaleDateString("es-ES")}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-gray-900">{payment.sales_id.fullName + " " + payment.sales_id.lastName}</td>
+                                                    <td className="px-6 py-4 text-gray-900">{payment.note}</td>
+                                                    <td className="px-6 py-4 text-gray-900">Bs. {payment.total.toFixed(2)}</td>
+                                                    <td className="px-4 py-3 text-gray-900">
+                                                        {payment.paymentStatus === "confirmado" && (
+                                                            <FaCheckCircle className="text-green-500 text-lg" />
+                                                        )}
+                                                        {payment.paymentStatus === "rechazado" && (
+                                                            <FaTimesCircle className="text-red-500 text-lg" />
+                                                        )}
+                                                        {payment.paymentStatus === "paid" && (
+                                                            <FaExclamationCircle className="text-yellow-400 text-lg" />
+                                                        )}
+                                                    </td>
 
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                                 </div>
                                 {selectedImage && (
                                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={closeModal}>
@@ -463,52 +463,52 @@ export default function ClientInformationOrdenComponent() {
 
                         ) : (
                             <div>
-                                <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-                                    <div className="min-w-[900px]">
+            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
+            <div className="min-w-[900px]">
 
-                                        <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                                            <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                                                <tr>
-                                                    <th className="px-6 py-3 uppercase"></th>
-                                                    <th className="px-6 py-3 uppercase">Nombre del Producto</th>
-                                                    <th className="px-6 py-3 uppercase">Cantidad</th>
-                                                    <th className="px-6 py-3 uppercase">Precio Unitario</th>
-                                                    <th className="px-6 py-3 uppercase">Descuento</th>
-                                                    <th className="px-6 py-3 uppercase">Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {state.products.map((product, index) => {
-                                                    const precio = product.precio || 0;
-                                                    const descuento = 0;
-                                                    const cantidad = product.cantidad || 1;
-                                                    const totalPorProducto = (precio - descuento) * cantidad;
+                                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                                        <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                                            <tr>
+                                                <th className="px-6 py-3 uppercase"></th>
+                                                <th className="px-6 py-3 uppercase">Nombre del Producto</th>
+                                                <th className="px-6 py-3 uppercase">Cantidad</th>
+                                                <th className="px-6 py-3 uppercase">Precio Unitario</th>
+                                                <th className="px-6 py-3 uppercase">Descuento</th>
+                                                <th className="px-6 py-3 uppercase">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {state.products.map((product, index) => {
+                                                const precio = product.precio || 0;
+                                                const descuento = 0;
+                                                const cantidad = product.cantidad || 1;
+                                                const totalPorProducto = (precio - descuento) * cantidad;
 
-                                                    return (
-                                                        <tr key={index} className="bg-white border-b hover:bg-gray-50">
-                                                            <td className="px-6 py-4 text-gray-900">
-                                                                {product.productImage ? (
-                                                                    <img
-                                                                        src={product.productImage}
-                                                                        alt="Foto del recibo"
-                                                                        onClick={() => handleImageClick(product.productImage)}
-                                                                        className="w-20 h-20 object-cover rounded-md"
-                                                                    />
-                                                                ) : (
-                                                                    "No disponible"
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 font-medium text-gray-900">{product.nombre || "Sin nombre"}</td>
-                                                            <td className="px-6 py-4 text-gray-900">{cantidad}</td>
-                                                            <td className="px-6 py-4 text-gray-900">Bs. {precio.toFixed(2)}</td>
-                                                            <td className="px-6 py-4 text-gray-900">Bs. {descuento.toFixed(2)}</td>
-                                                            <td className="px-6 py-4 text-gray-900">Bs. {totalPorProducto.toFixed(2)}</td>
+                                                return (
+                                                    <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                                                         <td className="px-6 py-4 text-gray-900">
+                                                        {product.productImage ? (
+                                                            <img
+                                                                src={product.productImage}
+                                                                alt="Foto del recibo"
+                                                                onClick={() => handleImageClick(product.productImage)}
+                                                                className="w-20 h-20 object-cover rounded-md"
+                                                            />
+                                                        ) : (
+                                                            "No disponible"
+                                                        )}
+                                                    </td>
+                                                        <td className="px-6 py-4 font-medium text-gray-900">{product.nombre || "Sin nombre"}</td>
+                                                        <td className="px-6 py-4 text-gray-900">{cantidad}</td>
+                                                        <td className="px-6 py-4 text-gray-900">Bs. {precio.toFixed(2)}</td>
+                                                        <td className="px-6 py-4 text-gray-900">Bs. {descuento.toFixed(2)}</td>
+                                                        <td className="px-6 py-4 text-gray-900">Bs. {totalPorProducto.toFixed(2)}</td>
 
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                     </div>
 
                                 </div>
@@ -573,130 +573,130 @@ export default function ClientInformationOrdenComponent() {
 
                     </div>
                     <div className="max-w-full mt-4 p-6 bg-white border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                        <ol className="relative border-s border-gray-300 dark:border-gray-700">
-                            {Array.isArray(orderData) && orderData.length > 0 ? (
-                                orderData.map((event, index) => (
-                                    <li key={index} className="mb-10 ms-6">
+                    <ol className="relative border-s border-gray-300 dark:border-gray-700">
+  {Array.isArray(orderData) && orderData.length > 0 ? (
+    orderData.map((event, index) => (
+      <li key={index} className="mb-10 ms-6">
 
-                                        <span className={`absolute flex items-center justify-center w-10 h-10 rounded-full -start-3 ring-8 ring-white dark:ring-gray-800 text-white text-lg shadow-md
+        <span className={`absolute flex items-center justify-center w-10 h-10 rounded-full -start-3 ring-8 ring-white dark:ring-gray-800 text-white text-lg shadow-md
           ${event.eventType === "Orden Creada" ? "bg-blue-500" :
-                                                event.eventType === "Pago Ingresado" ? "bg-yellow-500" :
-                                                    event.eventType === "Ha aprobado un pago" ? "bg-green-500" :
-                                                        event.eventType === "Ha sido asignado como repartidor" ? "bg-purple-500" :
-                                                            event.eventType === "está en camino al destino" ? "bg-indigo-500" :
-                                                                event.eventType === "ha llegado al destino" ? "bg-pink-500" :
-                                                                    event.eventType === "Pedido Entregado" ? "bg-green-600" :
-                                                                        "bg-gray-400"
-                                            }`}>
+            event.eventType === "Pago Ingresado" ? "bg-yellow-500" :
+            event.eventType === "Ha aprobado un pago" ? "bg-green-500" :
+            event.eventType === "Ha sido asignado como repartidor" ? "bg-purple-500" :
+            event.eventType === "está en camino al destino" ? "bg-indigo-500" :
+            event.eventType === "ha llegado al destino" ? "bg-pink-500" :
+            event.eventType === "Pedido Entregado" ? "bg-green-600" :
+            "bg-gray-400"
+          }`}>
 
-                                            {event.eventType === "Orden Creada" && <FaRegClipboard />}
-                                            {event.eventType === "Pago Ingresado" && <FaDollarSign />}
-                                            {event.eventType === "Ha aprobado un pago" && <FaCheckCircle />}
-                                            {event.eventType === "Ha sido asignado como repartidor" && <FaTruck />}
-                                            {event.eventType === "está en camino al destino" && <FaTruck />}
-                                            {event.eventType === "ha llegado al destino" && <FaMapMarkerAlt />}
-                                            {event.eventType === "Pedido Entregado" && <FaBoxOpen />}
-                                            {![
-                                                "Orden Creada", "Pago Ingresado", "Ha aprobado un pago",
-                                                "Ha sido asignado como repartidor", "está en camino al destino",
-                                                "ha llegado al destino", "Pedido Entregado"
-                                            ].includes(event.eventType) && <FaRegClipboard />}
-                                        </span>
+          {event.eventType === "Orden Creada" && <FaRegClipboard />}
+          {event.eventType === "Pago Ingresado" && <FaDollarSign />}
+          {event.eventType === "Ha aprobado un pago" && <FaCheckCircle />}
+          {event.eventType === "Ha sido asignado como repartidor" && <FaTruck />}
+          {event.eventType === "está en camino al destino" && <FaTruck />}
+          {event.eventType === "ha llegado al destino" && <FaMapMarkerAlt />}
+          {event.eventType === "Pedido Entregado" && <FaBoxOpen />}
+          {![
+            "Orden Creada", "Pago Ingresado", "Ha aprobado un pago",
+            "Ha sido asignado como repartidor", "está en camino al destino",
+            "ha llegado al destino", "Pedido Entregado"
+          ].includes(event.eventType) && <FaRegClipboard />}
+        </span>
 
-                                        <div className="p-6 ml-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                                            <div className="items-center justify-between mb-3 sm:flex">
-                                                <time className="mb-1 text-xs font-normal text-gray-900 dark:text-gray-400 sm:order-last sm:mb-0">
-                                                    {new Date(event.timestamp).toLocaleString()}
-                                                </time>
-                                                <div className="text-m font-normal text-gray-900 dark:text-gray-300">
-                                                    {event.eventType === "Orden Creada" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredBySalesman?.fullName
-                                                                    ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
-                                                                    : event.triggeredByUser?.fullName
-                                                                        ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
-                                                                        : event.triggeredByDelivery?.fullName
-                                                                            ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                                                                            : "Alguien"}
-                                                            </strong> ha creado el pedido.
-                                                        </div>
-                                                    )}
+        <div className="p-6 ml-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+          <div className="items-center justify-between mb-3 sm:flex">
+            <time className="mb-1 text-xs font-normal text-gray-900 dark:text-gray-400 sm:order-last sm:mb-0">
+              {new Date(event.timestamp).toLocaleString()}
+            </time>
+            <div className="text-m font-normal text-gray-900 dark:text-gray-300">
+              {event.eventType === "Orden Creada" && (
+                <div>
+                  <strong>
+                    {event.triggeredBySalesman?.fullName
+                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                      : event.triggeredByUser?.fullName
+                        ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
+                        : event.triggeredByDelivery?.fullName
+                          ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                          : "Alguien"}
+                  </strong> ha creado el pedido.
+                </div>
+              )}
 
-                                                    {event.eventType === "Pago Ingresado" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredBySalesman?.fullName
-                                                                    ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
-                                                                    : event.triggeredByUser?.fullName
-                                                                        ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
-                                                                        : event.triggeredByDelivery?.fullName
-                                                                            ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                                                                            : "Alguien"}
-                                                            </strong> ha ingresado un pago.
-                                                        </div>
-                                                    )}
+              {event.eventType === "Pago Ingresado" && (
+                <div>
+                  <strong>
+                    {event.triggeredBySalesman?.fullName
+                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                      : event.triggeredByUser?.fullName
+                        ? `${event.triggeredByUser.fullName} ${event.triggeredByUser.lastName}`
+                        : event.triggeredByDelivery?.fullName
+                          ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                          : "Alguien"}
+                  </strong> ha ingresado un pago.
+                </div>
+              )}
 
-                                                    {event.eventType === "Ha aprobado un pago" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredBySalesman?.fullName && event.triggeredBySalesman?.lastName
-                                                                    ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
-                                                                    : "Un administrador"}
-                                                            </strong> ha aprobado un pago.
-                                                        </div>
-                                                    )}
+              {event.eventType === "Ha aprobado un pago" && (
+                <div>
+                  <strong>
+                    {event.triggeredBySalesman?.fullName && event.triggeredBySalesman?.lastName
+                      ? `${event.triggeredBySalesman.fullName} ${event.triggeredBySalesman.lastName}`
+                      : "Un administrador"}
+                  </strong> ha aprobado un pago.
+                </div>
+              )}
 
-                                                    {event.eventType === "Ha sido asignado como repartidor" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
-                                                                    ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                                                                    : "Un repartidor"}
-                                                            </strong> ha sido asignado como repartidor.
-                                                        </div>
-                                                    )}
+              {event.eventType === "Ha sido asignado como repartidor" && (
+                <div>
+                  <strong>
+                    {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                      : "Un repartidor"}
+                  </strong> ha sido asignado como repartidor.
+                </div>
+              )}
 
-                                                    {event.eventType === "ha llegado al destino" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
-                                                                    ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                                                                    : "Un repartidor"}
-                                                            </strong> ha llegado al destino de entrega.
-                                                        </div>
-                                                    )}
+              {event.eventType === "ha llegado al destino" && (
+                <div>
+                  <strong>
+                    {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                      : "Un repartidor"}
+                  </strong> ha llegado al destino de entrega.
+                </div>
+              )}
 
-                                                    {event.eventType === "está en camino al destino" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
-                                                                    ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                                                                    : "Un repartidor"}
-                                                            </strong> está en camino al punto de entrega.
-                                                        </div>
-                                                    )}
+              {event.eventType === "está en camino al destino" && (
+                <div>
+                  <strong>
+                    {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                      : "Un repartidor"}
+                  </strong> está en camino al punto de entrega.
+                </div>
+              )}
 
-                                                    {event.eventType === "Pedido Entregado" && (
-                                                        <div>
-                                                            <strong>
-                                                                {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
-                                                                    ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
-                                                                    : "Un repartidor"}
-                                                            </strong> ha entregado el pedido.
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))
-                            ) : (
-                                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                                    No se tienen datos de registro de actividad.
-                                </div>
-                            )}
-                        </ol>
+              {event.eventType === "Pedido Entregado" && (
+                <div>
+                  <strong>
+                    {event.triggeredByDelivery?.fullName && event.triggeredByDelivery?.lastName
+                      ? `${event.triggeredByDelivery.fullName} ${event.triggeredByDelivery.lastName}`
+                      : "Un repartidor"}
+                  </strong> ha entregado el pedido.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </li>
+    ))
+  ) : (
+    <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+      No se tienen datos de registro de actividad.
+    </div>
+  )}
+</ol>
 
 
                     </div>

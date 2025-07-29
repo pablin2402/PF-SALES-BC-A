@@ -16,6 +16,7 @@ import StatisticsView from "./view/StatisticsView";
 import DeliveryRouteView from "./view/DeliveryRouteView";
 import ObjectiveRegionalsView from "./view/ObjectiveRegionalsView";
 import ProfileView from "./view/ProfileView";
+import DeliveryInformationOrderComponent from "./Components/ClientComponent/DeliveryInformationOrderComponent";
 
 import DeliveryCreationComponent from "./Components/ClientComponent/DeliveryCreationComponent";
 import ClientCreationComponent from "./Components/ClientComponent/ClientCreationComponent";
@@ -23,6 +24,7 @@ import ClientInformationComponent from "./Components/ClientComponent/ClientInfor
 import ClientInformationOrdenComponent from "./Components/ClientComponent/ClientInformationOrdenComponent";
 import DeliveryRouteComponent from "./Components/locationComponent/DeliveryRouteComponent";
 import AdministrationCreationComponent from "./Components/ClientComponent/AdministrationCreationComponent";
+import DeliveryInformation from "./Components/ClientComponent/DeliveryInformationComponent";
 
 import SalesManCreationComponent from "./Components/ClientComponent/SalesManCreationComponent";
 import SalesManInformationComponent from "./Components/ClientComponent/SalesManInformationComponent";
@@ -78,6 +80,9 @@ export default function AppRoutes() {
               <Route path="/sales/create" element={<SalesManCreationComponent />} />
               <Route path="/sales/:id" element={<SalesManInformationComponent />} />
               <Route path="/client/:id" element={<ClientInformationComponent />} />
+              <Route path="/deliver/:id" element={<DeliveryInformation />} />
+              <Route path="/deliver/order/:id" element={<DeliveryInformationOrderComponent />} />
+
               <Route path="/client/order/:id" element={<ClientInformationOrdenComponent />} />
               <Route path="/client/creation" element={<ClientCreationComponent />} />
               <Route path="/delivery/creation" element={<DeliveryCreationComponent />} />

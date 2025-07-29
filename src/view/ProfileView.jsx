@@ -33,7 +33,6 @@ export default function ProfileView() {
 
   const fetchClientData = useCallback(async () => {
     try {
-      console.log(id,user)
       const response = await axios.post(API_URL + "/whatsapp/sales/id", {
         _id: id,
         id_owner: user

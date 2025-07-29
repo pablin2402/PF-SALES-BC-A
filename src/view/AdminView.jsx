@@ -32,7 +32,6 @@ const AdminView = () => {
         }
       }
       );
-      console.log(response.data)
       setSalesData(response.data);
     } catch (error) {
       setError(error.message);

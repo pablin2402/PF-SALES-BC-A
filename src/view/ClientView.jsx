@@ -159,7 +159,6 @@ const ClientView = () => {
   };
   const handleUpdateClient = async (client) => {
     try {
-      console.log(client, selectedSaler1)
       await axios.put(API_URL + "/whatsapp/client/user/id", {
         _id: client._id,
         id_owner: "CL-01",
@@ -464,7 +463,7 @@ const ClientView = () => {
                   onChange={(e) =>
                     setSelectedItem({ ...selectedItem, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
 
@@ -478,7 +477,7 @@ const ClientView = () => {
                   onChange={(e) =>
                     setSelectedItem({ ...selectedItem, lastName: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
                 />
               </div>
 
@@ -489,7 +488,7 @@ const ClientView = () => {
                 <select
                   value={selectedSaler1}
                   onChange={(e) => setSelectedSaler1(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-300"
                 >
                   <option value="">Vendedor</option>
                   <option value="">Mostrar Todos</option>

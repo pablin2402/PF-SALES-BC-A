@@ -62,7 +62,7 @@ const registrarPagoEnBlockchain = async (orderId, payer, amount) => {
       const tx = await contrato.registrarPago(orderId, payer, ethers.parseUnits(amount.toString(), 0));
       await tx.wait();
 
-      console.log("✅ Pago registrado en blockchain:", tx.hash);
+      console.log("Pago registrado en blockchain:", tx.hash);
   } catch (error) {
       console.error("Error al registrar pago en blockchain:", error);
   }
