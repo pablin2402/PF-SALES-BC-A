@@ -1,6 +1,15 @@
 import { Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const DashboardLayout = () => {
+    const [role, setRole] = useState("");
+    useEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setRole(userRole);
+      }, []);
+    
+      const isAdmin = role === "ADMIN";
+    
     return (
         <div>
             <nav className="bg-white border-gray-200 border-b-2 border-black-400">
@@ -20,17 +29,21 @@ const DashboardLayout = () => {
                                     Análisis de ventas
                                 </a>
                             </li>
+                            {isAdmin && (
                             <li>
                                 <a href="/category" className="block py-2 text-m px-3 text-[#3A3737] md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Categoria</a>
                             </li>
+                             )}
                             <li>
                                 <a href="/order" className="block py-2 px-3 text-m text-[#3A3737] md:hover:text-lg font-bold rounded-sm md:p-0 md:hover:text-[#D3423E]">Pedidos</a>
                             </li>
+                            {isAdmin && (
                             <li>
                                 <a href="/product" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
                                     Productos
                                 </a>
                             </li>
+                            )}
                         </ul>
                     </div>
                 </div>

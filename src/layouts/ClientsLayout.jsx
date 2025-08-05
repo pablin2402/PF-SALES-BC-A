@@ -1,8 +1,19 @@
 import { Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const ClientsLayout = () => {
+    const [role, setRole] = useState("");
+    useEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setRole(userRole);
+    }, []);
+
+    const isAdmin = role === "ADMIN";
+
     return (
+
         <div>
+
             <nav className="bg-white border-gray-200 dark:bg-gray-900">
                 <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                     <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
@@ -13,30 +24,34 @@ const ClientsLayout = () => {
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" d="M1 1h15M1 7h15M1 13h15" />
                         </svg>
                     </button>
-                    <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-                        <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
-                            <li>
-                                <a href="/admin" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
-                                    Administradores
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/client" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
-                                    Clientes
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/delivery/list" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
-                                    Personal de Reparto
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/sales/client" className="block py-2 px-3 text-m text-[#3A3737] font-bold md:hover:text-lg rounded-sm md:p-0 md:hover:text-[#D3423E]">
-                                Vendedores
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    {isAdmin && (
+                        <>
+                            <div className="hidden w-full md:block md:w-auto" id="navbar-default">
+                                <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
+                                    <li>
+                                        <a href="/admin" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                            Administradores
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/client" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                            Clientes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/delivery/list" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
+                                            Personal de Reparto
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/sales/client" className="block py-2 px-3 text-m text-[#3A3737] font-bold md:hover:text-lg rounded-sm md:p-0 md:hover:text-[#D3423E]">
+                                            Vendedores
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </>
+                    )}
                 </div>
             </nav>
             <div className="p-6">

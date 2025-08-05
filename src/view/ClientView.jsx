@@ -7,6 +7,8 @@ import { HiFilter } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+import { motion } from "framer-motion";
+import { FaCheckCircle,FaTimesCircle } from "react-icons/fa";
 
 import { IoPersonAdd } from "react-icons/io5";
 import Spinner from "../Components/LittleComponents/Spinner";
@@ -34,6 +36,8 @@ const ClientView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const [openDialog, setOpenDialog] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const handleOpenDialog = (item) => {
     setSelectedItem(item);
@@ -170,12 +174,12 @@ const ClientView = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      alert("Cliente actualizado correctamente");
+      setShowSuccessModal(true);
       setOpenDialog(false);
       fetchProducts(1);
     } catch (error) {
       console.error(error);
-      alert("Error al actualizar el cliente");
+      setShowErrorModal(true);
     }
   };
   return (
@@ -338,7 +342,8 @@ const ClientView = () => {
                               <FaUserEdit size={22} />
 
                             </button>
-                          </td>                      </tr>
+                          </td>                      
+                        </tr>
                       ))
                     ) : (
                       <tr>
@@ -518,6 +523,53 @@ const ClientView = () => {
           </div>
         </div>
       )}
+      {showSuccessModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+  <motion.div
+    initial={{ scale: 0 }}
+    animate={{ scale: 1 }}
+    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+  >
+    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+      <FaCheckCircle className="text-green-500" size={80} />
+    </div>
+    <h2 className="text-2xl font-bold text-green-600 mb-2">Cliente Actualizado</h2>
+    <button
+      onClick={() => setShowSuccessModal(false)}
+      className="mt-4 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
+    >
+      Aceptar
+    </button>
+  </motion.div>
+</div>
+)}
+{showErrorModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+    >
+      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+        <FaTimesCircle className="text-red-500" size={80} />
+      </div>
+      <h2 className="text-2xl font-bold text-red-600 mb-2">Error al actualizar</h2>
+      <p className="text-center text-gray-700 text-sm">
+        Ocurrió un problema al actualizar el cliente.
+      </p>
+      <button
+        onClick={() => setShowErrorModal(false)}
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+      >
+        Cerrar
+      </button>
+    </motion.div>
+  </div>
+)}
+
+
 
     </div>
   );

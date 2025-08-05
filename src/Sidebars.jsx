@@ -90,12 +90,14 @@ export default function Sidebars() {
 
       <div className="px-0 pb-4">
         <ul className="mt-4 space-y-2 border-t border-red-400 pt-4 text-white">
+        {isAdmin && (
           <li>
             <Link to="/profile" className="flex items-center text-white font-bold text-lg hover:bg-red-600 hover:mr-5 hover:ml-5 rounded-md px-4 py-2 transition">
               <HiOutlineUser className="mx-auto md:ml-4" />
               <h1 className="ml-3 hidden md:block">Perfil</h1>
             </Link>
           </li>
+        )}
           <li>
             <button
               onClick={handleLogout}

@@ -131,13 +131,20 @@ export default function ClientInformationOrdenComponent() {
             });
             const payments = response.data;
             if (payments.length > 0) {
-                const totalPaidSum = payments.reduce((sum, payment) => sum + (payment.total || 0), 0);
+                const totalPaidSum = payments.reduce((sum, payment) => {
+                    if (payment.paymentStatus === "confirmado") {
+                        return sum + (payment.total || 0);
+                    }
+                    return sum;
+                }, 0);
+            
                 setPaymentsData(payments);
                 setTotalPaid(totalPaidSum);
             } else {
                 setPaymentsData([]);
                 setTotalPaid(0);
             }
+            
 
         } catch (error) {
             console.error("Error al obtener los pagos", error);

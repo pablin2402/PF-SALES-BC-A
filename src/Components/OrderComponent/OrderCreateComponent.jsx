@@ -639,8 +639,8 @@ const OrderCreateComponent = () => {
                   </div>
                 </>
               ) : viewMode === "form" ? (
-                <div className="flex w-full justify-center gap-6 mt-4">
-                  <div className="w-2/6 p-6 bg-white border border-black rounded-lg shadow-lg">
+                <div className="flex flex-col md:flex-row w-full justify-center gap-6 mt-4">
+                  <div className="md:w-2/6 w-full p-6 bg-white border border-black rounded-lg shadow-lg">
                     <h2 className="mb-6 text-lg text-left font-bold text-gray-900">Datos personales</h2>
                     <form>
                       <div className="grid gap-6">
@@ -764,7 +764,8 @@ const OrderCreateComponent = () => {
                       </div>
                     </form>
                   </div>
-                  <div className="w-4/6 p-6 bg-white border border-black rounded-lg shadow-lg flex flex-col">
+                  <div className="md:w-4/6 w-full p-6 bg-white border border-black rounded-lg shadow-lg flex flex-col">
+                  <div className="max-h-96 overflow-y-auto">
                     <h2 className="mb-6 text-lg text-left font-bold text-gray-900">Confirmar Orden</h2>
                     <form>
                       <div className="grid gap-4">
@@ -833,6 +834,7 @@ const OrderCreateComponent = () => {
                         </h3>
                       </div>
                     </form>
+                    </div>
                   </div>
                 </div>
               ) : (

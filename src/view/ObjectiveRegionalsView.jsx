@@ -3,6 +3,8 @@ import axios from "axios";
 import { API_URL } from "../config";
 import { HiFilter } from "react-icons/hi";
 import { FiTrash2, FiEdit2 } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { FaTimesCircle } from "react-icons/fa";
 
 import ObjectiveDepartmentComponent from "../Components/ObjectiveComponent/ObjectiveDepartmentComponent";
 import ObjectiveSalesDetailComponent from "../Components/ObjectiveComponent/ObjectiveSalesDetailComponent";
@@ -27,12 +29,20 @@ const ObjectiveRegionalsView = () => {
     const [selectedRegion, setSelectedRegion] = useState(null);
     const [selectedLyne, setSelectedLyne] = useState(null);
     const [objective, setObjective] = useState(0);
+    const [role, setRole] = useState("");
+    const [showObjectiveErrorModal, setShowObjectiveErrorModal] = useState(false);
 
     const [saleLastYear, setSaleLastYear] = useState(0);
     const [objective1, setObjective1] = useState(0);
     const [saleLastYear1, setSaleLastYear1] = useState(0);
     const [id, setId] = useState("");
     const [id1, setId1] = useState("");
+    useEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setRole(userRole);
+    }, []);
+
+    const isAdmin = role === "ADMIN";
 
     const applyFilters = () => {
         const customFilters = {};
@@ -99,7 +109,7 @@ const ObjectiveRegionalsView = () => {
         endDate: "",
         region: ""
     };
-    
+
     const handleSubmit = async () => {
         try {
             const response = await axios.post(
@@ -127,13 +137,13 @@ const ObjectiveRegionalsView = () => {
 
             if (response.status === 200) {
                 fetchProducts();
-                setFormData(initialFormData); 
+                setFormData(initialFormData);
                 setModalOpen(false);
             }
 
         } catch (err) {
             console.error(err);
-            alert("Error al insertar");
+            setShowObjectiveErrorModal(true);
         } finally {
             setLoading(false);
         }
@@ -249,9 +259,7 @@ const ObjectiveRegionalsView = () => {
         } catch (error) {
             console.error("Error al actualizar el estado de pago:", error);
         }
-
     };
-
     return (
         <div className="bg-white min-h-screen rounded-lg p-5">
             {loading ? (
@@ -266,7 +274,7 @@ const ObjectiveRegionalsView = () => {
                 </div>
             ) : (
                 <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-                <div className="flex mt-4 justify-start space-x-2">
+                    <div className="flex mt-4 justify-start space-x-2">
                         {viewMode === "card" ? (
                             <div className="flex mt-4 mb-4 justify-start space-x-2">
                                 <nav className="flex" aria-label="Breadcrumb">
@@ -399,13 +407,15 @@ const ObjectiveRegionalsView = () => {
                         <div>
                             <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
                                 <div className="flex flex-col w-full space-y-4">
-                                    <div className="flex justify-end items-center space-x-4">
+                                    {isAdmin && (
+                                        <div className="flex justify-end items-center space-x-4">
 
-                                        <PrincipalBUtton onClick={() => setModalOpen(true)}>
-                                            Nuevo Objetivo
-                                        </PrincipalBUtton>
+                                            <PrincipalBUtton onClick={() => setModalOpen(true)}>
+                                                Nuevo Objetivo
+                                            </PrincipalBUtton>
 
-                                    </div>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-2">
                                             <div className="flex items-center space-x-2">
@@ -482,36 +492,40 @@ const ObjectiveRegionalsView = () => {
                                                         <td className="px-4 py-3 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
                                                         <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
                                                         <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.saleLastYear) * 100).toFixed(2)}</td>
-                                                        <td className="px-4 py-3">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    deleteObjective(item._id || "");
-                                                                }}
-                                                                className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
-                                                                aria-label="Opciones"
-                                                            >
-                                                                <FiTrash2 size={20} />
+                                                        {isAdmin && (
+                                                            <>
+                                                                <td className="px-4 py-3">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            deleteObjective(item._id || "");
+                                                                        }}
+                                                                        className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                                        aria-label="Opciones"
+                                                                    >
+                                                                        <FiTrash2 size={20} />
 
-                                                            </button>
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setShowEditModal(true);
-                                                                    setId(item._id || "");
-                                                                    setObjective(item.objetivo || "");
-                                                                    setSaleLastYear(item.saleLastYear || "");
+                                                                    </button>
+                                                                </td>
+                                                                <td className="px-4 py-3">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setShowEditModal(true);
+                                                                            setId(item._id || "");
+                                                                            setObjective(item.objetivo || "");
+                                                                            setSaleLastYear(item.saleLastYear || "");
 
-                                                                }}
-                                                                className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
-                                                                aria-label="Opciones"
-                                                            >
-                                                                <FiEdit2 size={20} />
+                                                                        }}
+                                                                        className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                                        aria-label="Opciones"
+                                                                    >
+                                                                        <FiEdit2 size={20} />
 
-                                                            </button>
-                                                        </td>
+                                                                    </button>
+                                                                </td>
+                                                            </>
+                                                        )}
 
                                                     </tr>
                                                 ))
@@ -519,14 +533,14 @@ const ObjectiveRegionalsView = () => {
                                                 <tr>
                                                     <td colSpan="11" className="px-6 py-10 text-center">
                                                         <div className="flex flex-col items-center justify-center text-gray-500">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                                                        </svg>
-                                                        <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                                                        <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                                            </svg>
+                                                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
                                                         </div>
                                                     </td>
-                                                    </tr>
+                                                </tr>
                                             )}
                                         </tbody>
                                         <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-xl">
@@ -702,6 +716,7 @@ const ObjectiveRegionalsView = () => {
                                             <th className="px-4 py-3 uppercase">VS OBJETIVO</th>
                                             <th className="px-4 py-3 uppercase">TENDENCIA</th>
                                             <th className="px-4 py-3 uppercase">POR VENDER</th>
+
                                             <th className="px-4 py-3 uppercase"></th>
                                             <th className="px-4 py-3 uppercase"></th>
 
@@ -711,7 +726,7 @@ const ObjectiveRegionalsView = () => {
                                         {salesNationalData.length > 0 ? (
                                             salesNationalData.map((item) => (
                                                 <tr
-                                                   
+
                                                     key={item._id + item.saleLastYear} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                                                     <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.startDate
@@ -731,50 +746,54 @@ const ObjectiveRegionalsView = () => {
                                                     <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / item.objetivo) * 100).toFixed(2) + "%"}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-900">{((item.cajasVendidas / 14) * 31).toFixed(2)}</td>
                                                     <td className="px-4 py-3 font-medium text-gray-900">{(item.objetivo - item.cajasVendidas).toFixed(2)}</td>
-                                                    <td className="px-4 py-3">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                deleteObjective1(item._id || "");
-                                                            }}
-                                                            className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
-                                                            aria-label="Opciones"
-                                                        >
-                                                            <FiTrash2 size={20} />
+                                                    {isAdmin && (
+                                                        <>
+                                                            <td className="px-4 py-3">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        deleteObjective1(item._id || "");
+                                                                    }}
+                                                                    className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                                    aria-label="Opciones"
+                                                                >
+                                                                    <FiTrash2 size={20} />
 
-                                                        </button>
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setShowEditModal(true);
-                                                                setShowEditModal1(true);
-                                                                setId1(item._id || "");
-                                                                setObjective1(item.objetivo || "");
-                                                                setSaleLastYear1(item.saleLastYear || "");
-                                                            }}
-                                                            className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
-                                                            aria-label="Opciones"
-                                                        >
-                                                            <FiEdit2 size={20} />
+                                                                </button>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setShowEditModal(true);
+                                                                        setShowEditModal1(true);
+                                                                        setId1(item._id || "");
+                                                                        setObjective1(item.objetivo || "");
+                                                                        setSaleLastYear1(item.saleLastYear || "");
+                                                                    }}
+                                                                    className="text-[#D3423E] bg-white font-bold py-1 px-3 rounded"
+                                                                    aria-label="Opciones"
+                                                                >
+                                                                    <FiEdit2 size={20} />
 
-                                                        </button>
-                                                    </td>
+                                                                </button>
+                                                            </td>
+                                                        </>
+                                                    )}
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                            <td colSpan="11" className="px-6 py-10 text-center">
-                                              <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                                                </svg>
-                                                <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
-                                              </div>
-                                            </td>
-                                          </tr>
+                                                <td colSpan="11" className="px-6 py-10 text-center">
+                                                    <div className="flex flex-col items-center justify-center text-gray-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                                        </svg>
+                                                        <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                                        <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         )}
                                     </tbody>
                                     <tfoot className="text-sm text-gray-900 bg-gray-100 border-t border-gray-300 font-semibold rounded-b-2xl">
@@ -843,56 +862,56 @@ const ObjectiveRegionalsView = () => {
                                         ) : null}
                                         {showEditModal1 ? (
                                             <div className="grid grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
-                                                <input
-                                                    type="number"
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
+                                                    <input
+                                                        type="number"
 
-                                                    value={objective1}
-                                                    onChange={(e) => setObjective1(e.target.value)}
+                                                        value={objective1}
+                                                        onChange={(e) => setObjective1(e.target.value)}
 
-                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                                />
+                                                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">Venta año anterior:</label>
+                                                    <input
+                                                        type="number"
+                                                        value={saleLastYear1}
+                                                        onChange={(e) => setSaleLastYear1(e.target.value)}
+
+                                                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                    />
+                                                </div>
                                             </div>
-
-                                            <div>
-                                                <label className="block mb-1 text-sm font-medium text-gray-700">Venta año anterior:</label>
-                                                <input
-                                                    type="number"
-                                                    value={saleLastYear1}
-                                                    onChange={(e) => setSaleLastYear1(e.target.value)}
-
-                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                                />
-                                            </div>
-                                        </div>
                                         ) : showEditModal ? (
                                             <div className="grid grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
-                                                <input
-                                                    type="number"
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">Objetivo:</label>
+                                                    <input
+                                                        type="number"
 
-                                                    value={objective}
-                                                    onChange={(e) => setObjective(e.target.value)}
+                                                        value={objective}
+                                                        onChange={(e) => setObjective(e.target.value)}
 
-                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                                />
+                                                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">Venta año anterior:</label>
+                                                    <input
+                                                        type="number"
+                                                        value={saleLastYear}
+                                                        onChange={(e) => setSaleLastYear(e.target.value)}
+
+                                                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
+                                                    />
+                                                </div>
                                             </div>
-
-                                            <div>
-                                                <label className="block mb-1 text-sm font-medium text-gray-700">Venta año anterior:</label>
-                                                <input
-                                                    type="number"
-                                                    value={saleLastYear}
-                                                    onChange={(e) => setSaleLastYear(e.target.value)}
-
-                                                    className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                                />
-                                            </div>
-                                        </div>
                                         ) : null}
-                                      
+
 
                                         <div className="flex gap-4 mt-6">
 
@@ -951,6 +970,31 @@ const ObjectiveRegionalsView = () => {
                     ) : null}
                 </div>
             )}
+            {showObjectiveErrorModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+    >
+      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+        <FaTimesCircle className="text-red-500" size={80} />
+      </div>
+      <h2 className="text-2xl font-bold text-red-600 mb-2">Error al crear el objetivo</h2>
+      <p className="text-center text-gray-700 text-sm">
+        Ocurrió un problema al guardar los datos. Intenta nuevamente.
+      </p>
+      <button
+        onClick={() => setShowObjectiveErrorModal(false)}
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+      >
+        Cerrar
+      </button>
+    </motion.div>
+  </div>
+)}
+
         </div>
     );
 };

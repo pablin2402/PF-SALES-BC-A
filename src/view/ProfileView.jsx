@@ -247,12 +247,12 @@ export default function ProfileView() {
   return (
     <div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
       {loading ? (
-       <Spinner/>
+        <Spinner />
       ) : (
         <div className="p-6 mt-5 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
-        <div className="w-full max-w-5xl gap-6">
-          <div className="w-full mt-10 relative pt-40 bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
-          <div className="absolute top-10 w-40 h-40 rounded-full overflow-hidden">
+          <div className="w-full max-w-5xl gap-6">
+            <div className="w-full mt-10 relative pt-40 bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
+              <div className="absolute top-10 w-40 h-40 rounded-full overflow-hidden">
                 <img
                   src={client.identificationImage || "https://via.placeholder.com/150"}
                   alt={client.fullName}
@@ -287,46 +287,40 @@ export default function ProfileView() {
           </div>
 
           <div className="mt-10 w-full max-w-5xl">
-            <div className="flex items-center justify-between w-full mb-4">
-              <div className="flex gap-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                    }}
-                    className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                    }}
-                    className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  />
-                </div>
-             
-                <PrincipalBUtton onClick={() => handleFilterClick()} icon={HiFilter}>Filtrar</PrincipalBUtton>
- 
+            <div className="flex flex-col md:flex-row items-center justify-between w-full mb-4 gap-4 md:gap-0">
+              <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center w-full md:w-auto">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 w-full md:w-auto"
+                />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="h-10 px-3 py-2 border text-sm text-gray-900 rounded-3xl focus:outline-none focus:ring-0 focus:border-red-500 w-full md:w-auto"
+                />
+                <PrincipalBUtton onClick={() => handleFilterClick()} icon={HiFilter} className="w-full md:w-auto">
+                  Filtrar
+                </PrincipalBUtton>
               </div>
-              <div className="flex justify-end items-center space-x-4">
+
+              <div className="flex flex-col md:flex-row justify-end items-center gap-2 md:gap-4 w-full md:w-auto">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-m text-[#D3423E] border-2 border-[#D3423E] rounded-3xl hover:text-[#D3423E] flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-m text-[#D3423E] border-2 border-[#D3423E] rounded-3xl hover:text-[#D3423E] flex items-center gap-2 w-full md:w-auto justify-center"
                 >
                   <FaFileExport color="##726E6E" />
-                  csv
+                  CSV
                 </button>
-               
-                <PrincipalBUtton onClick={() => exportToPDF} icon={HiFilter}>PDF</PrincipalBUtton>
- 
+
+                <PrincipalBUtton onClick={() => exportToPDF()} icon={HiFilter} className="w-full md:w-auto">
+                  PDF
+                </PrincipalBUtton>
               </div>
             </div>
+
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {dateFilterActive && (
                 <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
@@ -340,7 +334,7 @@ export default function ProfileView() {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-            <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+              <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                 <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-6 py-3 uppercase">Referencia</th>
@@ -354,63 +348,77 @@ export default function ProfileView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {salesData.map((item) => (
-                    <tr key={item._id} onClick={() => handleRowClick(item)} className="bg-white border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-900">{item.receiveNumber}</td>
-                      <td className="px-6 py-4 text-gray-900">
-                        {item.creationDate
-                          ? new Date(item.creationDate).toLocaleString("es-ES", {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: false,
-                          }).toUpperCase()
-                          : ''}
-                      </td>
-                      <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                      <td className="px-6 py-4 text-gray-900 font-bold">
-                        {item.accountStatus === "Crédito" && (
-                          <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                            CRÉDITO
-                          </span>
-                        )}
-                        {item.accountStatus === "Contado" && (
-                          <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                            CONTADO
-                          </span>
-                        )}
-                        {item.accountStatus === "Cheque" && (
-                          <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
-                            CHEQUE
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.totalAmount}</td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.totalPagado}</td>
-                      <td className="px-6 py-4 text-gray-900">Bs. {item.restante}</td>
-                      <td className="px-6 py-4 text-gray-900">
-                        {calculateDaysRemaining(item.dueDate, item.creationDate)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
+                  {salesData.length > 0 ? (
+                    salesData.map((item) => (
+                      <tr key={item._id} onClick={() => handleRowClick(item)} className="bg-white border-b hover:bg-gray-50">
+                        <td className="px-6 py-4 text-gray-900">{item.receiveNumber}</td>
+                        <td className="px-6 py-4 text-gray-900">
+                          {item.creationDate
+                            ? new Date(item.creationDate).toLocaleString("es-ES", {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                              hour12: false,
+                            }).toUpperCase()
+                            : ''}
+                        </td>
+                        <td className="px-6 py-4 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                        <td className="px-6 py-4 text-gray-900 font-bold">
+                          {item.accountStatus === "Crédito" && (
+                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                              CRÉDITO
+                            </span>
+                          )}
+                          {item.accountStatus === "Contado" && (
+                            <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                              CONTADO
+                            </span>
+                          )}
+                          {item.accountStatus === "Cheque" && (
+                            <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
+                              CHEQUE
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-gray-900">Bs. {item.totalAmount}</td>
+                        <td className="px-6 py-4 text-gray-900">Bs. {item.totalPagado}</td>
+                        <td className="px-6 py-4 text-gray-900">Bs. {item.restante}</td>
+                        <td className="px-6 py-4 text-gray-900">
+                          {calculateDaysRemaining(item.dueDate, item.creationDate)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan={8}>
-                        <div className="flex justify-end px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
-                          <div className="text-m font-bold">
-                          <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
-                          </div>
+                      <td colSpan="11" className="px-6 py-10 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                          </svg>
+                          <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                          <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
                         </div>
                       </td>
                     </tr>
-                  </tfoot>
+                  )}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={8}>
+                      <div className="flex justify-end px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                        <div className="text-m font-bold">
+                          <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
-            
+
               {totalPages > 1 && (
                 <div className="flex justify-between items-center px-6 pb-4">
                   <div className="flex mb-4 justify-end items-center pt-4">

@@ -32,7 +32,7 @@ export default function ClientInformationComponent() {
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
-  
+
   const fetchClientData = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/client/info/id", {
@@ -134,7 +134,7 @@ export default function ClientInformationComponent() {
       if (selectedEstadoPago) {
         payload.estadoPago = selectedEstadoPago;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload,{
+      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -177,7 +177,7 @@ export default function ClientInformationComponent() {
         id_owner: user,
         id_client: idClient,
         page: 1,
-        limit: items+1,
+        limit: items + 1,
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
@@ -188,7 +188,7 @@ export default function ClientInformationComponent() {
       if (selectedEstadoPago) {
         payload.estadoPago = selectedEstadoPago;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload,{
+      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -257,7 +257,7 @@ export default function ClientInformationComponent() {
         <Spinner />
       ) : (
         <div className="p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
-        <div className="w-full max-w-5xl gap-6">
+          <div className="w-full max-w-5xl gap-6">
             <div className="flex mt-4 mb-4 justify-start space-x-2">
               <nav className="flex" aria-label="Breadcrumb">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
@@ -335,53 +335,57 @@ export default function ClientInformationComponent() {
           </div>
 
           <div className="mt-10 w-full max-w-5xl">
-          <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
-              <div className="flex gap-2">
-                <div className="flex items-center space-x-2">
-                    <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-                </div>
-                <div className="flex items-center space-x-2">
-                    <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <select
-                    value={selectedEstadoPago}
-                    onChange={(e) => setSelectedEstadoPago(e.target.value)}
-                    className="h-10 px-3 py-2 text-sm text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                  >
-                    <option value="">Mostrar Todos</option>
-                    <option value="Pagado">Pagado</option>
-                    <option value="Pendiente">Falta pagar</option>
-                  </select>
-                </div>
-
+            <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
+                <DateInput
+                  value={startDate}
+                  onChange={setStartDate}
+                  label="Fecha de Inicio"
+                  className="w-full sm:w-auto"
+                />
+                <DateInput
+                  value={endDate}
+                  onChange={setEndDate}
+                  min={startDate}
+                  label="Fecha Final"
+                  className="w-full sm:w-auto"
+                />
+                <select
+                  value={selectedEstadoPago}
+                  onChange={(e) => setSelectedEstadoPago(e.target.value)}
+                  className="h-10 px-3 py-2 text-sm text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500 w-full sm:w-auto"
+                >
+                  <option value="">Mostrar Todos</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Pendiente">Falta pagar</option>
+                </select>
                 <button
                   onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold uppercase text-lg text-white rounded-3xl bg-[#D3423E] flex items-center gap-6"
+                  className="px-4 py-2 font-bold uppercase text-lg text-white rounded-3xl bg-[#D3423E] flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   Filtrar
                 </button>
-
               </div>
 
-              <div className="flex justify-end items-center space-x-4">
+              <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:ml-auto">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl  flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
-                  <FaFileExport color="##726E6E" />
+                  <FaFileExport color="#D3423E" />
                   CSV
                 </button>
-             
-                <button
-                    onClick={exportToPDF}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                  >
-                    <FaFileExport color="##726E6E" /> PDF
-                  </button>
 
+                <button
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  <FaFileExport color="#D3423E" />
+                  PDF
+                </button>
               </div>
             </div>
+
             <div className="flex flex-wrap items-center gap-2 mt-4">
 
               {dateFilterActive && (
@@ -396,7 +400,7 @@ export default function ClientInformationComponent() {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-            <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+              <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                 <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-6 py-3 uppercase">Referencia</th>
@@ -439,7 +443,7 @@ export default function ClientInformationComponent() {
                             CONTADO
                           </span>
                         )}
-                         {item.accountStatus === "Cheque" && (
+                        {item.accountStatus === "Cheque" && (
                           <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
                             CHEQUE
                           </span>
@@ -467,19 +471,19 @@ export default function ClientInformationComponent() {
                   ))}
                 </tbody>
                 <tfoot>
-                    <tr>
-                      <td colSpan={8}>
-                        <div className="flex justify-end px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
-                          <div className="flex text-m font-bold justify-end">
+                  <tr>
+                    <td colSpan={8}>
+                      <div className="flex justify-end px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                        <div className="flex text-m font-bold justify-end">
                           <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
-                          </div>
                         </div>
-                      </td>
-                    </tr>
-                  </tfoot>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
               <div>
-               
+
                 {totalPages > 1 && (
                   <div className="flex justify-between items-center px-6 pb-4">
                     <div className="flex mb-4 justify-end items-center pt-4">

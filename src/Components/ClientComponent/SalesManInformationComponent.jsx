@@ -194,7 +194,6 @@ export default function SalesManInformationComponent() {
       const doc = new jsPDF();
       doc.addImage("/camacho.jpeg", "PNG", 160, 10, 30, 30);
       doc.text("Reporte de Ventas", 15, 20);
-      doc.text(`Cliente: ${client[0].name} ${client[0].lastName}`, 15, 40);
 
       const tableColumn = [
         "Referencia",
@@ -327,40 +326,53 @@ export default function SalesManInformationComponent() {
           </div>
 
           <div className="mt-10 w-full max-w-5xl">
-          <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
-              <div className="flex gap-2">
-                <div className="flex items-center space-x-2">
-                  <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-
+            <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
+                <div className="flex items-center w-full sm:w-auto">
+                  <DateInput
+                    value={startDate}
+                    onChange={setStartDate}
+                    label="Fecha de Inicio"
+                  />
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-
+                <div className="flex items-center w-full sm:w-auto">
+                  <DateInput
+                    value={endDate}
+                    onChange={setEndDate}
+                    min={startDate}
+                    label="Fecha Final"
+                  />
                 </div>
-                <PrincipalBUtton onClick={() => handleFilterClick()} icon={HiFilter}>Filtrar</PrincipalBUtton>
 
-
+                <PrincipalBUtton
+                  onClick={handleFilterClick}
+                  icon={HiFilter}
+                  className="w-full sm:w-auto"
+                >
+                  Filtrar
+                </PrincipalBUtton>
               </div>
-              <div className="flex justify-end items-center space-x-4">
+
+              <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:ml-auto">
                 <button
                   onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl  flex items-center gap-2"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
-                  <FaFileExport color="##726E6E" />
+                  <FaFileExport color="#D3423E" />
                   CSV
                 </button>
 
                 <button
                   onClick={exportToPDF}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
+                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl border-2 border-[#D3423E] flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
-                  <FaFileExport color="##726E6E" /> PDF
+                  <FaFileExport color="#D3423E" />
+                  PDF
                 </button>
-
               </div>
-
             </div>
+
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {dateFilterActive && (
                 <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
@@ -374,7 +386,7 @@ export default function SalesManInformationComponent() {
               )}
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-            <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+              <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
                 <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
                   <tr>
                     <th className="px-4 py-3 uppercase">Referencia</th>
@@ -433,17 +445,17 @@ export default function SalesManInformationComponent() {
                   ))}
                 </tbody>
                 <tfoot>
-                    <tr>
-                      <td colSpan={8}>
-                        <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                  <tr>
+                    <td colSpan={8}>
+                      <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
                         <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
 
-                        </div>
-                      </td>
-                    </tr>
-                  </tfoot>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
-            
+
               {totalPages > 1 && (
                 <div className="flex justify-between items-center px-6 pb-4">
                   <div className="flex mb-4 justify-end items-center pt-4">

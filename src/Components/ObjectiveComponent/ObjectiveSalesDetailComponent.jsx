@@ -5,6 +5,8 @@ import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 import DateInput from "../LittleComponents/DateInput";
 import Spinner from "../LittleComponents/Spinner";
+import { motion } from "framer-motion";
+import { FaTimesCircle } from "react-icons/fa";
 
 const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
     const [objectiveData, setObjectiveData] = useState([]);
@@ -25,6 +27,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
     const token = localStorage.getItem("token");
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [setItems] = useState();
+    const [showObjectiveErrorModal, setShowObjectiveErrorModal] = useState(false);
 
 
     const handleChange = (e) => {
@@ -68,7 +71,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
 
         } catch (err) {
             console.error(err);
-            alert("Error al insertar");
+            setShowObjectiveErrorModal(true);
         } finally {
             setLoading(false);
         }
@@ -593,6 +596,30 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                 </div>
 
             )}
+{showObjectiveErrorModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+    >
+      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+        <FaTimesCircle className="text-red-500" size={80} />
+      </div>
+      <h2 className="text-2xl font-bold text-red-600 mb-2">Error al crear el objetivo</h2>
+      <p className="text-center text-gray-700 text-sm">
+        Ocurrió un problema al guardar los datos. Intenta nuevamente.
+      </p>
+      <button
+        onClick={() => setShowObjectiveErrorModal(false)}
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+      >
+        Cerrar
+      </button>
+    </motion.div>
+  </div>
+)}
 
         </div>
     );

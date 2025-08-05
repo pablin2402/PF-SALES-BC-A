@@ -34,6 +34,7 @@ const OrderView = () => {
   const [dateFilterActive, setDateFilterActive] = useState(false);
   const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [showPaymentWarningModal, setShowPaymentWarningModal] = useState(false);
 
   const [vendedores, setVendedores] = useState([]);
 
@@ -46,13 +47,16 @@ const OrderView = () => {
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showCancelCheck, setShowCancelCheck] = useState(null);
   const [counts, setCounts] = useState(null);
   const [error, setError] = useState(null);
-
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  
   const handleNewOrderClick = () => {
     navigate("/order/creation");
   };
@@ -99,7 +103,7 @@ const OrderView = () => {
 
     } catch (error) {
       console.error(error);
-      
+
     } finally {
       setLoading1(false);
     }
@@ -491,268 +495,276 @@ const OrderView = () => {
               </div>
               <div className="mt-5 border border-gray-400 rounded-xl">
                 <div className="overflow-x-auto">
-                <div className="min-w-[900px]">
-                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                    <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
-                      <tr>
-                        <th className="px-4 py-3 uppercase">Fecha de creación</th>
-                        <th className="px-4 py-3 uppercase">Ciudad</th>
-                        <th className="px-4 py-3 uppercase">Nombre</th>
-                        <th className="px-4 py-3 uppercase">Tipo de Pago</th>
-                        <th className="px-4 py-3 uppercase">Vendedor</th>
-                        <th className="px-4 py-3 uppercase">Estado de pago</th>
-                        <th className="px-4 py-3 uppercase">Total</th>
-                        <th className="px-4 py-3 uppercase">Saldo por pagar</th>
-                        <th className="px-4 py-3 uppercase">Días de mora</th>
-                        <th className="px-4 py-3 uppercase"></th>
-                        <th className="px-4 py-3 uppercase"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading1 ? (
+                  <div className="min-w-[900px]">
+                    <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                      <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
                         <tr>
-                          <td colSpan="11" className="px-6 py-10 text-center">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <Spinner size="lg" />
-                            </div>
-                          </td>
-                        </tr>
-                      ) : error ? (
-                        <tr>
-                          <td colSpan="11" className="px-6 py-10 text-center">
-                            <div className="flex flex-col items-center justify-center text-red-500">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-1.414 1.414A8 8 0 115.636 5.636L4.222 4.222A10 10 0 1020 10a9.95 9.95 0 00-1.636-4.364z" />
-                              </svg>
-                              <p className="text-lg font-bold">Ocurrió un error al cargar los datos</p>
-                              <p className="text-sm text-gray-400 mt-1">Revisa tu conexión o intenta nuevamente.</p>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : salesData.length === 0 ? (
-                        <tr>
-                          <td colSpan="11" className="px-6 py-10 text-center">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                              </svg>
-                              <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                              <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : (
-                        salesData.map((item) => (
-                          <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
-                            <td className="px-4 py-3 text-gray-900">
-                              {item.creationDate
-                                ? new Date(item.creationDate).toLocaleString("es-ES", {
-                                  weekday: 'long',
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                  hour12: false,
-                                }).toUpperCase()
-                                : ''}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900">{item.region}</td>
-                            <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                            <td className="px-4 py-3 text-gray-900 font-bold">
-                              {item.accountStatus === "Crédito" && (
-                                <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                                  CRÉDITO
-                                </span>
-                              )}
-                              {item.accountStatus === "Contado" && (
-                                <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                                  CONTADO
-                                </span>
-                              )}
-                              {item.accountStatus === "Cheque" && (
-                                <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
-                                  CHEQUE
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
-                            <td className="px-4 py-3 text-gray-900 font-bold">
-                              {item.payStatus === "Pagado" && (
-                                <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                                  PAGADO
-                                </span>
-                              )}
-                              {item.payStatus === "Pendiente" && (
-                                <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
-                                  PENDIENTE
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
-                            <td className="px-4 py-3 text-gray-900">
-                              {item.restante}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900">
-                              {item.diasMora}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900">
-                              {item.orderStatus === "aproved" && (
-                                <FaCheckCircle className="text-green-500 text-lg" />
-                              )}
-                              {item.orderStatus === "En Ruta" && (
-                                <FaTruck className="text-blue-500 text-lg" />
-                              )}
+                          <th className="px-4 py-3 uppercase">Fecha de creación</th>
+                          <th className="px-4 py-3 uppercase">Ciudad</th>
+                          <th className="px-4 py-3 uppercase">Nombre</th>
+                          <th className="px-4 py-3 uppercase">Tipo de Pago</th>
+                          <th className="px-4 py-3 uppercase">Vendedor</th>
+                          <th className="px-4 py-3 uppercase">Estado de pago</th>
+                          <th className="px-4 py-3 uppercase">Total</th>
+                          <th className="px-4 py-3 uppercase">Saldo por pagar</th>
+                          <th className="px-4 py-3 uppercase">Días de mora</th>
+                          <th className="px-4 py-3 uppercase"></th>
 
-                              {item.orderStatus === "cancelled" && (
-                                <FaTimesCircle className="text-red-500 text-lg" />
-                              )}
-
-                              {item.orderStatus === "created" && (
-                                <FaExclamationCircle className="text-yellow-400 text-lg" />
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <button
-                                onClick={(e) => {
-
-                                  e.stopPropagation();
-                                  setOpenMenuId(openMenuId === item._id ? null : item._id);
-                                }}
-                                className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
-                                aria-label="Opciones"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <circle cx="10" cy="4" r="2" />
-                                  <circle cx="10" cy="10" r="2" />
-                                  <circle cx="10" cy="16" r="2" />
-                                </svg>
-                              </button>
-                              {openMenuId === item._id && (
-                                <div
-                                  className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <button
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setShowEditModal(true);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Confirmar pedido
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      handleDelete(item._id);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                  >
-                                    Eliminar pedido
-                                  </button>
-                                </div>
-                              )}
+                          <th className="px-4 py-3 uppercase"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loading1 ? (
+                          <tr>
+                            <td colSpan="11" className="px-6 py-10 text-center">
+                              <div className="flex flex-col items-center justify-center text-gray-500">
+                                <Spinner size="lg" />
+                              </div>
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                      <td colSpan={11}>
-                        <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
-                          <div className="text-m font-bold">
-                            Total de Ítems: <span className="font-semibold">{items}</span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tfoot>
-                  </table>
-    
-                  {totalPages > 1 && (
-                    <div className="flex justify-between items-center px-6 pb-4">
-                      <div className="flex mb-4 justify-end items-center pt-4">
-                        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                          Ítems por página:
-                        </label>
-                        <select
-                          id="itemsPerPage"
-                          value={itemsPerPage}
-                          onChange={(e) => {
-                            const selectedValue = Number(e.target.value);
-                            setItemsPerPage(selectedValue);
-                            setPage(1);
-                          }}
-                          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500"
-                        >
-                          {[5, 10, 20].map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                        ) : error ? (
+                          <tr>
+                            <td colSpan="11" className="px-6 py-10 text-center">
+                              <div className="flex flex-col items-center justify-center text-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-1.414 1.414A8 8 0 115.636 5.636L4.222 4.222A10 10 0 1020 10a9.95 9.95 0 00-1.636-4.364z" />
+                                </svg>
+                                <p className="text-lg font-bold">Ocurrió un error al cargar los datos</p>
+                                <p className="text-sm text-gray-400 mt-1">Revisa tu conexión o intenta nuevamente.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : salesData.length === 0 ? (
+                          <tr>
+                            <td colSpan="11" className="px-6 py-10 text-center">
+                              <div className="flex flex-col items-center justify-center text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                </svg>
+                                <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          salesData.map((item) => (
+                            <tr key={item._id} onClick={() => goToClientDetails(item)} className="bg-white border-b hover:bg-gray-50">
+                              <td className="px-4 py-3 text-gray-900">
+                                {item.creationDate
+                                  ? new Date(item.creationDate).toLocaleString("es-ES", {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                    hour12: false,
+                                  }).toUpperCase()
+                                  : ''}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900">{item.region}</td>
+                              <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
+                              <td className="px-4 py-3 text-gray-900 font-bold">
+                                {item.accountStatus === "Crédito" && (
+                                  <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                                    CRÉDITO
+                                  </span>
+                                )}
+                                {item.accountStatus === "Contado" && (
+                                  <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
+                                    CONTADO
+                                  </span>
+                                )}
+                                {item.accountStatus === "Cheque" && (
+                                  <span className="bg-blue-500 text-white px-2.5 py-0.5 rounded-full">
+                                    CHEQUE
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
+                              <td className="px-4 py-3 text-gray-900 font-bold">
+                                {item.payStatus === "Pagado" && (
+                                  <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
+                                    PAGADO
+                                  </span>
+                                )}
+                                {item.payStatus === "Pendiente" && (
+                                  <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
+                                    PENDIENTE
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900 font-bold text-lg">{item.totalAmount}</td>
+                              <td className="px-4 py-3 text-gray-900">
+                                {item.restante}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900">
+                                {item.diasMora}
+                              </td>
+                              <td className="px-4 py-3 text-gray-900">
+                                {item.orderStatus === "aproved" && (
+                                  <FaCheckCircle className="text-green-500 text-lg" />
+                                )}
+                                {item.orderStatus === "En Ruta" && (
+                                  <FaTruck className="text-blue-500 text-lg" />
+                                )}
 
-                      <nav className="flex items-center justify-center pt-4 space-x-2">
-                        <button
-                          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                          disabled={page === 1}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
-                        >
-                          ◀
-                        </button>
+                                {item.orderStatus === "cancelled" && (
+                                  <FaTimesCircle className="text-red-500 text-lg" />
+                                )}
 
-                        <button
-                          onClick={() => setPage(1)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                        >
-                          1
-                        </button>
+                                {item.orderStatus === "created" && (
+                                  <FaExclamationCircle className="text-yellow-400 text-lg" />
+                                )}
+                              </td>
 
-                        {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={(e) => {
 
-                        {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                          .filter((p) => p > 1 && p < totalPages)
-                          .map((p) => (
-                            <button
-                              key={p}
-                              onClick={() => setPage(p)}
-                              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                            >
-                              {p}
-                            </button>
-                          ))}
+                                    e.stopPropagation();
+                                    setOpenMenuId(openMenuId === item._id ? null : item._id);
+                                  }}
+                                  className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
+                                  aria-label="Opciones"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <circle cx="10" cy="4" r="2" />
+                                    <circle cx="10" cy="10" r="2" />
+                                    <circle cx="10" cy="16" r="2" />
+                                  </svg>
+                                </button>
+                                {openMenuId === item._id && (
+                                  <div
+                                    className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      onClick={() => {
+                                        setSelectedItem(item);
+                                        setShowEditModal(true);
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                      Confirmar pedido
+                                    </button>
+                                    <button
+  onClick={() => {
+    if (item.totalAmount === item.restante) {
+      setItemToDelete(item);
+      setShowConfirmDeleteModal(true);
+    } else {
+      setShowPaymentWarningModal(true);
+    }
+  }}
+  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+>
+  Eliminar pedido
+</button>
 
-                        {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
 
-                        {totalPages > 1 && (
-                          <button
-                            onClick={() => setPage(totalPages)}
-                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
-                          >
-                            {totalPages}
-                          </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))
                         )}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colSpan={11}>
+                            <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
+                              <div className="text-m font-bold">
+                                Total de Ítems: <span className="font-semibold">{items}</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
 
-                        <button
-                          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                          disabled={page === totalPages}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
-                        >
-                          ▶
-                        </button>
-                      </nav>
-                    </div>
-                  )}
+                    {totalPages > 1 && (
+                      <div className="flex justify-between items-center px-6 pb-4">
+                        <div className="flex mb-4 justify-end items-center pt-4">
+                          <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
+                            Ítems por página:
+                          </label>
+                          <select
+                            id="itemsPerPage"
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                              const selectedValue = Number(e.target.value);
+                              setItemsPerPage(selectedValue);
+                              setPage(1);
+                            }}
+                            className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500"
+                          >
+                            {[5, 10, 20].map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <nav className="flex items-center justify-center pt-4 space-x-2">
+                          <button
+                            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={page === 1}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold "}`}
+                          >
+                            ◀
+                          </button>
+
+                          <button
+                            onClick={() => setPage(1)}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                          >
+                            1
+                          </button>
+
+                          {page > 3 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                          {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                            .filter((p) => p > 1 && p < totalPages)
+                            .map((p) => (
+                              <button
+                                key={p}
+                                onClick={() => setPage(p)}
+                                className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                              >
+                                {p}
+                              </button>
+                            ))}
+
+                          {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
+
+                          {totalPages > 1 && (
+                            <button
+                              onClick={() => setPage(totalPages)}
+                              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                            >
+                              {totalPages}
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={page === totalPages}
+                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                          >
+                            ▶
+                          </button>
+                        </nav>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -928,6 +940,64 @@ const OrderView = () => {
           </div>
         </div>
       )}
+      {showPaymentWarningModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-lg w-96">
+      <div className="p-6 text-center">
+        <svg
+          className="mx-auto mb-4 text-red-500 w-12 h-12"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z"
+          />
+        </svg>
+        <h3 className="mb-5 text-lg font-semibold text-gray-900">
+          Este pedido no se puede eliminar porque ya tiene pagos registrados.
+        </h3>
+        <button
+          onClick={() => setShowPaymentWarningModal(false)}
+          className="px-5 py-2.5 uppercase font-bold text-sm text-white bg-red-500 rounded-lg hover:bg-red-600"
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{showConfirmDeleteModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-lg w-96 p-6 text-center">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">¿Estás seguro?</h2>
+      <p className="text-gray-600 mb-6">¿Deseas eliminar este pedido? Esta acción no se puede deshacer.</p>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={() => {
+            handleDelete(itemToDelete._id);
+            setShowConfirmDeleteModal(false);
+            setOpenMenuId(null);
+          }}
+          className="px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-600"
+        >
+          Sí, eliminar
+        </button>
+        <button
+          onClick={() => setShowConfirmDeleteModal(false)}
+          className="px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded hover:bg-gray-300"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   );

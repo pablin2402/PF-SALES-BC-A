@@ -6,6 +6,8 @@ import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 import DateInput from "../LittleComponents/DateInput";
 import { FaFileExport } from "react-icons/fa6";
 import Spinner from "../LittleComponents/Spinner";
+import { motion } from "framer-motion";
+import { FaTimesCircle } from "react-icons/fa";
 
 const ObjectiveSalesManComponent = ({ region }) => {
 
@@ -21,6 +23,8 @@ const ObjectiveSalesManComponent = ({ region }) => {
     const [selectedPayment, setSelectedPayment] = useState("");
     const [paymentFilterActive, setPaymentActive] = useState(false);
     const [saleActive, setActiveSaler] = useState(false);
+    const [role, setRole] = useState("");
+    const [showObjectiveErrorModal, setShowObjectiveErrorModal] = useState(false);
 
     const [vendedores, setVendedores] = useState([]);
     const [salesmen, setSalesmen] = useState({});
@@ -29,7 +33,12 @@ const ObjectiveSalesManComponent = ({ region }) => {
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
 
-
+    const isAdmin = role === "ADMIN";
+    useEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setRole(userRole);
+      }, []);
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -38,6 +47,15 @@ const ObjectiveSalesManComponent = ({ region }) => {
             [name]: name === "saleLastYear1" ? Number(value) : value
         });
     };
+    const initialFormData = {
+        ciudad: "",
+        categoria: "",
+        numberOfBoxes: "",
+        saleLastYear1: "",
+        startDate: "",
+        endDate: "",
+        salesMan: ""
+      };
     const handleSubmit = async () => {
         try {
 
@@ -64,11 +82,12 @@ const ObjectiveSalesManComponent = ({ region }) => {
             if (response.status === 200) {
                 fetchObjectiveDataRegion();
                 setModalOpen(false);
-            }
+                setFormData(initialFormData);
+              }
 
         } catch (err) {
             console.error(err);
-            alert("Error al insertar");
+            setShowObjectiveErrorModal(true);
         } finally {
             setLoading(false);
         }
@@ -270,6 +289,8 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                         </div>
                                 )}
                             </div>
+                            {isAdmin && (
+
                             <div className="flex justify-end gap-4">
                                 <button
                                     className="px-4 py-2 bg-white font-bold text-red-700 text-lg rounded-2xl flex items-center gap-2"
@@ -281,6 +302,7 @@ const ObjectiveSalesManComponent = ({ region }) => {
                                     Nuevo Objetivo
                                 </PrincipalBUtton>
                             </div>
+                            )}
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-4">
                             {dateFilterActive && (
@@ -567,6 +589,30 @@ const ObjectiveSalesManComponent = ({ region }) => {
                     </div>
                 )}
             </div>
+            {showObjectiveErrorModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+    >
+      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+        <FaTimesCircle className="text-red-500" size={80} />
+      </div>
+      <h2 className="text-2xl font-bold text-red-600 mb-2">Error al crear el objetivo</h2>
+      <p className="text-center text-gray-700 text-sm">
+        Ocurrió un problema al guardar los datos. Intenta nuevamente.
+      </p>
+      <button
+        onClick={() => setShowObjectiveErrorModal(false)}
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+      >
+        Cerrar
+      </button>
+    </motion.div>
+  </div>
+)}
 
         </div>
     );
