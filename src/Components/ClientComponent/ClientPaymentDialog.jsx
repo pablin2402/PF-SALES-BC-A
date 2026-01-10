@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS, USDT_CONTRACT_ADDRESS,DESTINATION_WALLET_ADDRESS } from '../../config';
-import { parseUnits, ethers } from 'ethers';
-import PaymentWithUSDTComponent from "./PaymentWithUSDTComponent";
+import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS } from '../../config';
+import { ethers } from 'ethers';
+//import PaymentWithUSDTComponent from "./PaymentWithUSDTComponent";
+import { QRCodeCanvas } from "qrcode.react";
 
 const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral, orderId, idClient, salesID }) => {
   const [paymentData, setPaymentData] = useState({
@@ -23,9 +24,12 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
   const [savingText, setSavingText] = useState("Guardando");
   const [blockchainSuccess, setBlockchainSuccess] = useState(false);
   const [isBlockchainProcessing, setIsBlockchainProcessing] = useState(false);
-  const [recipient, setRecipient] = useState(DESTINATION_WALLET_ADDRESS);
 
   const [paymentMethod, setPaymentMethod] = useState("normal");
+
+  const [order, setOrder] = useState(null);
+  const [paid, setPaid] = useState(false);
+  const [payment, setPayment] = useState(null);
 
   const handleFileChange = (e) => {
     setImageFile(e.target.files[0]);
@@ -177,35 +181,26 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
       setSavingText("Guardando");
     }
   };
-  const sendUsdtPayment = async () => {
+  const createPayment = async () => {
     try {
-      if (!window.ethereum) throw new Error("MetaMask no está instalado");
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const usdtContract = new ethers.Contract(
-        USDT_CONTRACT_ADDRESS,
-        ["function transfer(address to, uint256 amount) public returns (bool)"],
-        signer
+      const payload = {
+        amount: 1
+      };
+      const response = await axios.post(API_URL + "/whatsapp/create", payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
-      setStatus("Enviando USDT...");
-      setIsBlockchainProcessing(true);
-      const amountParsed = parseUnits(paymentData.amount, 6);
-      const tx = await usdtContract.transfer(recipient, amountParsed);
-      await tx.wait();
-      setStatus("Pago con USDT completado 🎉");
-      setBlockchainSuccess(true);
-      setTimeout(() => {
-        setIsBlockchainProcessing(false);
-        setStatus("");
-        onClose();
-      }, 3000);
+      setOrder(response.data || []);
+      setPayment(response.data);
     } catch (error) {
-      console.error(error);
-      setStatus("Error al enviar USDT: " + error.message);
-      setIsBlockchainProcessing(false);
+      console.error("Error al obtener los productos", error);
     }
   };
-  if (!isOpen) return null;
+
+  const qrValue = order?.address ? String(order.address) : "";
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] overflow-y-auto">
@@ -225,9 +220,12 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
           <button
             className={`flex-1 px-4 py-2 rounded-xl font-bold text-center ${paymentMethod === 'usdt' ? 'bg-[#D3423E] text-white' : 'bg-gray-200 text-gray-700'
               }`}
-            onClick={() => setPaymentMethod('usdt')}
+            onClick={() => {
+              setPaymentMethod('usdt');
+              createPayment();
+            }}
           >
-            Pagar con USDT
+            Pagar con ETH
           </button>
         </div>
 
@@ -348,13 +346,120 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
                   </div>
                 )}
               </div>
-
-
             </div>
           </>
         )}
         {paymentMethod === 'usdt' && (
-          <PaymentWithUSDTComponent  total={total}/>
+           <>
+           <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 space-y-4 sm:space-y-0">
+             <div className="flex-1">
+               <label htmlFor="amount" className="text-m font-bold text-left block text-gray-700">Importe</label>
+               <input
+                 type="number"
+                 id="amount"
+                 name="amount"
+                 value={paymentData.amount}
+                 onChange={handleInputChange}
+                 max={total}
+                 className={`mt-2 text-gray-900 border ${amountError ? 'border-red-500' : 'border-gray-900'} focus:outline-none focus:ring-0 w-full px-4 py-2 rounded-2xl`}
+                 placeholder="Ingrese el importe"
+               />
+               {amountError && (
+                 <p className="text-sm text-red-600 mt-2">{amountError}</p>
+               )}
+             </div>
+
+             <div className="flex-1">
+               <label htmlFor="payer" className="text-m block font-bold text-left text-gray-700">Quién paga</label>
+               <input
+                 type="text"
+                 id="payer"
+                 name="payer"
+                 value={paymentData.payer}
+                 onChange={handleInputChange}
+                 className="mt-2 hover:border-[#D3423E] text-gray-900 border-gray-900 focus:outline-none focus:ring-0 w-full px-4 py-2 border rounded-2xl"
+                 placeholder="Ingrese el nombre del pagador"
+               />
+             </div>
+           </div>
+           <div style={{ textAlign: "center" }}>
+            {paymentMethod === "usdt" && (
+              <div style={{ textAlign: "center" }}>
+                {!order ? (
+                  <>
+                    <h2 className="text-gray-900 font-bold">Generando pago...</h2>
+                    <p className="text-gray-600">Espera un momento</p>
+                  </>
+                ) : !paid ? (
+                  <>
+                    {qrValue ? (
+                      <div
+                        style={{
+                          background: "#fff",
+                          padding: 12,
+                          borderRadius: 12,
+                          width: "fit-content",
+                          margin: "12px auto",
+                          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        <QRCodeCanvas value={qrValue} size={220} />
+                      </div>
+                    ) : (
+                      <p className="text-gray-600">Generando QR…</p>
+                    )}
+
+                    <p style={{ color: "#111827", wordBreak: "break-all" }}>
+                      <b>Address:</b> {order.address}
+                    </p>
+                  </>
+                ) : (
+                  <h1 style={{ color: "#16a34a", fontWeight: 800 }}>✅ Pago confirmado</h1>
+                )}
+              </div>
+            )}
+
+          </div>
+           <div className="mb-6">
+             <label htmlFor="user_avatar" className="text-m font-bold block text-left text-gray-700 mb-2">
+               Adjunta una imagen del comprobante de pago
+             </label>
+             <input
+               className="block w-full text-gray-900 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-[#D3423E] focus:outline-none"
+               id="user_avatar"
+               type="file"
+               accept=".svg,.png,.jpg,.jpeg"
+               onChange={handleFileChange}
+             />
+             <p className="mt-2 text-sm text-gray-500"><span className="font-semibold">Haz clic para subir</span> SVG, PNG o JPG</p>
+           </div>
+           <div className="flex flex-col w-full space-y-4">
+              <div className="flex flex-col w-full space-y-4">
+                {!isBlockchainProcessing && !blockchainSuccess && (
+                  <div className="flex flex-col sm:flex-row w-full sm:space-x-4 sm:space-y-0 space-y-4">
+                    <button
+                      onClick={onClose}
+                      className="w-full sm:w-1/2 px-4 py-2 text-lg border-2 border-[#D3423E] text-[#D3423E] uppercase font-bold rounded-2xl"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      onClick={handleSavePayment}
+                      disabled={!paymentData.amount || !paymentData.payer || amountError || isSaving}
+                      className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isSaving
+                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                        : 'bg-[#D3423E] text-white hover:bg-red-600'
+                        }`}
+                    >
+                      {isSaving ? savingText : saveSuccess ? "Guardado" : "Guardar"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+         </>
+         
         )}
       </div>
 

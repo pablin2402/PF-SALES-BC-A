@@ -24,6 +24,7 @@ const containerStyle = {
     width: "100%",
     height: "300px",
 };
+const GOOGLE_LIBRARIES_EMPTY = [];
 
 export default function ClientInformationOrdenComponent() {
     const { state } = useLocation();
@@ -56,8 +57,8 @@ export default function ClientInformationOrdenComponent() {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: GOOGLE_API_KEY,
-        libraries: ['maps'],
-    });
+        libraries: GOOGLE_LIBRARIES_EMPTY, 
+      });
 
     useEffect(() => {
         if (tabRefs.current[activeTab]) {
@@ -189,9 +190,9 @@ export default function ClientInformationOrdenComponent() {
         }
     };
     useEffect(() => {
-        fetchPayments();
-        fetchOrderTracks();
-        fetchOrderPickUpDetails();
+     //   fetchPayments();
+       // fetchOrderTracks();
+        //fetchOrderPickUpDetails();
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
       
@@ -586,7 +587,7 @@ export default function ClientInformationOrdenComponent() {
                                     <li key={index} className="mb-10 ms-6">
 
                                         <span className={`absolute flex items-center justify-center w-10 h-10 rounded-full -start-3 ring-8 ring-white dark:ring-gray-800 text-white text-lg shadow-md
-          ${event.eventType === "Orden Creada" ? "bg-blue-500" :
+                                            ${event.eventType === "Orden Creada" ? "bg-blue-500" :
                                                 event.eventType === "Pago Ingresado" ? "bg-yellow-500" :
                                                     event.eventType === "Ha aprobado un pago" ? "bg-green-500" :
                                                         event.eventType === "Ha sido asignado como repartidor" ? "bg-purple-500" :
@@ -707,72 +708,70 @@ export default function ClientInformationOrdenComponent() {
 
 
                     </div>
-
-                    {deliveryData && deliveryData.latitud && deliveryData.longitud ? (
-                        <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                            <div className="space-y-4 mb-5">
-                                <div className="flex justify-between pb-2">
-                                    <span className="text-xl font-bold text-gray-900">
-                                        Información del Punto de Entrega
-                                    </span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-xl font-bold text-gray-900">Persona que recibió el pedido:</span>
-                                    <span className="text-lg text-gray-900">{deliveryData.clientName}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-xl font-bold text-gray-900">Repartidor:</span>
-                                    <span className="text-lg text-gray-900">
-                                        {deliveryData.delivery.fullName + " " + deliveryData.delivery.lastName}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-xl font-bold text-gray-900">Fecha:</span>
-                                    <span className="text-lg text-gray-900">
-                                        {new Date(deliveryData.creationDate).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <img
-                                        src={deliveryData.image}
-                                        alt="Foto del recibo"
-                                        className="w-25 h-20 object-cover rounded-md"
-                                    />
-                                </div>
-                            </div>
-                            {isLoaded && window.google?.maps?.Size && (
-                                <GoogleMap
-                                    mapContainerStyle={containerStyle}
-                                    center={{
-                                        lat: deliveryData.latitud,
-                                        lng: deliveryData.longitud,
-                                    }}
-                                    zoom={15}
-                                >
-                                    {iconReady && (
-                                        <Marker
-                                            position={{
-                                                lat: deliveryData.latitud,
-                                                lng: deliveryData.longitud,
-                                            }}
-                                            icon={{
-                                                url: tiendaIcon,
-                                                scaledSize: new window.google.maps.Size(40, 40),
-                                            }}
+                        {deliveryData && deliveryData.latitud && deliveryData.longitud ? (
+                            <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                                <div className="space-y-4 mb-5">
+                                    <div className="flex justify-between pb-2">
+                                        <span className="text-xl font-bold text-gray-900">
+                                            Información del Punto de Entrega
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-xl font-bold text-gray-900">Persona que recibió el pedido:</span>
+                                        <span className="text-lg text-gray-900">{deliveryData.clientName}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-xl font-bold text-gray-900">Repartidor:</span>
+                                        <span className="text-lg text-gray-900">
+                                            {deliveryData.delivery.fullName + " " + deliveryData.delivery.lastName}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-xl font-bold text-gray-900">Fecha:</span>
+                                        <span className="text-lg text-gray-900">
+                                            {new Date(deliveryData.creationDate).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <img
+                                            src={deliveryData.image}
+                                            alt="Foto del recibo"
+                                            className="w-25 h-20 object-cover rounded-md"
                                         />
-                                    )}
+                                    </div>
+                                </div>
+                                {isLoaded && window.google?.maps?.Size && (
+                                    <GoogleMap
+                                        mapContainerStyle={containerStyle}
+                                        center={{
+                                            lat: deliveryData.latitud,
+                                            lng: deliveryData.longitud,
+                                        }}
+                                        zoom={15}
+                                    >
+                                        {iconReady && (
+                                            <Marker
+                                                position={{
+                                                    lat: deliveryData.latitud,
+                                                    lng: deliveryData.longitud,
+                                                }}
+                                                icon={{
+                                                    url: tiendaIcon,
+                                                    scaledSize: new window.google.maps.Size(40, 40),
+                                                }}
+                                            />
+                                        )}
 
-                                </GoogleMap>
-                            )}
+                                    </GoogleMap>
+                                )}
 
 
-                        </div>
-                    ) : (
-                        <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                            <p className="text-gray-700 text-center">Todavía no se tienen datos de la entrega.</p>
-                        </div>
-                    )}
-
+                            </div>
+                        ) : (
+                            <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                                <p className="text-gray-700 text-center">Todavía no se tienen datos de la entrega.</p>
+                            </div>
+                        )}
                 </div>
             </div>
         </div>

@@ -1,8 +1,8 @@
-export const API_URL = "http://localhost:3055"; 
+export const API_URL = "http://localhost:3047"; 
 export const GOOGLE_API_KEY ="AIzaSyBn4M7fGwSm8N7Ndje6_gU0AOjXKIsTyzs";
 export const CONTRACT_DIRECTION="0xd9145CCE52D386f254917e481eB44e9943F39138";
 export const UPLOAD_TIME=50000;
-//export const API_URL = "http://18.223.136.136:3041"; 
+//export const API_URL = "http://56.125.214.181:3041"; 
 export const CONTRACT_ADDRESS = "0xf245Dc3C202867E8E4C2e6eCCCddf204ee6EbF2F";
 export const DESTINATION_WALLET_ADDRESS = "0x49A623323b37B62b7952142eA07B3c0B23f83650";
 export const USDT_CONTRACT_ADDRESS="0x3813e82e6f7098b9583FC0F33a962D02018B6803";
