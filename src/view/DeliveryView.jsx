@@ -41,16 +41,15 @@ const DeliveryView = () => {
     const index = hash % colorClasses.length;
     return colorClasses[index];
   };
-  const fetchProducts = useCallback(async (pageNumber) => {
+  const fetchDeliveryList = useCallback(async (pageNumber) => {
     setLoading(true);
-    const filters = {
-      id_owner: user,
-      page: pageNumber,
-      limit: itemsPerPage,
-      searchTerm: searchTerm
-    };
     try {
-      const response = await axios.post(API_URL + "/whatsapp/delivery/list", filters, {
+      const response = await axios.post(API_URL + "/whatsapp/delivery/list", {
+        id_owner: user,
+        page: pageNumber,
+        limit: itemsPerPage,
+        searchTerm: searchTerm
+      }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -65,7 +64,7 @@ const DeliveryView = () => {
     }
   }, [user, searchTerm, token, itemsPerPage]);
   useEffect(() => {
-    fetchProducts(page);
+    fetchDeliveryList(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, itemsPerPage]);
   const goToClientDetails = (client) => {
@@ -81,7 +80,7 @@ const DeliveryView = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      fetchProducts(1);
+      fetchDeliveryList(1);
     } catch (error) {
       console.error("Error al cambiar estado", error);
     }
@@ -147,12 +146,12 @@ const DeliveryView = () => {
                       <TextInputFilter
                         value={searchTerm}
                         onChange={setSearchTerm}
-                        onEnter={() => fetchProducts(1)}
+                        onEnter={() => fetchDeliveryList(1)}
                         placeholder="Buscar por Nombre, apellidos"
                       />
                     </div>
                   </div>
-                  <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
+                  <PrincipalBUtton onClick={() => fetchDeliveryList(1)} icon={HiFilter}>Filtrar</PrincipalBUtton>
                 </div>
             </div>
             <div>
@@ -244,7 +243,7 @@ const DeliveryView = () => {
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
-                          fetchProducts(1);
+                          fetchDeliveryList(1);
                         }}
                         className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700 focus:outline-none focus:ring-0 focus:border-red-500"
                       >

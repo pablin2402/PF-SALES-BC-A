@@ -98,7 +98,11 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
         };
 
         try {
-            const response = await axios.post(API_URL + "/whatsapp/order/objective/region/id", filters);
+            const response = await axios.post(API_URL + "/whatsapp/order/objective/region/id", filters , {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setObjectiveData(response.data);
         } catch (error) {
             console.error("Error fetching products:", error);

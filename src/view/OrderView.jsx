@@ -12,6 +12,7 @@ import { FaTimesCircle, FaExclamationCircle, FaTruck } from "react-icons/fa";
 import { FaCheckCircle } from "react-icons/fa";
 import { MdCancel, MdLocalShipping, MdDoneAll } from 'react-icons/md';
 import { HiOutlineCheckCircle, HiOutlineDocumentAdd } from 'react-icons/hi';
+import { FaBoxOpen } from "react-icons/fa";
 
 import Spinner from "../Components/LittleComponents/Spinner";
 
@@ -27,7 +28,7 @@ const OrderView = () => {
   const [inputValue, setInputValue] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedPaymentType, setSelectedPaymentType] = useState("");
   const [selectedSaler, setSelectedSaler] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("");
@@ -48,7 +49,7 @@ const OrderView = () => {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showCancelCheck, setShowCancelCheck] = useState(null);
@@ -56,7 +57,7 @@ const OrderView = () => {
   const [error, setError] = useState(null);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-  
+
   const handleNewOrderClick = () => {
     navigate("/order/creation");
   };
@@ -129,6 +130,28 @@ const OrderView = () => {
       setLoading(false);
     }
   };
+  const filterByStatus = (status) => {
+    setSelectedStatus(status);
+    const customFilters = {};
+
+    if (inputValue) customFilters.fullName = inputValue;
+    if (status) customFilters.status = status;
+    if (selectedPaymentType) customFilters.paymentType = selectedPaymentType;
+    if (selectedSaler) customFilters.salesId = selectedSaler;
+    if (selectedPayment) customFilters.payStatus = selectedPayment;
+    if (selectedRegion) customFilters.region = selectedRegion;
+
+    if (startDate && endDate) {
+      customFilters.startDate = startDate;
+      customFilters.endDate = endDate;
+      setDateFilterActive(true);
+    }
+
+    fetchOrdersFilters(customFilters);
+    fetchOrders(1, customFilters);
+    setPage(1);
+  };
+
   const applyFilters = () => {
     const customFilters = {};
     if (inputValue) customFilters.fullName = inputValue;
@@ -300,6 +323,7 @@ const OrderView = () => {
                 value={counts.created}
                 bgColor="bg-blue-100"
                 textColor="text-blue-500"
+                onClick={() => filterByStatus("created")}
               />
 
               <Card
@@ -308,22 +332,25 @@ const OrderView = () => {
                 value={counts.aproved}
                 bgColor="bg-green-100"
                 textColor="text-green-500"
+                onClick={() => filterByStatus("aproved")}
               />
 
               <Card
                 icon={<MdLocalShipping size={28} />}
                 label="En Ruta"
-                value={counts['En Ruta']}
+                value={counts["En Ruta"]}
                 bgColor="bg-yellow-100"
                 textColor="text-yellow-500"
+                onClick={() => filterByStatus("En Ruta")}
               />
 
               <Card
                 icon={<MdDoneAll size={28} />}
                 label="Entregados"
-                value={counts.delivered}
+                value={counts.deliver}
                 bgColor="bg-purple-100"
                 textColor="text-purple-500"
+                onClick={() => filterByStatus("deliver")}
               />
 
               <Card
@@ -332,7 +359,9 @@ const OrderView = () => {
                 value={counts.cancelled}
                 bgColor="bg-red-100"
                 textColor="text-red-500"
+                onClick={() => filterByStatus("cancelled")}
               />
+
 
             </div>
 
@@ -340,7 +369,6 @@ const OrderView = () => {
               <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between w-full mb-4">
                   <h1 className="text-gray-900 font-bold text-2xl">Órdenes de venta</h1>
-
                   <div className="flex justify-end items-center space-x-4">
                     <button
                       onClick={exportToExcel}
@@ -582,7 +610,7 @@ const OrderView = () => {
                                   </span>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-gray-900">{item.salesId.fullName + " " + item.salesId.lastName}</td>
+                              <td className="px-4 py-3 text-gray-900">{item.salesId?.fullName + " " + item.salesId?.lastName}</td>
                               <td className="px-4 py-3 text-gray-900 font-bold">
                                 {item.payStatus === "Pagado" && (
                                   <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
@@ -617,6 +645,10 @@ const OrderView = () => {
                                 {item.orderStatus === "created" && (
                                   <FaExclamationCircle className="text-yellow-400 text-lg" />
                                 )}
+                                {item.orderStatus === "deliver" && (
+                                  <FaBoxOpen className="text-green-600 text-lg" />
+
+                                )}
                               </td>
 
                               <td className="px-4 py-3">
@@ -640,38 +672,39 @@ const OrderView = () => {
                                     <circle cx="10" cy="16" r="2" />
                                   </svg>
                                 </button>
-                                {openMenuId === item._id && (
-                                  <div
-                                    className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <button
-                                      onClick={() => {
-                                        setSelectedItem(item);
-                                        setShowEditModal(true);
-                                        setOpenMenuId(null);
-                                      }}
-                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                {openMenuId === item._id &&
+                                  !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
+                                    <div
+                                      className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                                      onClick={(e) => e.stopPropagation()}
                                     >
-                                      Confirmar pedido
-                                    </button>
-                                    <button
-  onClick={() => {
-    if (item.totalAmount === item.restante) {
-      setItemToDelete(item);
-      setShowConfirmDeleteModal(true);
-    } else {
-      setShowPaymentWarningModal(true);
-    }
-  }}
-  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
->
-  Eliminar pedido
-</button>
+                                      <button
+                                        onClick={() => {
+                                          setSelectedItem(item);
+                                          setShowEditModal(true);
+                                          setOpenMenuId(null);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        Confirmar pedido
+                                      </button>
 
+                                      <button
+                                        onClick={() => {
+                                          if (item.totalAmount === item.restante) {
+                                            setItemToDelete(item);
+                                            setShowConfirmDeleteModal(true);
+                                          } else {
+                                            setShowPaymentWarningModal(true);
+                                          }
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                      >
+                                        Eliminar pedido
+                                      </button>
+                                    </div>
+                                  )}
 
-                                  </div>
-                                )}
                               </td>
                             </tr>
                           ))
@@ -888,7 +921,6 @@ const OrderView = () => {
                     </button>
                   </div>
                 )}
-
                 {selectedItem.orderStatus === "aproved" && (
                   <div className="flex gap-4 mt-6">
                     <button
@@ -934,6 +966,31 @@ const OrderView = () => {
                     </div>
                   </>
                 )}
+                {selectedItem.orderStatus === "deliver" && (
+                  <>
+                    <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Pedido entregado</h2>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex justify-center mb-4"
+                    >
+                      <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center shadow-lg">
+                        <FaBoxOpen className="text-green-500" size={60} />
+                      </div>
+                    </motion.div>
+                    <p className="text-center text-green-600 font-semibold text-lg mb-4">El pedido ha sido entregado</p>
+
+                    <div className="flex gap-4 mt-6">
+                      <button
+                        onClick={() => setShowEditModal(false)}
+                        className="w-full px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  </>
+                )}
 
               </>
             )}
@@ -941,69 +998,75 @@ const OrderView = () => {
         </div>
       )}
       {showPaymentWarningModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-lg shadow-lg w-96">
-      <div className="p-6 text-center">
-        <svg
-          className="mx-auto mb-4 text-red-500 w-12 h-12"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z"
-          />
-        </svg>
-        <h3 className="mb-5 text-lg font-semibold text-gray-900">
-          Este pedido no se puede eliminar porque ya tiene pagos registrados.
-        </h3>
-        <button
-          onClick={() => setShowPaymentWarningModal(false)}
-          className="px-5 py-2.5 uppercase font-bold text-sm text-white bg-red-500 rounded-lg hover:bg-red-600"
-        >
-          Entendido
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-{showConfirmDeleteModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-lg shadow-lg w-96 p-6 text-center">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">¿Estás seguro?</h2>
-      <p className="text-gray-600 mb-6">¿Deseas eliminar este pedido? Esta acción no se puede deshacer.</p>
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={() => {
-            handleDelete(itemToDelete._id);
-            setShowConfirmDeleteModal(false);
-            setOpenMenuId(null);
-          }}
-          className="px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-600"
-        >
-          Sí, eliminar
-        </button>
-        <button
-          onClick={() => setShowConfirmDeleteModal(false)}
-          className="px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded hover:bg-gray-300"
-        >
-          Cancelar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg w-96">
+            <div className="p-6 text-center">
+              <svg
+                className="mx-auto mb-4 text-red-500 w-12 h-12"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z"
+                />
+              </svg>
+              <h3 className="mb-5 text-lg font-semibold text-gray-900">
+                Este pedido no se puede eliminar porque ya tiene pagos registrados.
+              </h3>
+              <button
+                onClick={() => setShowPaymentWarningModal(false)}
+                className="px-5 py-2.5 uppercase font-bold text-sm text-white bg-red-500 rounded-lg hover:bg-red-600"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showConfirmDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg w-96 p-6 text-center">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">¿Estás seguro?</h2>
+            <p className="text-gray-600 mb-6">¿Deseas eliminar este pedido? Esta acción no se puede deshacer.</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  handleDelete(itemToDelete._id);
+                  setShowConfirmDeleteModal(false);
+                  setOpenMenuId(null);
+                }}
+                className="px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-600"
+              >
+                Sí, eliminar
+              </button>
+              <button
+                onClick={() => setShowConfirmDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
     </div>
   );
 };
-const Card = ({ icon, label, value, bgColor, textColor }) => (
-  <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
+const Card = ({ icon, label, value, bgColor, textColor, onClick }) => (
+  <div
+    onClick={onClick}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onClick?.()}
+    className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4 cursor-pointer hover:shadow-lg hover:bg-gray-50 transition"
+  >
     <div className={`p-3 ${bgColor} ${textColor} rounded-full`}>
       {icon}
     </div>
@@ -1013,4 +1076,5 @@ const Card = ({ icon, label, value, bgColor, textColor }) => (
     </div>
   </div>
 );
+
 export default OrderView;

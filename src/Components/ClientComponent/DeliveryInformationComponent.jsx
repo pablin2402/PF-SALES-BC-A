@@ -11,7 +11,7 @@ import Spinner from "../LittleComponents/Spinner";
 
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
-export default function ClientInformationComponent() {
+export default function DeliveryInformationComponent() {
   const { id } = useParams();
 
   const [client, setClient] = useState();
@@ -289,7 +289,10 @@ export default function ClientInformationComponent() {
                         onClick={() => navigate(-1)}
                         className="ms-1 text-lg font-bold text-[#D3423E] hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
                       >
-                        {client.fullName} {client.lastName}
+                       {client?.fullName || client?.lastName
+  ? `${client.fullName ?? ""} ${client.lastName ?? ""}`.trim()
+  : "Nombre no disponible"}
+
                       </button>
 
                     </div>
@@ -303,14 +306,16 @@ export default function ClientInformationComponent() {
               <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
                 <img
                   src={client.identificationImage || "https://via.placeholder.com/150"}
-                  alt={client.fullName}
+                  alt={client.identificationImage}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               <div className="mt-20 text-center">
                 <h2 className="text-2xl font-bold text-gray-900">
-                {client.fullName} {client.lastName}
+                {client?.fullName || client?.lastName
+  ? `${client.fullName ?? ""} ${client.lastName ?? ""}`.trim()
+  : "Nombre no disponible"}
                 </h2>
               
                 <div className="flex items-center gap-2 text-gray-900">

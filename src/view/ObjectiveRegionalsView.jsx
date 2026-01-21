@@ -60,9 +60,13 @@ const ObjectiveRegionalsView = () => {
             id_owner: user,
             ...customFilters
         };
-
+        console.log(filters);
         try {
-            const response = await axios.post(API_URL + "/whatsapp/sales/objective/region/order", filters);
+            const response = await axios.post(API_URL + "/whatsapp/sales/objective/region/order", filters, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setSalesData(response.data);
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -471,13 +475,14 @@ const ObjectiveRegionalsView = () => {
                                                     }}
                                                         key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                                                         <td className="px-4 py-3 font-medium text-gray-900">
-                                                            {item.startDate
-                                                                ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
-                                                                : "-"}
+                                                        {item.startDate
+                                                            ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/")
+                                                            : "-"}
+
                                                         </td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">
                                                             {item.endDate
-                                                                ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                                ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 10)
                                                                 : "-"}
                                                         </td>
 
@@ -730,12 +735,12 @@ const ObjectiveRegionalsView = () => {
                                                     key={item._id + item.saleLastYear} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                                                     <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.startDate
-                                                            ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                            ? new Date(item.startDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 10)
                                                             : "-"}
                                                     </td>
                                                     <td className="px-4 py-3 font-medium text-gray-900">
                                                         {item.endDate
-                                                            ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 8)
+                                                            ? new Date(item.endDate).toISOString().slice(0, 10).split("-").reverse().join("/").slice(0, 10)
                                                             : "-"}
                                                     </td>
                                                     <td className="px-4 py-3 text-gray-900">{item.lyne}</td>

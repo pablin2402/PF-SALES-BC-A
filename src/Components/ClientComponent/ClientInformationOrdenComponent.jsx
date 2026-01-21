@@ -15,7 +15,7 @@ import {
     FaBoxOpen
 } from "react-icons/fa";
 
-import tiendaIcon from "../../icons/tienda.png";
+import tiendaIcon from "../../icons/entrega-rapida.png";
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -24,7 +24,7 @@ const containerStyle = {
     width: "100%",
     height: "300px",
 };
-const GOOGLE_LIBRARIES_EMPTY = [];
+export const GOOGLE_MAPS_LIBRARIES = ["maps"];
 
 export default function ClientInformationOrdenComponent() {
     const { state } = useLocation();
@@ -46,19 +46,12 @@ export default function ClientInformationOrdenComponent() {
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
-    const [iconReady, setIconReady] = useState(false);
-
-    useEffect(() => {
-        const img = new Image();
-        img.src = tiendaIcon;
-        img.onload = () => setIconReady(true);
-    }, []);
 
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: GOOGLE_API_KEY,
-        libraries: GOOGLE_LIBRARIES_EMPTY, 
-      });
+        libraries: GOOGLE_MAPS_LIBRARIES,
+    });
 
     useEffect(() => {
         if (tabRefs.current[activeTab]) {
@@ -74,8 +67,8 @@ export default function ClientInformationOrdenComponent() {
 
         pdf.text(`Nota de remisión: ${state.files.receiveNumber}`, 15, 30);
         pdf.text(`Cliente: ${state.files.id_client.name} ${state.files.id_client.lastName}`, 15, 40);
-        pdf.text(`Estado: ${formatAccountStatus(state.files.accountStatus)}`, 15, 50);
-        pdf.text(`Vencimiento: ${state.files.dueDate ? new Date(state.files.dueDate).toLocaleDateString("es-ES") : new Date(state.files.creationDate).toLocaleDateString("es-ES")}`, 15, 60);
+        pdf.text(`Tipo de pago: ${formatAccountStatus(state.files.accountStatus)}`, 15, 50);
+        pdf.text(`Fecha de vencimiento: ${state.files.dueDate ? new Date(state.files.dueDate).toLocaleDateString("es-ES") : new Date(state.files.creationDate).toLocaleDateString("es-ES")}`, 15, 60);
 
         autoTable(pdf, {
             startY: 70,
@@ -138,14 +131,14 @@ export default function ClientInformationOrdenComponent() {
                     }
                     return sum;
                 }, 0);
-            
+
                 setPaymentsData(payments);
                 setTotalPaid(totalPaidSum);
             } else {
                 setPaymentsData([]);
                 setTotalPaid(0);
             }
-            
+
 
         } catch (error) {
             console.error("Error al obtener los pagos", error);
@@ -181,6 +174,7 @@ export default function ClientInformationOrdenComponent() {
 
             if (data && data.latitud && data.longitud) {
                 setOrderPickUP(data);
+                console.log(data)
             }
         } catch (error) {
             if (error.response && error.response.status === 404) {
@@ -190,12 +184,12 @@ export default function ClientInformationOrdenComponent() {
         }
     };
     useEffect(() => {
-     //   fetchPayments();
-       // fetchOrderTracks();
-        //fetchOrderPickUpDetails();
+        fetchPayments();
+        fetchOrderTracks();
+        fetchOrderPickUpDetails();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, []);
-      
+    }, []);
+
     const handleSavePayment = () => {
         fetchPayments();
     };
@@ -300,21 +294,18 @@ export default function ClientInformationOrdenComponent() {
                             <h2 className="text-2xl font-bold text-gray-900">
                                 Nota de remisión <span className="text-gray-900 text-2xl">{"# " + state.files.receiveNumber}</span>
                             </h2>
-
                             {state.files.orderStatus === "aproved" && (
                                 <div className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700 text-m font-medium">
                                     <FaCheckCircle className="text-green-500 mr-1" />
                                     Aprobado
                                 </div>
                             )}
-
                             {state.files.orderStatus === "En Ruta" && (
                                 <div className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-m font-medium">
                                     <FaTruck className="text-blue-500 mr-1" />
                                     En Ruta
                                 </div>
                             )}
-
                             {state.files.orderStatus === "cancelled" && (
                                 <div className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-700 text-m font-medium">
                                     <FaTimesCircle className="text-red-500 mr-1" />
@@ -328,8 +319,13 @@ export default function ClientInformationOrdenComponent() {
                                     Creado
                                 </div>
                             )}
+                             {state.files.orderStatus === "deliver" && (
+                                <div className="inline-flex items-center px-2 py-1 rounded-full bg-green-600 text-white text-m font-medium">
+                                  <FaBoxOpen className="text-white-600 text-lg"  />
+                                    Entregado
+                                </div>
+                            )}
                         </div>
-
                         <div className="flex items-center space-x-4">
                             {state.files.accountStatus === 'DEUDA' && (
                                 <button
@@ -338,17 +334,18 @@ export default function ClientInformationOrdenComponent() {
                                     Registrar pago
                                 </button>
                             )}
-
-                            <ClientPaymentDialog
-                                isOpen={isDialogOpen}
-                                onClose={handleCloseDialog}
-                                onSave={handleSavePayment}
-                                orderId={state.files._id}
-                                totalPaid={totalPaid}
-                                idClient={state.files.id_client._id}
-                                salesID={state.files.salesId._id}
-                                totalGeneral={totalGeneral}
-                            />
+                            {isDialogOpen && (
+                                <ClientPaymentDialog
+                                    isOpen={isDialogOpen}
+                                    onClose={handleCloseDialog}
+                                    onSave={handleSavePayment}
+                                    orderId={state.files._id}
+                                    totalPaid={totalPaid}
+                                    idClient={state.files.id_client._id}
+                                    salesID={state.files.salesId._id}
+                                    totalGeneral={totalGeneral}
+                                />
+                            )}
 
                             <button
                                 onClick={exportToPDF}
@@ -395,7 +392,7 @@ export default function ClientInformationOrdenComponent() {
                                                     <th className="px-6 py-3 uppercase">Vendedor</th>
                                                     <th className="px-6 py-3 uppercase">Nota</th>
                                                     <th className="px-6 py-3 uppercase">Monto</th>
-                                                    <th className="px-6 py-3 uppercase"></th>
+                                                    <th className="px-6 py-3 uppercase">Estado del pago</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -450,6 +447,12 @@ export default function ClientInformationOrdenComponent() {
                                         </div>
                                     </div>
                                 )}
+                                <br />
+                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-sm text-yellow-800">
+                                    <strong>Nota importante:</strong> Todos los pagos registrados deben ser <strong>aprobados</strong> por un administrador.
+                                    Hasta que un pago sea aprobado, <strong>no se descontará</strong> del total general ni del saldo por pagar.
+                                </div>
+
                                 <div className="mt-4 flex flex-col items-end gap-2">
                                     <p className="text-m font-semibold text-gray-600 flex justify-between w-full max-w-xs">
                                         Saldo por Pagar:
@@ -708,70 +711,79 @@ export default function ClientInformationOrdenComponent() {
 
 
                     </div>
-                        {deliveryData && deliveryData.latitud && deliveryData.longitud ? (
-                            <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                                <div className="space-y-4 mb-5">
-                                    <div className="flex justify-between pb-2">
-                                        <span className="text-xl font-bold text-gray-900">
-                                            Información del Punto de Entrega
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between border-b pb-2">
-                                        <span className="text-xl font-bold text-gray-900">Persona que recibió el pedido:</span>
-                                        <span className="text-lg text-gray-900">{deliveryData.clientName}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b pb-2">
-                                        <span className="text-xl font-bold text-gray-900">Repartidor:</span>
-                                        <span className="text-lg text-gray-900">
-                                            {deliveryData.delivery.fullName + " " + deliveryData.delivery.lastName}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between border-b pb-2">
-                                        <span className="text-xl font-bold text-gray-900">Fecha:</span>
-                                        <span className="text-lg text-gray-900">
-                                            {new Date(deliveryData.creationDate).toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between border-b pb-2">
-                                        <img
-                                            src={deliveryData.image}
-                                            alt="Foto del recibo"
-                                            className="w-25 h-20 object-cover rounded-md"
-                                        />
-                                    </div>
+                    {deliveryData && deliveryData.latitud && deliveryData.longitud ? (
+                        <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                            <div className="space-y-4 mb-5">
+                                <div className="flex justify-between pb-2">
+                                    <span className="text-xl font-bold text-gray-900">
+                                        Información del Punto de Entrega
+                                    </span>
                                 </div>
-                                {isLoaded && window.google?.maps?.Size && (
-                                    <GoogleMap
-                                        mapContainerStyle={containerStyle}
-                                        center={{
-                                            lat: deliveryData.latitud,
-                                            lng: deliveryData.longitud,
+
+                                <div className="flex justify-between border-b pb-2">
+                                    <span className="text-xl font-bold text-gray-900">
+                                        Persona que recibió el pedido:
+                                    </span>
+                                    <span className="text-lg text-gray-900">{deliveryData.clientName}</span>
+                                </div>
+
+                                <div className="flex justify-between border-b pb-2">
+                                    <span className="text-xl font-bold text-gray-900">Repartidor:</span>
+                                    <span className="text-lg text-gray-900">
+                                        {deliveryData?.delivery?.fullName && deliveryData?.delivery?.lastName
+                                            ? `${deliveryData.delivery.fullName} ${deliveryData.delivery.lastName}`
+                                            : "Nombre no disponible"}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between border-b pb-2">
+                                    <span className="text-xl font-bold text-gray-900">Fecha:</span>
+                                    <span className="text-lg text-gray-900">
+                                        {new Date(deliveryData.creationDate).toLocaleString()}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between border-b pb-2">
+                                    <img
+                                        src={deliveryData.image}
+                                        alt="Foto del recibo"
+                                        className="w-25 h-20 object-cover rounded-md"
+                                    />
+                                </div>
+                            </div>
+
+                            {isLoaded && (
+                                <GoogleMap
+                                    mapContainerStyle={containerStyle}
+                                    center={{
+                                        lat: Number(deliveryData.latitud),
+                                        lng: Number(deliveryData.longitud),
+                                    }}
+                                    zoom={15}
+                                >
+                                    <Marker
+                                        key={`${deliveryData.latitud}-${deliveryData.longitud}`}
+
+                                        position={{
+                                            lat: parseFloat(String(deliveryData.latitud).replace(",", ".")),
+                                            lng: parseFloat(String(deliveryData.longitud).replace(",", ".")),
                                         }}
-                                        zoom={15}
-                                    >
-                                        {iconReady && (
-                                            <Marker
-                                                position={{
-                                                    lat: deliveryData.latitud,
-                                                    lng: deliveryData.longitud,
-                                                }}
-                                                icon={{
-                                                    url: tiendaIcon,
-                                                    scaledSize: new window.google.maps.Size(40, 40),
-                                                }}
-                                            />
-                                        )}
+                                        icon={{
+                                            url: tiendaIcon,
+                                            scaledSize: new window.google.maps.Size(40, 40),
+                                        }}
+                                    />
+                                </GoogleMap>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                            <p className="text-gray-700 text-center">
+                                Todavía no se tienen datos de la entrega.
+                            </p>
+                        </div>
+                    )}
 
-                                    </GoogleMap>
-                                )}
-
-
-                            </div>
-                        ) : (
-                            <div className="max-w-full mt-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                                <p className="text-gray-700 text-center">Todavía no se tienen datos de la entrega.</p>
-                            </div>
-                        )}
                 </div>
             </div>
         </div>

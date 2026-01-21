@@ -13,6 +13,7 @@ import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import AlertModal from "../Components/modal/AlertModal";
 import DateInput from "../Components/LittleComponents/DateInput";
+export const GOOGLE_MAPS_LIBRARIES = ["maps"];
 
 export default function DeliveryRouteView() {
   const navigate = useNavigate();
@@ -67,6 +68,8 @@ export default function DeliveryRouteView() {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
     id: "google-map-script",
+    libraries: GOOGLE_MAPS_LIBRARIES
+
   });
   const loadMarkersFromAPI = useCallback(async () => {
     try {
@@ -217,34 +220,35 @@ export default function DeliveryRouteView() {
     }
   };
   useEffect(() => {
-    if (
-      selectedMarkers.length > 1
-    ) {
+    if (!isLoaded) return;
+  
+    if (selectedMarkers.length > 1) {
       const routePoints = selectedMarkers.filter(
-        (client) => client.id_client?.client_location
+        (client) => client.client_location
       );
-
+  
       if (routePoints.length < 2) return;
-
+  
       const origin = {
-        lat: routePoints[0].id_client.client_location.latitud,
-        lng: routePoints[0].id_client.client_location.longitud,
+        lat: Number(routePoints[0].client_location.latitud),
+        lng: Number(routePoints[0].client_location.longitud),
       };
-
+  
       const destination = {
-        lat: routePoints[routePoints.length - 1].id_client.client_location.latitud,
-        lng: routePoints[routePoints.length - 1].id_client.client_location.longitud,
+        lat: Number(routePoints[routePoints.length - 1].client_location.latitud),
+        lng: Number(routePoints[routePoints.length - 1].client_location.longitud),
       };
-
+  
       const waypoints = routePoints.slice(1, -1).map((client) => ({
         location: {
-          lat: client.id_client.client_location.latitud,
-          lng: client.id_client.client_location.longitud,
+          lat: Number(client.client_location.latitud),
+          lng: Number(client.client_location.longitud),
         },
         stopover: true,
       }));
-
+  
       const directionsService = new window.google.maps.DirectionsService();
+  
       directionsService.route(
         {
           origin,
@@ -256,14 +260,14 @@ export default function DeliveryRouteView() {
         (result, status) => {
           if (status === window.google.maps.DirectionsStatus.OK) {
             setDirectionsResponse(result);
-          } else {
           }
         }
       );
     } else {
       setDirectionsResponse(null);
     }
-  }, [selectedMarkers]);
+  }, [selectedMarkers, isLoaded]);
+  
   const handleMarkerClick = (location) => {
     if (!selectedSaler) {
       setSuccessModal(true)
@@ -304,7 +308,7 @@ export default function DeliveryRouteView() {
   };
   return (
     <div className="h-screen w-full flex overflow-hidden">
-<div className="w-full lg:w-2/6 overflow-y-auto border-r-2 border-gray-200 max-h-screen">
+      <div className="w-full lg:w-2/6 overflow-y-auto border-r-2 border-gray-200 max-h-screen">
         <div className="px-4 py-4 w-full">
           <div className="relative w-full mb-4">
             <TextInputFilter
@@ -320,15 +324,13 @@ export default function DeliveryRouteView() {
           {markers.length > 0 ? (
             <>
               {markers.map((client, index) => (
-               <div
-               key={client._id}
-               onClick={() => findLocation(client)}
-               className="flex flex-col sm:flex-row w-full h-auto bg-white border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative overflow-hidden"
-               role="button"
-               tabIndex={0}
-             >
-             
-
+                <div
+                  key={client._id}
+                  onClick={() => findLocation(client)}
+                  className="flex flex-col sm:flex-row w-full h-auto bg-white border-2 border-gray-300 rounded-2xl mb-4 shadow-md relative overflow-hidden"
+                  role="button"
+                  tabIndex={0}
+                >
                   <span className="absolute top-2 left-2 text-gray-900 font-bold">
                     {client.orderStatus === "aproved" && (
                       <span className="bg-yellow-100 text-sm text-yellow-800 px-2.5 py-0.5 rounded-full">
@@ -378,16 +380,16 @@ export default function DeliveryRouteView() {
                     </h5>
 
                     <h5 className="text-sm sm:text-base mt-2 mb-2 font-normal text-gray-900">
-  {client.id_client.company || "Sin empresa"}
-</h5>
+                      {client.id_client.company || "Sin empresa"}
+                    </h5>
 
 
-<p className="text-sm sm:text-base mt-2 mb-2 font-normal text-gray-700 flex items-center truncate">
-  <FaMapMarkerAlt className="text-red-500 mr-2 shrink-0" />
-  <span className="whitespace-normal break-words">
-    {client.id_client.client_location?.direction || "No disponible"}
-  </span>
-</p>
+                    <p className="text-sm sm:text-base mt-2 mb-2 font-normal text-gray-700 flex items-center truncate">
+                      <FaMapMarkerAlt className="text-red-500 mr-2 shrink-0" />
+                      <span className="whitespace-normal break-words">
+                        {client.id_client.client_location?.direction || "No disponible"}
+                      </span>
+                    </p>
 
                     <h5 className="text-m mt-2 mb-2 font-normal tracking-tight text-gray-900 flex items-center">
                       {client.creationDate
@@ -451,7 +453,7 @@ export default function DeliveryRouteView() {
             </>
           ) : (
             <div className="flex flex-1 h-[calc(100vh-150px)] items-center justify-center border border-gray-400 rounded-lg text-gray-700 text-sm font-semibold">
-              Ningún item seleccionado
+              No existen pedidos creados previamente
             </div>
           )}
         </div>
@@ -472,11 +474,14 @@ export default function DeliveryRouteView() {
                   lng: location.id_client.client_location.longitud,
                 }}
                 icon={{
-                  url: selectedMarkers.includes(location)
+                  url: selectedMarkers.some(m => m._id === location._id)
                     ? "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
                     : tiendaIcon,
-                  scaledSize: new window.google.maps.Size(40, 40),
+                  ...(isLoaded && {
+                    scaledSize: new window.google.maps.Size(40, 40),
+                  }),
                 }}
+                
                 onClick={() => handleMarkerClick(location)}
 
               >

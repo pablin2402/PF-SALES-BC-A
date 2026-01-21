@@ -90,7 +90,11 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
         };
     
         try {
-            const response = await axios.post(API_URL + "/whatsapp/order/objective/region/product", filters);
+            const response = await axios.post(API_URL + "/whatsapp/order/objective/region/product", filters, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setObjectiveData(response.data.data);
             setTotalPages(response.data.pages);
             setItems(response.data.total);

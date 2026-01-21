@@ -95,7 +95,12 @@ const ObjectiveSalesManComponent = ({ region }) => {
     const fetchSalesmenByIds = async (ids) => {
         if (!ids.length) return;
         try {
-            const res = await axios.post(API_URL + "/whatsapp/salesman/multiple", { ids });
+            const res = await axios.post(API_URL + "/whatsapp/salesman/multiple", { ids },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             const map = {};
             res.data.forEach(({ _id, fullName, lastName }) => {
                 map[_id] = { fullName, lastName };
@@ -121,7 +126,12 @@ const ObjectiveSalesManComponent = ({ region }) => {
         
 
         try {
-            const response = await axios.post(API_URL + "/whatsapp/sales/objective/list", filters);
+            const response = await axios.post(API_URL + "/whatsapp/sales/objective/list", filters,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             const data = response.data;
             setObjectiveData(data);
 
