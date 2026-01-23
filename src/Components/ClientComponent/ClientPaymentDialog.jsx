@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 //import PaymentWithUSDTComponent from "./PaymentWithUSDTComponent";
 import { QRCodeCanvas } from "qrcode.react";
 
-const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral, orderId, idClient, salesID }) => {
+const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, salesID,totalGeneral }) => {
   const [paymentData, setPaymentData] = useState({
     amount: '',
     payer: ''
@@ -136,8 +136,8 @@ const ClientPaymentDialog = ({ isOpen, onClose, onSave, totalPaid, totalGeneral,
       if (orderResponse.status === 200) {
         onSave();
         const savedOrder = orderResponse.data;
-        const orderId = savedOrder._id;
-        await sendPayment(orderId, paymentData.amount, paymentData.payer);
+        const orderId1 = savedOrder._id;
+        await sendPayment(orderId1, paymentData.amount, paymentData.payer);
         setPaymentData({ amount: '', payer: '' });
 
         if (navigator.geolocation) {

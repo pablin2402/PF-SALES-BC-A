@@ -821,24 +821,23 @@ const OrderView = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-green-600">Pedido Confirmado</h2>
               </motion.div>
-            ) : showCancelCheck ? (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="flex flex-col items-center justify-center"
-              >
-                <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
-                  <FaTimesCircle className="text-red-500" size={80} />
-                </div>
-                <h2 className="text-2xl font-bold text-red-600">Pedido Rechazado</h2>
-              </motion.div>
-            ) : (
+                ) : showCancelCheck ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex flex-col items-center justify-center"
+                  >
+                    <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+                      <FaTimesCircle className="text-red-500" size={80} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-red-600">Pedido Rechazado</h2>
+                  </motion.div>
+                ) : (
               <>
                 {selectedItem.orderStatus === "created" && (
                   <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Aprobar Pedido</h2>
                 )}
-
                 {selectedItem.orderStatus === "aproved" && (
                   <>
                     <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Pedido aprobado</h2>

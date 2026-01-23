@@ -161,6 +161,7 @@ export default function DeliveryInformationOrderComponent() {
     };
     const fetchOrderPickUpDetails = async () => {
         try {
+            
             const response = await axios.post(API_URL + "/whatsapp/delivery/order/id", {
                 orderId: state.files._id,
                 id_owner: user,
