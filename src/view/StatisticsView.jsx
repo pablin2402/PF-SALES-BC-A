@@ -39,7 +39,13 @@ const StatisticsView = () => {
     }, []);
 
     useEffect(() => {
-        axios.post(API_URL + "/whatsapp/order/products/analysis")
+        axios.post(API_URL + "/whatsapp/order/products/analysis",
+        {}, 
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
             .then((res) => {
                 setProducts(res.data.data);
                 setLoading2(false);
@@ -48,7 +54,7 @@ const StatisticsView = () => {
                 console.error('Error al obtener predicciones:', err);
                 setLoading2(false);
             });
-    }, []);
+    }, [token]);
 
 
     const fetchOrders = async (pages) => {

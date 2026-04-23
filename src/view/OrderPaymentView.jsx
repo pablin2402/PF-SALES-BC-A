@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS } from "../config";
 import { HiFilter } from "react-icons/hi";
 import { FaFileExport } from "react-icons/fa6";
-import { BrowserProvider, Contract, id, Interface } from "ethers";
+import { BrowserProvider, ethers,Contract, id, Interface } from "ethers";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { FiExternalLink } from "react-icons/fi";
 
@@ -44,14 +44,17 @@ const OrderPaymentView = () => {
 
   const getBlockchainPayments = async () => {
     try {
-      if (!window.ethereum) {
-        throw new Error("MetaMask no está instalado");
+      if (!window.ethereum) throw new Error("MetaMask no está instalado");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);  
+      const code = await provider.getCode(CONTRACT_ADDRESS);
+  
+      if (code === "0x") {
+        throw new Error("No existe contrato en esa address en ESTA red (cambia de red o cambia address)");
       }
 
-      const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
       const count = await contract.getPaymentsCount();
       const payments = [];
       for (let i = 0; i < count; i++) {
@@ -431,7 +434,7 @@ const OrderPaymentView = () => {
                             <td className="px-4 py-3 text-center">
                               {item.blockchain?.transactionHash ? (
                                 <a
-                                  href={`https://polygonscan.com/tx/${item.blockchain.transactionHash}`}
+                                  href={`https://etherscan.io/tx/${item.blockchain.transactionHash}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center px-3 py-1 text-sm font-semibold uppercase text-white bg-red-700 hover:bg-red-600 rounded-full shadow transition"

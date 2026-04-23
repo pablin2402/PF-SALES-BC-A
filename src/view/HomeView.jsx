@@ -89,7 +89,7 @@ const HomeView = () => {
     'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
     'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
   ];
-  const years = Array.from({ length: 16 }, (_, i) => 2010 + i);
+  const years = Array.from({ length: 17 }, (_, i) => 2010 + i);
   const months = [
     { value: "01", label: "Enero" },
     { value: "02", label: "Febrero" },
@@ -198,7 +198,12 @@ const HomeView = () => {
   const totalOrdersSum = salesBySeller.reduce((sum, seller) => sum + seller.totalOrders, 0);
   const totalAmountSum = salesBySeller.reduce((sum, seller) => sum + seller.totalAmount, 0);
   useEffect(() => {
-    axios.post(API_URL + "/whatsapp/order/products/analysis")
+    axios.post(API_URL + "/whatsapp/order/products/analysis",{}, 
+    {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
       .then((res) => {
         setProducts(res.data.data);
         setLoading2(false);
@@ -207,7 +212,7 @@ const HomeView = () => {
         console.error('Error al obtener predicciones:', err);
         setLoading2(false);
       });
-  }, []);
+  }, [token]);
   const fetchNumber2 = async (status) => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/order/status/count",

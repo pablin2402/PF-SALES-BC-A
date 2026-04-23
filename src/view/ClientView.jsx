@@ -8,7 +8,7 @@ import { FaUserEdit } from "react-icons/fa";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion } from "framer-motion";
-import { FaCheckCircle,FaTimesCircle } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 import { IoPersonAdd } from "react-icons/io5";
 import Spinner from "../Components/LittleComponents/Spinner";
@@ -54,13 +54,19 @@ const ClientView = () => {
     'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
     'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
   ];
-  const getColor = (name, lastName) => {
-    const hash = (name + lastName)
-      .split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const index = hash % colorClasses.length;
-    return colorClasses[index];
-  };
+  const getColor = useCallback((name, lastName) => {
+  const hash = (name + lastName)
+    .split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colorClasses[hash % colorClasses.length];
+}, []);
+useEffect(() => {
+  const delay = setTimeout(() => {
+    setPage(1);
+  }, 400);
+
+  return () => clearTimeout(delay);
+}, [searchTerm]);
   useEffect(() => {
     const fetchVendedores = async () => {
       try {
@@ -140,8 +146,9 @@ const ClientView = () => {
         "Categoría": item.userCategory || "",
         "Dirección": item.client_location.direction || "",
         "Teléfono Celular": item.number,
-        "Vendedor": item.sales_id?.fullName + " " + item.sales_id?.lastName || "",
-      }))
+        "Vendedor": item.sales_id
+        ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
+        : "",      }))
     );
 
     const wb = XLSX.utils.book_new();
@@ -165,7 +172,7 @@ const ClientView = () => {
     try {
       await axios.put(API_URL + "/whatsapp/client/user/id", {
         _id: client._id,
-        id_owner: "CL-01",
+id_owner: user,
         name: client.name,
         lastName: client.lastName,
         sales_id: selectedSaler1,
@@ -183,92 +190,91 @@ const ClientView = () => {
     }
   };
   return (
-    <div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
-      <div className="relative overflow-x-auto">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+      <div className="max-w-[1600px] mx-auto">
         {loading ? (
           <Spinner />
         ) : (
-          <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
+          <div>
             <div>
-              <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
-                <div className="flex items-center justify-between w-full mb-4">
-                  <div className="flex items-center w-full max-w-2xl gap-2">
-                    <h1 className="text-gray-900 font-bold text-2xl">Clientes</h1>
-                  </div>
-                  <div className="flex justify-end items-center space-x-4">
-                    <button
-                      onClick={exportToExcel}
-                      className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                    >
-                      <FaFileExport color="##726E6E" />
-                    </button>
-                    <PrincipalBUtton onClick={() => navigate("/client/creation")} icon={IoPersonAdd}>
-                      Nuevo Cliente
-                    </PrincipalBUtton>
-                  </div>
-                </div>
-                <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
-                  <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
-                    <div className="relative flex-grow">
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">Clientes</h1>
+                <p className="text-sm text-gray-500">Gestiona todos los clientes desde un solo lugar</p>
+              </div>
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="relative flex-1 max-w-md">
                       <TextInputFilter
                         value={searchTerm}
                         onChange={setSearchTerm}
                         onEnter={() => fetchProducts(1)}
-                        placeholder="Buscar por Nombre, apellido, teléfono..."
+                        placeholder="Buscar por nombre ..."
                       />
-
                     </div>
                     <select
                       value={selectedFilter}
                       onChange={(e) => setSelectedFilter(e.target.value)}
-                      className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                      className="px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
                     >
                       <option value="">Filtrar por: </option>
                       <option value="seller">Filtrar por vendedores: </option>
                       <option value="region">Filtrar por region:</option>
                     </select>
                   </div>
-                  {selectedFilter === "region" && (
-                    <div className="flex gap-2">
-                      <select
-                        className="text-gray-900 rounded-2xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
-                        name="ciudad"
-                        value={selectedRegion}
-                        onChange={(e) => setSelectedRegion(e.target.value)}
-                        required
-                      >
-                        <option value="">Ciudad</option>
-                        <option value="Cochabamba">Cochabamba</option>
-                        <option value="Santa Cruz">Santa Cruz</option>
-                        <option value="La Paz">La Paz</option>
-                        <option value="Oruro">Oruro</option>
-                      </select>
-
-                    </div>
-                  )}
-                  {selectedFilter === "seller" && (
-                    <div className="flex gap-2">
-
-                      <select
-                        className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                        name="vendedor"
-                        value={selectedSaler}
-                        onChange={(e) => setSelectedSaler(e.target.value)}
-                        required
-                      >
-                        <option value="">Vendedor</option>
-                        <option value="">Mostrar Todos</option>
-                        {vendedores.map((vendedor) => (
-                          <option key={vendedor._id} value={vendedor._id}>
-                            {vendedor.fullName + " " + vendedor.lastName}
-                          </option>
-                        ))}
-                      </select>
-
-                    </div>
-                  )}
-                  <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>FILTRAR</PrincipalBUtton>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={exportToExcel}
+                      className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
+                    >
+                      <FaFileExport color="##726E6E" />
+                      Exportar
+                    </button>
+                    <PrincipalBUtton onClick={() => navigate("/client/creation")}>
+                      Nuevo Cliente
+                    </PrincipalBUtton>
+                  </div>
                 </div>
+                {selectedFilter === "region" && (
+                  <div className="flex gap-2">
+                    <select
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      name="ciudad"
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
+                      required
+                    >
+                      <option value="">Ciudad</option>
+                      <option value="Cochabamba">Cochabamba</option>
+                      <option value="Santa Cruz">Santa Cruz</option>
+                      <option value="La Paz">La Paz</option>
+                      <option value="Oruro">Oruro</option>
+                    </select>
+                    <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Aplicar</PrincipalBUtton>
+
+                  </div>
+                )}
+                {selectedFilter === "seller" && (
+                  <div className="flex gap-2">
+                    <select
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      name="vendedor"
+                      value={selectedSaler}
+                      onChange={(e) => setSelectedSaler(e.target.value)}
+                      required
+                    >
+                      <option value="">Vendedor</option>
+                      <option value="">Mostrar Todos</option>
+                      {vendedores.map((vendedor) => (
+                        <option key={vendedor._id} value={vendedor._id}>
+                          {vendedor.fullName + " " + vendedor.lastName}
+                        </option>
+                      ))}
+                    </select>
+                    <PrincipalBUtton onClick={() => fetchProducts(1)} icon={HiFilter}>Aplicar</PrincipalBUtton>
+
+                  </div>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-4">
                 {selectedSaler && (
@@ -293,91 +299,83 @@ const ClientView = () => {
                 )}
               </div>
             </div>
-            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-              <div className="min-w-[900px]">
-
-                <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                  <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                    <tr>
-                      <th className="px-6 py-3"></th>
-                      <th className="px-6 py-3 uppercase">Nombre</th>
-                      <th className="px-6 py-3 uppercase">Categoría</th>
-                      <th className="px-6 py-3 uppercase">Dirección</th>
-                      <th className="px-6 py-3 uppercase">Telefono Celular</th>
-                      <th className="px-6 py-3 uppercase">Vendedor</th>
-                      <th className="px-6 py-3 uppercase">Ciudad asignada</th>
-                      <th className="px-6 py-3 uppercase"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {salesData.length > 0 ? (
-                      salesData.map((item) => (
-                        <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                          <td className="px-6 py-4 font-medium text-gray-900">
-                            <div
-                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
-                            >
-                              <span className="font-medium text-white">
-                                {getInitials(item.name, item.lastName)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 font-medium text-gray-900">
-                            {item.name + " " + item.lastName}
-                          </td>
-
-                          <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
-                          <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
-                          <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                          <td className="px-6 py-4 font-medium text-gray-900">{item.sales_id.fullName + " " + item.sales_id?.lastName}</td>
-                          <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
-                          <td className="px-6 py-4 font-medium text-gray-900">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDialog(item);
-                              }}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <FaUserEdit size={22} />
-
-                            </button>
-                          </td>                      
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="11" className="px-6 py-10 text-center">
-                          <div className="flex flex-col items-center justify-center text-gray-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                            </svg>
-                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
+                <thead className="text-xs text-gray-600 uppercase bg-gray-150 border-b border-gray-300">
+                  <tr>
+                    <th className="px-6 py-3"></th>
+                    <th className="px-6 py-3 uppercase">Nombre</th>
+                    <th className="px-6 py-3 uppercase">Categoría</th>
+                    <th className="px-6 py-3 uppercase">Dirección</th>
+                    <th className="px-6 py-3 uppercase">Telefono Celular</th>
+                    <th className="px-6 py-3 uppercase">Vendedor</th>
+                    <th className="px-6 py-3 uppercase">Ciudad asignada</th>
+                    <th className="px-6 py-3 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {salesData.length > 0 ? (
+                    salesData.map((item) => (
+                      <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          <div
+                            className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
+                          >
+                            <span className="font-medium text-white">
+                              {getInitials(item.name, item.lastName)}
+                            </span>
                           </div>
                         </td>
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {item.name + " " + item.lastName}
+                        </td>
+
+                        <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
+                        <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
+                        <td>
+                          {item.sales_id
+                            ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
+                            : "Sin asignar"}
+                        </td>                        
+                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDialog(item);
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <FaUserEdit size={22} />
+
+                          </button>
+                        </td>
                       </tr>
-                    )}
-                  </tbody>
-                  <tfoot>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan={8}>
-                        <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
-                          <div className="text-m font-bold">
-                            Total de Ítems: <span className="font-semibold">{items}</span>
-                          </div>
+                      <td colSpan="11" className="px-6 py-10 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                          </svg>
+                          <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                          <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
                         </div>
                       </td>
                     </tr>
-                  </tfoot>
-                </table>
-              </div>
-              {totalPages > 1 && searchTerm === "" && (
-                <div className="flex justify-between items-center px-6 pb-4">
-                  <div className="flex mb-4 justify-end items-center pt-4">
-                    <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                      Ítems por página:
-                    </label>
+                  )}
+                </tbody>
+              </table>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+
+                  <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                  <div className="h-4 w-px bg-gray-300"></div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
                     <select
                       id="itemsPerPage"
                       value={itemsPerPage}
@@ -386,7 +384,7 @@ const ClientView = () => {
                         setPage(1);
                         fetchProducts(page);
                       }}
-                      className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                      className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
                     >
                       {[5, 10, 20, 50, 100].map((option) => (
                         <option key={option} value={option}>
@@ -395,23 +393,26 @@ const ClientView = () => {
                       ))}
                     </select>
                   </div>
+                </div>
+                {totalPages > 1 && searchTerm === "" && (
+
                   <nav className="flex items-center justify-center pt-4 space-x-2">
                     <button
                       onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                       disabled={page === 1}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
                     >
-                      ◀
+                      ← Anterior
                     </button>
 
                     <button
                       onClick={() => setPage(1)}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                     >
                       1
                     </button>
 
-                    {page > 3 && <span className="px-2 text-gray-900">…</span>}
+                    {page > 3 && <span className="px-1 text-gray-400">…</span>}
 
                     {Array.from({ length: 3 }, (_, i) => page - 1 + i)
                       .filter((p) => p > 1 && p < totalPages)
@@ -419,18 +420,18 @@ const ClientView = () => {
                         <button
                           key={p}
                           onClick={() => setPage(p)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                         >
                           {p}
                         </button>
                       ))}
 
-                    {page < totalPages - 2 && <span className="px-2 text-gray-900">…</span>}
+                    {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
 
                     {totalPages > 1 && (
                       <button
                         onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold "}`}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                       >
                         {totalPages}
                       </button>
@@ -439,20 +440,21 @@ const ClientView = () => {
                     <button
                       onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                       disabled={page === totalPages}
-                      className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] font-bold"}`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
                     >
-                      ▶
+                      Siguiente →
                     </button>
                   </nav>
-                </div>
-              )}
+
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
       {openDialog && (
-    <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] overflow-y-auto">
+        <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] overflow-y-auto">
             <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
               Editar Datos del Cliente
             </h2>
@@ -524,53 +526,50 @@ const ClientView = () => {
         </div>
       )}
       {showSuccessModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-  <motion.div
-    initial={{ scale: 0 }}
-    animate={{ scale: 1 }}
-    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-    className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
-  >
-    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg mb-4">
-      <FaCheckCircle className="text-green-500" size={80} />
-    </div>
-    <h2 className="text-2xl font-bold text-green-600 mb-2">Cliente Actualizado</h2>
-    <button
-      onClick={() => setShowSuccessModal(false)}
-      className="mt-4 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
-    >
-      Aceptar
-    </button>
-  </motion.div>
-</div>
-)}
-{showErrorModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
-    >
-      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
-        <FaTimesCircle className="text-red-500" size={80} />
-      </div>
-      <h2 className="text-2xl font-bold text-red-600 mb-2">Error al actualizar</h2>
-      <p className="text-center text-gray-700 text-sm">
-        Ocurrió un problema al actualizar el cliente.
-      </p>
-      <button
-        onClick={() => setShowErrorModal(false)}
-        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
-      >
-        Cerrar
-      </button>
-    </motion.div>
-  </div>
-)}
-
-
-
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+          >
+            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+              <FaCheckCircle className="text-green-500" size={80} />
+            </div>
+            <h2 className="text-2xl font-bold text-green-600 mb-2">Cliente Actualizado</h2>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"
+            >
+              Aceptar
+            </button>
+          </motion.div>
+        </div>
+      )}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
+          >
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
+              <FaTimesCircle className="text-red-500" size={80} />
+            </div>
+            <h2 className="text-2xl font-bold text-red-600 mb-2">Error al actualizar</h2>
+            <p className="text-center text-gray-700 text-sm">
+              Ocurrió un problema al actualizar el cliente.
+            </p>
+            <button
+              onClick={() => setShowErrorModal(false)}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+            >
+              Cerrar
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

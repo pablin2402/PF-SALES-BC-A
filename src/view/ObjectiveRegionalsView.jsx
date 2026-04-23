@@ -60,7 +60,6 @@ const ObjectiveRegionalsView = () => {
             id_owner: user,
             ...customFilters
         };
-        console.log(filters);
         try {
             const response = await axios.post(API_URL + "/whatsapp/sales/objective/region/order", filters, {
                 headers: {
