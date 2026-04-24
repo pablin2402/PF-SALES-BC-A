@@ -543,7 +543,7 @@ const OrderView = () => {
 
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-300">
+                      <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Fecha</th>
                       <th className="px-4 py-3 font-semibold">Ciudad</th>

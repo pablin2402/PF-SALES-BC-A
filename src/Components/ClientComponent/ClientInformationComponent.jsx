@@ -171,78 +171,151 @@ export default function ClientInformationComponent() {
       console.error("Error exporting data:", error);
     }
   };
-  const exportToPDF = async () => {
-    try {
-      const payload = {
-        id_owner: user,
-        id_client: idClient,
-        page: 1,
-        limit: items + 1,
-      };
-      if (startDate && endDate) {
-        payload.startDate = startDate;
-        payload.endDate = endDate;
-        setDateFilterActive(true);
+const exportToPDF = async () => {
+  try {
+    const payload = {
+      id_owner: user,
+      id_client: idClient,
+      page: 1,
+      limit: items + 1,
+    };
 
-      }
-      if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
-      }
-      const response = await axios.post(API_URL + "/whatsapp/order/id/user", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const allData = response.data.orders;
-
-      const doc = new jsPDF();
-      doc.addImage("/camacho.jpeg", "PNG", 160, 10, 30, 30);
-      doc.text("Reporte de Ventas", 15, 20);
-      doc.text(`Cliente: ${client[0].name} ${client[0].lastName}`, 15, 40);
-
-      const tableColumn = [
-        "Referencia",
-        "Fecha confirmación",
-        "Tipo de Pago",
-        "Vendedor",
-        "Fecha de Pago",
-        "Total",
-        "Total pagado",
-        "Saldo",
-        "Días de mora"
-      ];
-      const tableRows = allData.map((item) => [
-        item.receiveNumber,
-        item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : '',
-        item.accountStatus === "Crédito" ? "CRÉDITO" : "CONTADO",
-        `${item.salesId.fullName} ${item.salesId.lastName}`,
-        item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES"),
-        `Bs. ${item.totalAmount}`,
-        item.totalPagado,
-        item.restante,
-        calculateDaysRemaining(item.dueDate)
-      ]);
-
-      doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 70,
-        theme: "grid",
-        headStyles: {
-          fillColor: [211, 211, 211],
-          textColor: [51, 51, 51],
-          fontSize: 12,
-          font: "Montserrat",
-          halign: "center",
-          valign: "middle"
-        },
-      });
-
-      doc.save("Reporte_Ventas.pdf");
-    } catch (error) {
-      console.error("Error exporting data to PDF:", error);
+    if (startDate && endDate) {
+      payload.startDate = startDate;
+      payload.endDate = endDate;
     }
-  };
+
+    if (selectedEstadoPago) {
+      payload.estadoPago = selectedEstadoPago;
+    }
+
+    const response = await axios.post(
+      API_URL + "/whatsapp/order/id/user",
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = response.data.orders;
+    const doc = new jsPDF();
+
+    const primary = [33, 37, 41];
+    const accent = [0, 123, 255];
+    const lightGray = [240, 240, 240];
+
+    doc.setFontSize(18);
+    doc.setTextColor(...primary);
+    doc.text("Reporte de Ventas", 15, 20);
+
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`Generado: ${new Date().toLocaleDateString()}`, 15, 27);
+
+    doc.setDrawColor(...lightGray);
+    doc.line(15, 30, 195, 30);
+
+    doc.setFontSize(11);
+    doc.setTextColor(60);
+    doc.text(
+      `Cliente: ${client[0].name} ${client[0].lastName}`,
+      15,
+      40
+    );
+
+    const totalVentas = data.reduce((a, i) => a + i.totalAmount, 0);
+    const totalPagado = data.reduce((a, i) => a + i.totalPagado, 0);
+    const deuda = data.reduce((a, i) => a + i.restante, 0);
+
+    const drawCard = (x, y, title, value, color) => {
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(220);
+      doc.roundedRect(x, y, 55, 25, 3, 3, "FD");
+
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text(title, x + 5, y + 8);
+
+      doc.setFontSize(12);
+      doc.setTextColor(...color);
+      doc.text(value, x + 5, y + 18);
+    };
+
+    drawCard(15, 50, "Total Ventas", `Bs. ${totalVentas}`, [0, 0, 0]);
+    drawCard(75, 50, "Total Pagado", `Bs. ${totalPagado}`, [40, 167, 69]);
+    drawCard(135, 50, "Saldo", `Bs. ${deuda}`, [220, 53, 69]);
+
+    const rows = data.map((item) => [
+      item.receiveNumber,
+      new Date(item.creationDate).toLocaleDateString("es-ES"),
+      item.accountStatus === "Crédito" ? "CRÉDITO" : "CONTADO",
+      item.salesId.fullName,
+      item.dueDate
+        ? new Date(item.dueDate).toLocaleDateString("es-ES")
+        : "",
+      item.totalAmount,
+      item.totalPagado,
+      item.restante,
+      calculateDaysRemaining(item.dueDate),
+    ]);
+
+    doc.autoTable({
+      startY: 85,
+      head: [[
+        "Ref",
+        "Fecha",
+        "Tipo",
+        "Vendedor",
+        "Venc.",
+        "Total",
+        "Pagado",
+        "Saldo",
+        "Mora"
+      ]],
+      body: rows,
+      theme: "plain",
+
+      styles: {
+        fontSize: 8,
+        cellPadding: 4,
+      },
+
+      headStyles: {
+        fillColor: accent,
+        textColor: 255,
+        fontStyle: "bold",
+      },
+
+      didDrawCell: (data) => {
+        if (data.column.index === 7 && data.cell.section === "body") {
+          const value = data.cell.raw;
+          if (value > 0) {
+            doc.setTextColor(220, 53, 69);
+          } else {
+            doc.setTextColor(40, 167, 69);
+          }
+        }
+      },
+    });
+    const pages = doc.internal.getNumberOfPages();
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.text(
+        `Página ${i} de ${pages}`,
+        170,
+        290
+      );
+    }
+
+    doc.save("Reporte_Ventas.pdf");
+
+  } catch (error) {
+    console.error(error);
+  }
+};
   const totalAmountSum = salesData.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
   const clearFilter = (type) => {
     if (type === 'date') {
@@ -405,7 +478,7 @@ export default function ClientInformationComponent() {
             </div>
             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
               <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 uppercase">Referencia</th>
                     <th className="px-6 py-3 uppercase">Fecha de creación</th>

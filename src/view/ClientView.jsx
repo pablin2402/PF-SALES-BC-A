@@ -301,7 +301,7 @@ id_owner: user,
             </div>
             <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                <thead className="text-xs text-gray-600 uppercase bg-gray-150 border-b border-gray-300">
+                      <thead className="text-s text-gray-700 uppercase bg-gray-200 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3"></th>
                     <th className="px-6 py-3 uppercase">Nombre</th>

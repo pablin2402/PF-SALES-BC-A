@@ -9,21 +9,45 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { FaFilter } from "react-icons/fa";
+import { FaFilter, FaCalendarAlt, FaUsers, FaChartLine, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { FaFileExport } from "react-icons/fa6";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ObjectiveSalesManComponent from "../Components/ObjectiveComponent/ObjectiveSalesManComponent";
-import { HiOutlineShoppingCart, HiOutlineCurrencyDollar, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiOutlineShoppingCart, HiOutlineCurrencyDollar, HiOutlineUserGroup, HiOutlineDotsVertical, HiOutlineTrendingUp, HiOutlineChartBar } from 'react-icons/hi';
 import { MdLocalShipping } from 'react-icons/md';
 import VentasChart from "../Components/charts/VentasChart";
-import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useNavigate } from 'react-router-dom';
 import TrendLineChart from "../Components/charts/TrendLineChart";
 import Spinner from "../Components/LittleComponents/Spinner";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
+const MONTHS = [
+  { value: "01", label: "Enero" },
+  { value: "02", label: "Febrero" },
+  { value: "03", label: "Marzo" },
+  { value: "04", label: "Abril" },
+  { value: "05", label: "Mayo" },
+  { value: "06", label: "Junio" },
+  { value: "07", label: "Julio" },
+  { value: "08", label: "Agosto" },
+  { value: "09", label: "Septiembre" },
+  { value: "10", label: "Octubre" },
+  { value: "11", label: "Noviembre" },
+  { value: "12", label: "Diciembre" }
+];
+
+const COLOR_CLASSES = [
+  'bg-gradient-to-br from-red-500 to-red-700',
+  'bg-gradient-to-br from-blue-500 to-blue-700',
+  'bg-gradient-to-br from-green-500 to-green-700',
+  'bg-gradient-to-br from-purple-500 to-purple-700',
+  'bg-gradient-to-br from-yellow-500 to-yellow-700',
+  'bg-gradient-to-br from-pink-500 to-pink-700',
+  'bg-gradient-to-br from-indigo-500 to-indigo-700',
+  'bg-gradient-to-br from-teal-500 to-teal-700'
+];
 
 const HomeView = () => {
   const currentDate = new Date();
@@ -32,8 +56,7 @@ const HomeView = () => {
   const navigate = useNavigate();
 
   const [salesData, setSalesData] = useState([]);
-  const [numberOfOrdersNew, setNumberOfOrdersNew] = useState([]);
-
+  const [numberOfOrdersNew, setNumberOfOrdersNew] = useState(0);
   const [salesBySeller, setSalesBySeller] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -51,8 +74,9 @@ const HomeView = () => {
   const [products, setProducts] = useState([]);
   const [loading2, setLoading2] = useState(true);
 
-  const fetchChart = async (pages) => {
-    setLoading(true);
+  const years = Array.from({ length: 17 }, (_, i) => 2010 + i);
+
+  const fetchChart = useCallback(async (pages) => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/order/products/stadistics",
         {
@@ -61,70 +85,36 @@ const HomeView = () => {
           page: pages,
           itemsPerPage: itemsPerPage
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const fetchedData = response.data.data || [];
-      const chartLabels = fetchedData.map((item) => item._id?.slice(0, 12) || "Sin nombre");
-      const chartValues = fetchedData.map((item) => item.totalCantidad || 0);
-
-      setSalesData(fetchedData);
-      setLabels(chartLabels);
-      setValues(chartValues);
-
+      setLabels(fetchedData.map((item) => item._id?.slice(0, 12) || "Sin nombre"));
+      setValues(fetchedData.map((item) => item.totalCantidad || 0));
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [selectedYear, selectedMonth, itemsPerPage, token]);
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchChart(page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, selectedYear, selectedMonth, itemsPerPage]);
-  const colorClasses = [
-    'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
-    'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
-  ];
-  const years = Array.from({ length: 17 }, (_, i) => 2010 + i);
-  const months = [
-    { value: "01", label: "Enero" },
-    { value: "02", label: "Febrero" },
-    { value: "03", label: "Marzo" },
-    { value: "04", label: "Abril" },
-    { value: "05", label: "Mayo" },
-    { value: "06", label: "Junio" },
-    { value: "07", label: "Julio" },
-    { value: "08", label: "Agosto" },
-    { value: "09", label: "Septiembre" },
-    { value: "10", label: "Octubre" },
-    { value: "11", label: "Noviembre" },
-    { value: "12", label: "Diciembre" }
-  ];
+  }, [page, fetchChart]);
+
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const requestData =
-        filterType === "monthYear"
-          ? { id_owner: user, year: selectedYear, month: selectedMonth }
-          : { id_owner: user, startDate, endDate };
+      const requestData = filterType === "monthYear"
+        ? { id_owner: user, year: selectedYear, month: selectedMonth }
+        : { id_owner: user, startDate, endDate };
 
       const response = await axios.post(API_URL + "/whatsapp/order/id/statistics", requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      setSalesData(response.data.orders);
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSalesData(response.data.orders || []);
 
-      const groupedSales = response.data.orders.reduce((acc, order) => {
+      const groupedSales = (response.data.orders || []).reduce((acc, order) => {
         const sellerId = order.salesId?._id || "Desconocido";
         const sellerName = `${order.salesId?.fullName || "Desconocido"} ${order.salesId?.lastName || ""}`.trim();
-
         if (!acc[sellerId]) {
           acc[sellerId] = { sellerName, totalAmount: 0, totalOrders: 0 };
         }
@@ -133,7 +123,8 @@ const HomeView = () => {
         return acc;
       }, {});
 
-      setSalesBySeller(Object.values(groupedSales));
+      const sellersArr = Object.values(groupedSales).sort((a, b) => b.totalAmount - a.totalAmount);
+      setSalesBySeller(sellersArr);
     } catch (error) {
       setError("Error al cargar los datos.");
     } finally {
@@ -144,13 +135,40 @@ const HomeView = () => {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  useEffect(() => {
+    axios.post(API_URL + "/whatsapp/order/products/analysis", {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+      .then((res) => {
+        setProducts(res.data.data);
+        setLoading2(false);
+      })
+      .catch((err) => {
+        console.error('Error al obtener predicciones:', err);
+        setLoading2(false);
+      });
+  }, [token]);
+
+  useEffect(() => {
+    const fetchNumber2 = async () => {
+      try {
+        const response = await axios.post(API_URL + "/whatsapp/order/status/count",
+          { id_owner: user, status: "En Ruta" },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setNumberOfOrdersNew(response.data.count || 0);
+      } catch (error) {
+        console.error("Error fetching orders count", error);
+      }
+    };
+    fetchNumber2();
+  }, [user, token]);
+
   const exportOrdersToExcel = () => {
     const formattedOrders = salesData.map((order) => {
       const productos = order.products
-        .map(
-          (p) =>
-            `${p.nombre} (Cant: ${p.cantidad}, Precio: Bs ${p.precio})`
-        )
+        .map((p) => `${p.nombre} (Cant: ${p.cantidad}, Precio: Bs ${p.precio})`)
         .join(" | ");
       const creationDateUTC = new Date(order.creationDate);
       creationDateUTC.setHours(creationDateUTC.getHours() - 4);
@@ -158,7 +176,7 @@ const HomeView = () => {
       return {
         "Número / Recibo": order.receiveNumber || "—",
         "Fecha de creación": formattedDate,
-        "Vencimiento": new Date(order.dueDate).toLocaleDateString(),
+        "Vencimiento": order.dueDate ? new Date(order.dueDate).toLocaleDateString() : "—",
         "Vendedor": `${order.salesId?.fullName || "—"} ${order.salesId?.lastName || ""}`.trim(),
         "Productos": productos,
         "Total Bs": order.totalAmount,
@@ -176,275 +194,370 @@ const HomeView = () => {
     const worksheet = XLSX.utils.json_to_sheet(formattedOrders);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sales_By_Sales");
-
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const dataBlob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-
     saveAs(dataBlob, `ordenes_ventas_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
-  const getInitials = (name) => {
-    const firstInitial = name?.charAt(0).toUpperCase() || '';
-    return firstInitial;
-  };
+
+  const getInitials = (name) => name?.charAt(0).toUpperCase() || '?';
+
   const getColor = (name, lastName) => {
-    const hash = (name + lastName)
-      .split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const index = hash % colorClasses.length;
-    return colorClasses[index];
+    const hash = (name + lastName).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return COLOR_CLASSES[hash % COLOR_CLASSES.length];
   };
+
   const totalOrdersSum = salesBySeller.reduce((sum, seller) => sum + seller.totalOrders, 0);
   const totalAmountSum = salesBySeller.reduce((sum, seller) => sum + seller.totalAmount, 0);
-  useEffect(() => {
-    axios.post(API_URL + "/whatsapp/order/products/analysis",{}, 
-    {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-      .then((res) => {
-        setProducts(res.data.data);
-        setLoading2(false);
-      })
-      .catch((err) => {
-        console.error('Error al obtener predicciones:', err);
-        setLoading2(false);
-      });
-  }, [token]);
-  const fetchNumber2 = async (status) => {
-    try {
-      const response = await axios.post(API_URL + "/whatsapp/order/status/count",
-        {
-          id_owner: user,
-          status:status
-        }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setNumberOfOrdersNew(response.data.count);
-    } catch (error) {
-    } finally {
-    }
-  };
-  useEffect(() => {
-    fetchNumber2("En Ruta")
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const averageTicket = totalOrdersSum > 0 ? totalAmountSum / totalOrdersSum : 0;
+  const topSeller = salesBySeller[0];
+
+  const currentMonthLabel = MONTHS.find(m => m.value === selectedMonth)?.label || "";
+
   return (
-    <div className="bg-white w-full min-h-screen p-4 sm:p-5">
-      <div className="mx-auto w-full max-w-7xl overflow-x-auto">
+    <div className="bg-gray-50 w-full min-h-screen p-4 sm:p-6">
+      <div className="max-w-[1600px] mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
+          <p className="text-sm text-gray-500">
+            Reporte de ventas · {filterType === "monthYear" ? `${currentMonthLabel} ${selectedYear}` : `${startDate || "..."} → ${endDate || "..."}`}
+          </p>
+        </div>
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div role="status">
-              <svg className="w-10 h-10 text-gray-200 animate-spin fill-red-500" viewBox="0 0 100 101">
-                <path d="M100 50.59..." fill="currentColor" />
-                <path d="M93.97 39.04..." fill="currentFill" />
-              </svg>
-              <span className="sr-only">Loading...</span>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
+              <p className="text-gray-600 text-sm">Cargando datos...</p>
             </div>
           </div>
         ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+            <p className="text-red-700 font-semibold">{error}</p>
+          </div>
         ) : (
           <div className="flex flex-col space-y-6">
-            <div className="w-full p-6 bg-white border border-gray-300 rounded-2xl shadow-md">
-              <div className="flex justify-between items-start sm:items-center mt-2 sm:mt-5">
-                <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Reporte de ventas</h2>
-              </div>
-              <div className="flex flex-col mt-8 sm:flex-row sm:items-center justify-between gap-4">
-                <select
-                  className="p-2 text-sm text-gray-900 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                >
-                  <option value="monthYear">Filtrar por Mes y Año</option>
-                  <option value="dateRange">Filtrar por Rango de Fechas</option>
-                </select>
-                {filterType === "monthYear" ? (
-                  <div className="flex gap-2 flex-wrap">
-                    <select
-                      className="p-2 text-sm font-bold text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                    >
-                      {years.map((year) => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                    <select
-                      className="p-2 text-sm font-bold text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
-                    >
-                      {months.map((month) => (
-                        <option key={month.value} value={month.value}>{month.label}</option>
-                      ))}
-                    </select>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                icon={<HiOutlineShoppingCart size={24} />}
+                label="Pedidos del mes"
+                value={totalOrdersSum}
+                bgColor="bg-red-100"
+                iconColor="text-[#D3423E]"
+                trend={totalOrdersSum > 0 ? 'up' : null}
+              />
+              <StatCard
+                icon={<HiOutlineCurrencyDollar size={24} />}
+                label="Total vendido"
+                value={`Bs. ${totalAmountSum.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                bgColor="bg-green-100"
+                iconColor="text-green-600"
+                trend="up"
+              />
+              <StatCard
+                icon={<HiOutlineTrendingUp size={24} />}
+                label="Ticket promedio"
+                value={`Bs. ${averageTicket.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                bgColor="bg-blue-100"
+                iconColor="text-blue-600"
+              />
+              <StatCard
+                icon={<MdLocalShipping size={24} />}
+                label="En camino"
+                value={numberOfOrdersNew}
+                bgColor="bg-yellow-100"
+                iconColor="text-yellow-600"
+              />
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                      <FaUsers className="text-[#D3423E]" />
+                      Ventas por vendedor
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-0.5">Desempeño por equipo de ventas</p>
                   </div>
-                ) : (
-                  <div className="flex gap-2 flex-wrap">
-                    <input
-                      type="date"
-                      className="p-2 text-sm font-semibold  text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                    <input
-                      type="date"
-                      className="p-2 text-sm font-semibold text-gray-700 border border-gray-500 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+                      <button
+                        onClick={() => setFilterType("monthYear")}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${filterType === "monthYear" ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                      >
+                        Mes / Año
+                      </button>
+                      <button
+                        onClick={() => setFilterType("dateRange")}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${filterType === "dateRange" ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                      >
+                        Rango
+                      </button>
+                    </div>
+
+                    {filterType === "monthYear" ? (
+                      <div className="flex gap-2">
+                        <select
+                          className="px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          value={selectedYear}
+                          onChange={(e) => setSelectedYear(e.target.value)}
+                        >
+                          {years.map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                        <select
+                          className="px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(e.target.value)}
+                        >
+                          {MONTHS.map((month) => (
+                            <option key={month.value} value={month.value}>{month.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2 flex-wrap">
+                        <div className="relative">
+                          <FaCalendarAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+                          <input
+                            type="date"
+                            className="pl-8 pr-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                          />
+                        </div>
+                        <div className="relative">
+                          <FaCalendarAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+                          <input
+                            type="date"
+                            className="pl-8 pr-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+                            value={endDate}
+                            min={startDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                          />
+                        </div>
+                        <button
+                          onClick={fetchOrders}
+                          className="px-4 py-2 text-sm font-bold bg-[#D3423E] text-white rounded-xl hover:bg-red-700 transition-colors flex items-center gap-1.5"
+                        >
+                          <FaFilter size={12} /> Filtrar
+                        </button>
+                      </div>
+                    )}
+
                     <button
-                      onClick={fetchOrders}
-                      className="px-4 py-2 text-sm font-bold bg-white text-[#D3423E] border border-red-400 rounded-2xl hover:bg-gray-100 flex items-center gap-1"
+                      onClick={exportOrdersToExcel}
+                      className="px-3 py-2 text-sm font-semibold bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-1.5"
                     >
-                      <FaFilter />
-                      Filtrar
+                      <FaFileExport size={14} />
+                      <span className="hidden sm:inline">Exportar</span>
                     </button>
+                  </div>
+                </div>
+
+                {topSeller && salesBySeller.length > 0 && (
+                  <div className="mt-4 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl flex items-center gap-3">
+                    <div className="text-2xl">🏆</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-600 uppercase">Top vendedor del período</p>
+                      <p className="font-bold text-gray-900 truncate">{topSeller.sellerName}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-600">Total</p>
+                      <p className="font-bold text-gray-900">Bs. {topSeller.totalAmount.toFixed(2)}</p>
+                    </div>
                   </div>
                 )}
               </div>
-              <div className="mt-8 border border-gray-300 rounded-xl overflow-x-auto">
-                <table className="min-w-full text-xs text-left text-gray-500">
-                  <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200">
-                    <tr>
-                      <th className="px-4 py-3 font-bold uppercase"></th>
-                      <th className="px-4 py-3 font-bold uppercase">Vendedor</th>
-                      <th className="px-4 py-3 font-bold uppercase">Número de pedidos</th>
-                      <th className="px-4 py-3 font-bold uppercase">Total Vendido</th>
-                      <th className="px-4 py-3 font-bold uppercase">Exportar</th>
 
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 font-semibold">#</th>
+                      <th className="px-4 py-3 font-semibold">Vendedor</th>
+                      <th className="px-4 py-3 font-semibold text-center">Pedidos</th>
+                      <th className="px-4 py-3 font-semibold text-right">Total vendido</th>
+                      <th className="px-4 py-3 font-semibold text-right">Ticket promedio</th>
+                      <th className="px-4 py-3 font-semibold text-center">Progreso</th>
                     </tr>
                   </thead>
                   <tbody>
                     {salesBySeller.length > 0 ? (
-                      salesBySeller.map((seller) => (
-                        <tr key={seller.sellerName} className="bg-white border-b hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">
-                            <div
-                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(seller.sellerName, seller.sellerName)}`}
-                            >
-                              <span className="font-medium text-white">
-                                {getInitials(seller.sellerName)}
+                      salesBySeller.map((seller, idx) => {
+                        const percentage = totalAmountSum > 0 ? (seller.totalAmount / totalAmountSum) * 100 : 0;
+                        const ticketAvg = seller.totalOrders > 0 ? seller.totalAmount / seller.totalOrders : 0;
+                        return (
+                          <tr key={seller.sellerName} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4">
+                              <span className={`font-bold text-lg ${idx === 0 ? 'text-yellow-500' : idx === 1 ? 'text-gray-400' : idx === 2 ? 'text-amber-700' : 'text-gray-500'}`}>
+                                #{idx + 1}
                               </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 font-medium text-gray-900">{seller.sellerName}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900">{seller.totalOrders}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900">Bs. {seller.totalAmount.toFixed(2)}</td>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={exportOrdersToExcel}
-                              className="p-2 bg-white font-bold text-[#D3423E] rounded-2xl flex items-center gap-1"
-                            >
-                              <FaFileExport size={20} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`relative inline-flex items-center justify-center w-10 h-10 rounded-full text-white font-bold shadow-sm ${getColor(seller.sellerName, seller.sellerName)}`}>
+                                  {getInitials(seller.sellerName)}
+                                </div>
+                                <span className="font-semibold text-gray-900">{seller.sellerName}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                              <span className="font-bold text-gray-900">{seller.totalOrders}</span>
+                            </td>
+                            <td className="px-4 py-4 text-right font-bold text-gray-900">
+                              Bs. {seller.totalAmount.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-4 text-right text-gray-700">
+                              Bs. {ticketAvg.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                                  <div
+                                    className="bg-gradient-to-r from-[#D3423E] to-red-700 h-2 rounded-full transition-all"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-bold text-gray-600 min-w-[45px] text-right">
+                                  {percentage.toFixed(1)}%
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     ) : (
                       <tr>
-                          <td colSpan="11" className="px-6 py-10 text-center">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                              </svg>
-                              <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                              <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
-                            </div>
-                          </td>
-                        </tr>
+                        <td colSpan="6" className="px-6 py-16 text-center">
+                          <div className="flex flex-col items-center justify-center text-gray-500">
+                            <FaUsers className="text-5xl mb-3 text-gray-300" />
+                            <p className="text-lg font-semibold">Sin datos</p>
+                            <p className="text-sm text-gray-400 mt-1">No hay ventas en este período</p>
+                          </div>
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
-                <div className="p-3 bg-red-100 text-red-500 rounded-full">
-                  <HiOutlineShoppingCart size={28} />
-                </div>
-                <div>
-                  <p className="text-gray-900 text-sm">Pedidos del mes</p>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-1">{totalOrdersSum}</h2>
-                </div>
-              </div>
 
-              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
-                <div className="p-3 bg-green-100 text-green-500 rounded-full">
-                  <HiOutlineCurrencyDollar size={28} />
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm">Total vendido</p>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-1">Bs. {totalAmountSum.toFixed(2)}</h2>
-                </div>
-              </div>
-
-              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
-                <div className="p-3 bg-blue-100 text-blue-500 rounded-full">
-                  <HiOutlineUserGroup size={28} />
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm">Clientes nuevos</p>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-1">150</h2>
-                </div>
-              </div>
-
-              <div className="bg-white p-4 border border-gray-300 rounded-2xl shadow-md flex items-center gap-4">
-                <div className="p-3 bg-yellow-100 text-yellow-500 rounded-full">
-                  <MdLocalShipping size={28} />
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm">Pedidos en camino</p>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-1">{numberOfOrdersNew}</h2>
-                </div>
+              <div className="md:hidden p-4 space-y-3">
+                {salesBySeller.length > 0 ? salesBySeller.map((seller, idx) => {
+                  const percentage = totalAmountSum > 0 ? (seller.totalAmount / totalAmountSum) * 100 : 0;
+                  return (
+                    <div key={seller.sellerName} className="bg-gray-50 rounded-xl p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className={`font-bold text-lg w-8 ${idx === 0 ? 'text-yellow-500' : 'text-gray-500'}`}>
+                          #{idx + 1}
+                        </span>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${getColor(seller.sellerName, seller.sellerName)}`}>
+                          {getInitials(seller.sellerName)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-gray-900 truncate">{seller.sellerName}</p>
+                          <p className="text-xs text-gray-500">{seller.totalOrders} pedidos</p>
+                        </div>
+                        <p className="font-bold text-gray-900">Bs. {seller.totalAmount.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-[#D3423E] to-red-700 h-2 rounded-full"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold text-gray-600">{percentage.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                    <FaUsers className="text-4xl mb-3 text-gray-300" />
+                    <p className="font-semibold">Sin datos</p>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex space-x-4">
-              <div className="relative w-1/2 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                <button
-                  onClick={() => navigate("/stadistics")}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-[#D3423E] transition-colors"
-                >
-                  <HiOutlineDotsVertical size={20} />
-                </button>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="relative bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <HiOutlineChartBar className="text-[#D3423E]" />
+                      Productos más vendidos
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{currentMonthLabel} {selectedYear}</p>
+                  </div>
+                  <button
+                    onClick={() => navigate("/stadistics")}
+                    className="p-2 text-gray-400 hover:text-[#D3423E] hover:bg-red-50 rounded-lg transition-colors"
+                    title="Ver más"
+                  >
+                    <HiOutlineDotsVertical size={20} />
+                  </button>
+                </div>
                 <VentasChart labels={labels} values={values} year={selectedYear} />
               </div>
 
-              <div className="relative w-1/2 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <div className="relative bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <FaChartLine className="text-[#D3423E]" />
+                      Tendencia de productos
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Análisis predictivo</p>
+                  </div>
+                  <button
+                    onClick={() => navigate("/stadistics")}
+                    className="p-2 text-gray-400 hover:text-[#D3423E] hover:bg-red-50 rounded-lg transition-colors"
+                    title="Ver más"
+                  >
+                    <HiOutlineDotsVertical size={20} />
+                  </button>
+                </div>
                 {loading2 ? (
-                  <div className="flex justify-center items-center h-96">
+                  <div className="flex justify-center items-center h-80">
                     <Spinner />
                   </div>
                 ) : (
-                  <div>
-                    <button
-                      onClick={() => navigate("/stadistics")}
-                      className="absolute top-4 right-4 text-gray-500 hover:text-[#D3423E] transition-colors"
-                    >
-                      <HiOutlineDotsVertical size={20} />
-                    </button>
-                    <TrendLineChart products={products} limit={5}/>
-
-                  </div>
+                  <TrendLineChart products={products} limit={5} />
                 )}
-
               </div>
             </div>
 
-            <div className="w-full p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
               <ObjectiveSalesManComponent region="TOTAL CBB" />
             </div>
           </div>
         )}
       </div>
     </div>
-
   );
-}
+};
+
+const StatCard = ({ icon, label, value, bgColor, iconColor, trend }) => (
+  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all">
+    <div className="flex items-start justify-between mb-3">
+      <div className={`p-3 ${bgColor} ${iconColor} rounded-xl`}>
+        {icon}
+      </div>
+      {trend && (
+        <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {trend === 'up' ? <FaArrowUp size={8} /> : <FaArrowDown size={8} />}
+          <span>activo</span>
+        </div>
+      )}
+    </div>
+    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</p>
+    <p className="text-2xl font-bold text-gray-900 mt-1 truncate">{value}</p>
+  </div>
+);
 
 export default HomeView;

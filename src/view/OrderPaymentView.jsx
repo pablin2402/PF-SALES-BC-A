@@ -1,20 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS } from "../config";
 import { HiFilter } from "react-icons/hi";
 import { FaFileExport } from "react-icons/fa6";
-import { BrowserProvider, ethers,Contract, id, Interface } from "ethers";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import { FiExternalLink } from "react-icons/fi";
+import { ethers, Contract, id, Interface } from "ethers";
+import { FaCheckCircle, FaTimesCircle, FaEllipsisV, FaSearch, FaCalendarAlt, FaReceipt, FaUser, FaDollarSign, FaCheck, FaTimes, FaImage, FaLink } from "react-icons/fa";
+import { FiExternalLink, FiGrid, FiList } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { FiGrid, FiList } from "react-icons/fi";
 import OrderCalendarView from "./OrderCalendarView";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import Spinner from "../Components/LittleComponents/Spinner";
+
+const PAYMENT_STATUS_CONFIG = {
+  "paid": {
+    label: "Ingresado",
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-700",
+    borderColor: "border-blue-300",
+    icon: FaReceipt
+  },
+  "confirmado": {
+    label: "Confirmado",
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
+    borderColor: "border-green-300",
+    icon: FaCheckCircle
+  },
+  "rechazado": {
+    label: "Rechazado",
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
+    borderColor: "border-red-300",
+    icon: FaTimesCircle
+  }
+};
 
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -23,20 +47,17 @@ const OrderPaymentView = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(5);
-
   const [selectedFilter, setSelectedFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [applyFilter, setApplyFilter] = useState(false);
-
-
-  const [items, setItems] = useState();
-
+  const [items, setItems] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
   const [dateFilterActive, setDateFilterActive] = useState(false);
   const [viewMode, setViewMode] = useState("table");
-
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -44,13 +65,14 @@ const OrderPaymentView = () => {
 
   const getBlockchainPayments = async () => {
     try {
-      if (!window.ethereum) throw new Error("MetaMask no está instalado");
+      if (!window.ethereum) return [];
 
-      const provider = new ethers.BrowserProvider(window.ethereum);  
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const code = await provider.getCode(CONTRACT_ADDRESS);
-  
+
       if (code === "0x") {
-        throw new Error("No existe contrato en esa address en ESTA red (cambia de red o cambia address)");
+        console.warn("No existe contrato en esa address en esta red");
+        return [];
       }
 
       const signer = await provider.getSigner();
@@ -80,11 +102,13 @@ const OrderPaymentView = () => {
       });
 
       for (const log of logs) {
-        const parsed = contractInterface.parseLog(log);
-        const orderId = parsed.args[0];
-        const match = payments.find((p) => p.orderId === orderId);
-        if (match) {
-          match.transactionHash = log.transactionHash;
+        try {
+          const parsed = contractInterface.parseLog(log);
+          const orderId = parsed.args[0];
+          const match = payments.find((p) => p.orderId === orderId);
+          if (match) match.transactionHash = log.transactionHash;
+        } catch (e) {
+          console.warn("Error parsing log", e);
         }
       }
 
@@ -94,7 +118,8 @@ const OrderPaymentView = () => {
       return [];
     }
   };
-  const fetchProducts = async (pageNumber = 1) => {
+
+  const fetchProducts = useCallback(async (pageNumber = 1) => {
     setLoading(true);
     try {
       const filters = {
@@ -113,51 +138,46 @@ const OrderPaymentView = () => {
       const response = await axios.post(
         API_URL + "/whatsapp/order/pay/list/id",
         filters,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const backendData = response.data.data || [];
       const blockchainPayments = await getBlockchainPayments();
       const mergedData = backendData.map((item) => {
-        const backendId = item._id;
         const blockchainEntry = blockchainPayments.find(
-          (payment) => payment.orderId === backendId
+          (payment) => payment.orderId === item._id
         );
-
         return {
           ...item,
-          blockchain: blockchainEntry
-            ? {
-              amount: blockchainEntry.amount,
-              payer: blockchainEntry.payer,
-              sender: blockchainEntry.sender,
-              orderId: blockchainEntry.orderId,
-              timestamp: blockchainEntry.timestamp,
-              transactionHash: blockchainEntry.transactionHash
-            }
-            : null,
+          blockchain: blockchainEntry ? {
+            amount: blockchainEntry.amount,
+            payer: blockchainEntry.payer,
+            sender: blockchainEntry.sender,
+            orderId: blockchainEntry.orderId,
+            timestamp: blockchainEntry.timestamp,
+            transactionHash: blockchainEntry.transactionHash
+          } : null,
         };
       });
 
       setSalesData(mergedData);
-      setItems(response.data.pagination.totalRecords);
-      setTotalPages(response.data.pagination.totalPages || 1);
+      setItems(response.data.pagination?.totalRecords || 0);
+      setTotalPages(response.data.pagination?.totalPages || 1);
     } catch (error) {
       console.error("Error fetching products:", error);
+      setSalesData([]);
     } finally {
       setLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, token, itemsPerPage, searchTerm, startDate, endDate]);
 
   useEffect(() => {
     fetchProducts(page);
-    setApplyFilter(false)
+    setApplyFilter(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applyFilter, page, itemsPerPage, selectedFilter]);
+
   const exportToExcel = async () => {
     try {
       const filters = {
@@ -166,45 +186,38 @@ const OrderPaymentView = () => {
         limit: items,
         clientName: searchTerm,
       };
-
       if (startDate && endDate) {
         filters.startDate = startDate;
         filters.endDate = endDate;
       }
       const response = await axios.post(API_URL + "/whatsapp/order/pay/list/id", filters, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const allData = response.data.data;
+      const allData = response.data.data || [];
 
       const ws = XLSX.utils.json_to_sheet(
         allData.map((item) => {
           const creationDateUTC = new Date(item.creationDate);
           creationDateUTC.setHours(creationDateUTC.getHours() - 4);
           const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
-
           return {
-            "Número de Orden": item.orderId.receiveNumber,
+            "Número de Orden": item.orderId?.receiveNumber,
             "Fecha de Pago": formattedDate,
-            "Vendedor": item.sales_id.fullName + " " + item.sales_id.lastName,
-            "Cliente": item.id_client.name + " " + item.id_client.lastName || "",
+            "Vendedor": `${item.sales_id?.fullName || ""} ${item.sales_id?.lastName || ""}`.trim(),
+            "Cliente": `${item.id_client?.name || ""} ${item.id_client?.lastName || ""}`.trim(),
             "Estado": item.paymentStatus || "",
             "Pago": item.total || "",
-            "Monto total": item.orderId.totalAmount || "",
+            "Monto total": item.orderId?.totalAmount || "",
             "Deuda de la nota": item.debt?.toFixed(2) || "",
           };
         })
       );
 
-
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Pagos_Por_Cliente");
-
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
       const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-      saveAs(data, "Pagos_Por_Cliente.xlsx");
+      saveAs(data, `Pagos_${new Date().toISOString().slice(0, 10)}.xlsx`);
     } catch (error) {
       console.error("Error exporting data:", error);
     }
@@ -212,24 +225,25 @@ const OrderPaymentView = () => {
 
   const handleFilterChange = (value) => {
     setSelectedFilter(value);
-
-    if (value === "all") {
+    if (value === "all" || value === "none") {
       setDateFilterActive(false);
-      setStartDate(null);
-      setEndDate(null);
-      setApplyFilter(false);
+      setStartDate("");
+      setEndDate("");
+      setApplyFilter(true);
     }
   };
+
   const clearFilter = (type) => {
     if (type === 'date') {
       setStartDate('');
       setEndDate('');
-      fetchProducts(1);
       setDateFilterActive(false);
+      fetchProducts(1);
     }
-
   };
+
   const uploadProducts = async (id, orderId1) => {
+    setIsProcessing(true);
     try {
       const response = await axios.put(
         API_URL + "/whatsapp/order/pay/status/id",
@@ -238,11 +252,7 @@ const OrderPaymentView = () => {
           paymentStatus: selectedItem.confirmed,
           reviewer: id_user,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.status === 200) {
         await axios.post(API_URL + "/whatsapp/order/track", {
@@ -253,257 +263,317 @@ const OrderPaymentView = () => {
           triggeredByUser: "",
           location: { lat: 0, lng: 0 }
         }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
         fetchProducts(1);
         setShowEditModal(false);
       }
     } catch (error) {
       console.error("Error al actualizar el estado de pago:", error);
+    } finally {
+      setIsProcessing(false);
     }
-
   };
 
+  const stats = {
+    total: salesData.length,
+    ingresados: salesData.filter(s => s.paymentStatus === "paid").length,
+    confirmados: salesData.filter(s => s.paymentStatus === "confirmado").length,
+    rechazados: salesData.filter(s => s.paymentStatus === "rechazado").length,
+    enBlockchain: salesData.filter(s => s.blockchain).length
+  };
+
+  const totalAmount = salesData.reduce((sum, s) => sum + (s.total || 0), 0);
 
   return (
-    <div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
-      {loading ? (
-        <Spinner />
-      ) : (
-        <div className="w-full p-10 bg-white border border-gray-200 rounded-2xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-          <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+      <div className="max-w-[1600px] mx-auto">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Lista de pagos</h1>
+            <p className="text-sm text-gray-500">Gestión y validación de pagos con blockchain</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${viewMode === "table" ? 'bg-white text-[#D3423E] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                title="Vista de tabla"
+              >
+                <FiList size={18} />
+              </button>
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${viewMode === "cards" ? 'bg-white text-[#D3423E] shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                title="Vista de calendario"
+              >
+                <FiGrid size={18} />
+              </button>
+            </div>
+            <button
+              onClick={exportToExcel}
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 text-sm"
+            >
+              <FaFileExport />
+              Exportar
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
+              <p className="text-gray-600 text-sm">Cargando pagos...</p>
+            </div>
+          </div>
+        ) : (
+          <>
             {viewMode === "table" ? (
-              <div>
-                <div className="flex flex-col w-full">
-                  <div className="flex items-center justify-between w-full mb-4">
-                    <div>
-                      <h1 className="text-gray-900 font-bold text-2xl">Lista de pagos</h1>
-                    </div>
-                    <div className="flex justify-end items-center space-x-4">
-                      <button
-                        onClick={exportToExcel}
-                        className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                      >
-                        <FaFileExport color="##726E6E" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
-                    <div className="relative flex items-center  w-full max-w-2xl  space-x-4">
-                      <div className="relative flex-grow">
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                  <StatCard label="Total" value={stats.total} icon={<FaReceipt />} color="bg-gray-100 text-gray-700" />
+                  <StatCard label="Ingresados" value={stats.ingresados} icon={<FaReceipt />} color="bg-blue-100 text-blue-700" />
+                  <StatCard label="Confirmados" value={stats.confirmados} icon={<FaCheckCircle />} color="bg-green-100 text-green-700" />
+                  <StatCard label="Rechazados" value={stats.rechazados} icon={<FaTimesCircle />} color="bg-red-100 text-red-700" />
+                  <StatCard label="En blockchain" value={stats.enBlockchain} icon={<FaLink />} color="bg-purple-100 text-purple-700" />
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                      <div className="relative flex-1 max-w-md">
                         <TextInputFilter
                           value={searchTerm}
                           onChange={setSearchTerm}
                           onEnter={() => fetchProducts(1)}
-                          placeholder="Buscar por nombre"
+                          placeholder="Buscar por cliente..."
                         />
                       </div>
+
                       <select
                         value={selectedFilter}
-                        onChange={(e) => { handleFilterChange(e.target.value) }}
-                        className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                        onChange={(e) => handleFilterChange(e.target.value)}
+                        className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer"
                       >
-                        <option value="none">Filtrar por: </option>
+                        <option value="none">Filtros</option>
                         <option value="all">Mostrar todos</option>
-                        <option value="date">Filtrar por Fecha:</option>
+                        <option value="date">Por fecha</option>
                       </select>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 mt-4">
+
                       {selectedFilter === "date" && (
-                        <div className="flex space-x-4 mb-4 items-center">
-                          <div className="flex items-center space-x-2">
-                            <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-                          </div>
+                        <div className="flex gap-2 flex-wrap">
+                          <DateInput value={startDate} onChange={setStartDate} label="Desde" />
+                          <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+                          <PrincipalBUtton onClick={() => setApplyFilter(true)} icon={HiFilter}>
+                            Aplicar
+                          </PrincipalBUtton>
                         </div>
                       )}
+
+                      <div className="ml-auto text-right">
+                        <p className="text-xs text-gray-500 uppercase font-semibold">Monto total</p>
+                        <p className="text-lg font-bold text-gray-900">Bs. {totalAmount.toFixed(2)}</p>
+                      </div>
                     </div>
-                    <PrincipalBUtton onClick={() => setApplyFilter(true)} icon={HiFilter}>
-                      Filtrar
-                    </PrincipalBUtton>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
+
                     {dateFilterActive && (
-                      <span className="bg-orange-400 text-white px-3 py-1 rounded-full font-bold text-sm flex items-center gap-2">
-                        Fecha: {startDate} → {endDate}
-                        <button
-                          onClick={() => clearFilter("date")}
-                          className="font-bold"            >
-                          ×
-                        </button>
-                      </span>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="bg-[#D3423E] text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2">
+                          <FaCalendarAlt size={10} />
+                          {startDate} → {endDate}
+                          <button onClick={() => clearFilter("date")} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5">
+                            <FaTimes size={10} />
+                          </button>
+                        </span>
+                      </div>
                     )}
                   </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button
-                    onClick={() => setViewMode("table")}
-                    className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
-                  >
-                    <FiList className="w-5 h-5 text-[#D3423E] font-bold" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("cards")}
-                    className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
-                  >
-                    <FiGrid className="w-5 h-5 text-[#D3423E] font-bold" />
-                  </button>
-                </div>
-                <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-                  <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                    <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300">
-                      <tr>
-                        <th className="px-4 py-3 uppercase">Número de Nota</th>
-                        <th className="px-4 py-3 uppercase">Fecha</th>
-                        <th className="px-4 py-3 uppercase">Vendedor</th>
-                        <th className="px-4 py-3 uppercase">Cliente</th>
-                        <th className="px-4 py-3 uppercase">Monto</th>
-                        <th className="px-4 py-3 uppercase">Total </th>
-                        <th className="px-4 py-3 uppercase">Deuda a la Fecha</th>
-                        <th className="px-4 py-3 uppercase">Estado de pago</th>
-                        <th className="px-4 py-3 uppercase text-center">Blockchain</th>
-                        <th className="px-4 py-3 uppercase text-center">Ver en la blockchain</th>
-                        <th className="px-4 py-3 uppercase"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {salesData.length > 0 ? (
-                        salesData.map((item) => (
-                          <tr
-                            key={item._id}
-                            className="bg-white border-b hover:bg-gray-50"
-                            onClick={() => {
-                              setSelectedItem(item);
-                            }}
-                          >
-                            <td className="px-4 py-3 text-gray-900">{item.orderId?.receiveNumber}</td>
-                            <td className="px-4 py-3 text-gray-900">
-                              {item.creationDate
-                                ? new Date(item.creationDate).toLocaleString("es-ES", {
-                                  weekday: 'long',
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                  hour12: false,
-                                }).toUpperCase()
-                                : ''}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900">
-                              {(item.sales_id || item.delivery_id)?.fullName + " " + (item.sales_id || item.delivery_id)?.lastName}
-                            </td>
-                            <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                            <td className="px-4 py-3 text-gray-900">Bs. {item.total}</td>
-                            <td className="px-4 py-3 text-gray-900">Bs. {item.orderId?.totalAmount}</td>
-                            <td className="px-4 py-3 text-gray-900">
-                              {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "N/A"}
-                            </td>
-                            <td className="px-4 py-3 font-medium text-gray-900">
-                              {item.paymentStatus === "paid" && (
-                                <span className="bg-blue-500 font-bold text-m text-white px-3.5 py-0.5 rounded-full">
-                                  INGRESADO
-                                </span>
-                              )}
-                              {item.paymentStatus === "confirmado" && (
-                                <span className="bg-green-500 font-bold text-white px-4 py-1 rounded-full inline-block text-sm whitespace-nowrap">
-                                  PAGO CONFIRMADO
-                                </span>
-                              )}
-                              {item.paymentStatus === "rechazado" && (
-                                <span className="bg-red-500 font-bold text-white px-2.5 py-0.5 rounded-full">
-                                  PAGO RECHAZADO
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex justify-center items-center">
-                                {item.blockchain ? (
-                                  <FaCheckCircle className="text-green-500 text-lg" />
-                                ) : (
-                                  <FaTimesCircle className="text-red-400 text-lg" />
-                                )}
+
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold">Nota</th>
+                          <th className="px-4 py-3 font-semibold">Fecha</th>
+                          <th className="px-4 py-3 font-semibold">Vendedor</th>
+                          <th className="px-4 py-3 font-semibold">Cliente</th>
+                          <th className="px-4 py-3 font-semibold text-right">Pago</th>
+                          <th className="px-4 py-3 font-semibold text-right">Total</th>
+                          <th className="px-4 py-3 font-semibold text-right">Deuda</th>
+                          <th className="px-4 py-3 font-semibold text-center">Estado</th>
+                          <th className="px-4 py-3 font-semibold text-center">Blockchain</th>
+                          <th className="px-4 py-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {salesData.length > 0 ? (
+                          salesData.map((item) => {
+                            const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
+                            const StatusIcon = statusConfig?.icon;
+                            return (
+                              <tr key={item._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                <td className="px-4 py-3">
+                                  <span className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</span>
+                                </td>
+                                <td className="px-4 py-3 text-gray-700">
+                                  {item.creationDate ? (
+                                    <div>
+                                      <p className="font-medium text-gray-900">
+                                        {new Date(item.creationDate).toLocaleDateString("es-ES", {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric'
+                                        })}
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        {new Date(item.creationDate).toLocaleTimeString("es-ES", {
+                                          hour: "2-digit",
+                                          minute: "2-digit"
+                                        })}
+                                      </p>
+                                    </div>
+                                  ) : "-"}
+                                </td>
+                                <td className="px-4 py-3 text-gray-700 text-xs">
+                                  {(item.sales_id || item.delivery_id)?.fullName} {(item.sales_id || item.delivery_id)?.lastName}
+                                </td>
+                                <td className="px-4 py-3 font-medium text-gray-900">
+                                  {item.id_client?.name} {item.id_client?.lastName}
+                                </td>
+                                <td className="px-4 py-3 text-right font-bold text-gray-900">
+                                  Bs. {Number(item.total).toFixed(2)}
+                                </td>
+                                <td className="px-4 py-3 text-right text-gray-700">
+                                  Bs. {Number(item.orderId?.totalAmount || 0).toFixed(2)}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <span className={item.debt > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
+                                    {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "-"}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  {statusConfig && (
+                                    <div className="flex justify-center">
+                                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor} text-xs font-bold`}>
+                                        <StatusIcon size={10} />
+                                        {statusConfig.label}
+                                      </span>
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex justify-center items-center">
+                                    {item.blockchain ? (
+                                      item.blockchain.transactionHash ? (
+                                        <a
+                                          href={`https://polygonscan.com/tx/${item.blockchain.transactionHash}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full text-xs font-bold transition-colors"
+                                          title="Ver en Polygonscan"
+                                        >
+                                          <FaCheckCircle size={10} />
+                                          Ver TX
+                                          <FiExternalLink size={10} />
+                                        </a>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                          <FaCheckCircle size={10} />
+                                          Registrado
+                                        </span>
+                                      )
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold">
+                                        <FaTimesCircle size={10} />
+                                        No
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedItem(item);
+                                      setShowEditModal(true);
+                                    }}
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                  >
+                                    <FaEllipsisV className="text-gray-600" size={14} />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan="10" className="px-6 py-16 text-center">
+                              <div className="flex flex-col items-center justify-center text-gray-500">
+                                <FaReceipt className="text-5xl mb-3 text-gray-300" />
+                                <p className="text-lg font-semibold">No hay pagos</p>
+                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros</p>
                               </div>
                             </td>
-
-                            <td className="px-4 py-3 text-center">
-                              {item.blockchain?.transactionHash ? (
-                                <a
-                                  href={`https://etherscan.io/tx/${item.blockchain.transactionHash}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center px-3 py-1 text-sm font-semibold uppercase text-white bg-red-700 hover:bg-red-600 rounded-full shadow transition"
-                                  title="Consulta pública en Polygonscan"
-                                >
-                                  Ver en la Blockchain
-                                  <FiExternalLink className="ml-2 text-white" size={16} />
-                                </a>
-                              ) : (
-                                <span className="text-gray-400">—</span>
-                              )}
-                            </td>
-
-
-                            <td className="px-4 py-3">
-                              <button
-                                onClick={() => {
-                                  setShowEditModal(true);
-                                }}
-                                className="text-gray-900 bg-white font-bold py-1 px-3 rounded"
-                                aria-label="Opciones"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-5 w-5"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <circle cx="10" cy="4" r="2" />
-                                  <circle cx="10" cy="10" r="2" />
-                                  <circle cx="10" cy="16" r="2" />
-                                </svg>
-                              </button>
-                            </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="11" className="px-6 py-10 text-center">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                              </svg>
-                              <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                              <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <td colSpan={11}>
-                          <div className="flex justify-between px-6 py-4 text-sm text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
-                            <div className="text-m font-bold">
-                              Total de Ítems: <span className="font-semibold">{items}</span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
 
-                  {totalPages > 1 && (
-                    <div className="flex justify-between items-center px-6 pb-4">
-                      <div className="flex mb-4 justify-end items-center pt-4">
-                        <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                          Ítems por página:
-                        </label>
+                  <div className="lg:hidden p-4 space-y-3">
+                    {salesData.length > 0 ? salesData.map((item) => {
+                      const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
+                      const StatusIcon = statusConfig?.icon;
+                      return (
+                        <div
+                          key={item._id}
+                          onClick={() => { setSelectedItem(item); setShowEditModal(true); }}
+                          className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(item.creationDate).toLocaleDateString("es-ES")}
+                              </p>
+                            </div>
+                            {statusConfig && (
+                              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor} text-xs font-bold`}>
+                                <StatusIcon size={10} />
+                                {statusConfig.label}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2">
+                            {item.id_client?.name} {item.id_client?.lastName}
+                          </p>
+                          <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                            <span className="text-xs text-gray-500">
+                              {item.blockchain ? (
+                                <span className="text-purple-700 font-bold flex items-center gap-1">
+                                  <FaLink size={10} /> En blockchain
+                                </span>
+                              ) : "Sin blockchain"}
+                            </span>
+                            <span className="font-bold text-gray-900">Bs. {Number(item.total).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div className="text-center py-12 text-gray-500">
+                        <FaReceipt className="text-4xl mb-3 mx-auto text-gray-300" />
+                        <p className="font-semibold">Sin pagos</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span>Total: <strong className="text-gray-900">{items}</strong> pagos</span>
+                      <div className="h-4 w-px bg-gray-300"></div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
                         <select
                           id="itemsPerPage"
                           value={itemsPerPage}
@@ -511,230 +581,296 @@ const OrderPaymentView = () => {
                             setItemsPerPage(Number(e.target.value));
                             setPage(1);
                           }}
-                          className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                          className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
                         >
                           {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
+                            <option key={option} value={option}>{option}</option>
                           ))}
                         </select>
                       </div>
-                      <nav className="flex items-center mb-4 justify-center pt-4 space-x-2">
+                    </div>
+
+                    {totalPages > 1 && (
+                      <nav className="flex items-center gap-1">
                         <button
                           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                           disabled={page === 1}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "text-[#D3423E] cursor-not-allowed" : "text-gray-900 font-bold"}`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
                         >
-                          ◀
+                          ← Anterior
                         </button>
-
                         <button
                           onClick={() => setPage(1)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                         >
                           1
                         </button>
-
-                        {page > 3 && <span className="px-2 text-gray-900">…</span>}
-
+                        {page > 3 && <span className="px-1 text-gray-400">…</span>}
                         {Array.from({ length: 3 }, (_, i) => page - 1 + i)
                           .filter((p) => p > 1 && p < totalPages)
                           .map((p) => (
                             <button
                               key={p}
                               onClick={() => setPage(p)}
-                              className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                             >
                               {p}
                             </button>
                           ))}
-
-                        {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
+                        {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
                         {totalPages > 1 && (
                           <button
                             onClick={() => setPage(totalPages)}
-                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                           >
                             {totalPages}
                           </button>
                         )}
-
                         <button
                           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                           disabled={page === totalPages}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "text-[#D3423E] cursor-not-allowed" : "text-[#D3423E] hover:bg-gray-200"}`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
                         >
-                          ▶
+                          Siguiente →
                         </button>
                       </nav>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div className="flex mt-4 mb-4 justify-end space-x-2">
-                  <button
-                    onClick={() => setViewMode("table")}
-                    className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
-                  >
-                    <FiList className="w-5 h-5 text-[#D3423E] font-bold" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("cards")}
-                    className=" rounded-lg font-bold text-sm p-2 text-[#D3423E] w-10 h-10 flex items-center justify-center"
-                  >
-                    <FiGrid className="w-5 h-5 text-[#D3423E] font-bold" />
-                  </button>
-                </div>
-                <OrderCalendarView></OrderCalendarView>
-              </div>
-            )}
-            {showEditModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white p-8 rounded-lg shadow-xl w-[700px]">
-                  {selectedItem.paymentStatus === "paid" && (
-                    <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Verificación de Pago</h2>
-                  )}
-                  {selectedItem.paymentStatus === "confirmado" && (
-                    <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Detalles del pago</h2>
-                  )}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">Número de Nota:</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={selectedItem.orderId?.receiveNumber}
-                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">Monto Pagado:</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={selectedItem.total}
-                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">Cliente:</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={selectedItem.id_client?.name + " " + selectedItem.id_client?.lastName}
-                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">Fecha de Pago:</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={selectedItem.creationDate
-                          ? new Date(selectedItem.creationDate).toLocaleString("es-ES", {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: false,
-                          }).toUpperCase()
-                          : ''}
-                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">Deuda a la fecha:</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={selectedItem.debt !== undefined ? `Bs. ${selectedItem.debt.toFixed(2)}` : "N/A"}
-                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">Monto Total:</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={selectedItem.orderId.totalAmount}
-                        className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                      />
-                    </div>
-                    {selectedItem.saleImage && (
-                      <div className="col-span-2 mt-4">
-                        <label className="block mb-1 text-sm font-medium text-gray-700">Imagen del Recibo:</label>
-                        <img
-                          src={selectedItem.saleImage}
-                          alt="Recibo"
-                          className="rounded-md border border-gray-300 max-h-40 w-full object-contain"
-                        />
-                      </div>
-                    )}
-                    {selectedItem.paymentStatus === "paid" && (
-                      <div className="col-span-2">
-                        <label className="block mb-1 text-sm font-medium text-gray-700">¿Confirmar Pago?</label>
-                        <select
-                          value={selectedItem.confirmed || ""}
-                          onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                        >
-                          <option value="">Seleccione una opción</option>
-                          <option value="confirmado">Confirmado</option>
-                          <option value="rechazado">Rechazado</option>
-                        </select>
-                      </div>
                     )}
                   </div>
-                  {selectedItem.paymentStatus === "paid" && (
+                </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <OrderCalendarView />
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
-                    <div className="flex gap-4 mt-6">
+      <AnimatePresence>
+        {showEditModal && selectedItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowEditModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-5 bg-gradient-to-br from-[#D3423E] to-red-700 text-white flex items-center justify-between sticky top-0 z-10">
+                <div>
+                  <h3 className="text-lg font-bold">
+                    {selectedItem.paymentStatus === "paid" ? "Verificación de pago" : "Detalles del pago"}
+                  </h3>
+                  <p className="text-xs text-red-100 mt-0.5">Nota #{selectedItem.orderId?.receiveNumber}</p>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <InfoField
+                    icon={<FaReceipt />}
+                    label="Número de nota"
+                    value={`#${selectedItem.orderId?.receiveNumber}`}
+                  />
+                  <InfoField
+                    icon={<FaDollarSign />}
+                    label="Monto pagado"
+                    value={`Bs. ${Number(selectedItem.total).toFixed(2)}`}
+                    highlight
+                  />
+                  <InfoField
+                    icon={<FaUser />}
+                    label="Cliente"
+                    value={`${selectedItem.id_client?.name} ${selectedItem.id_client?.lastName}`}
+                  />
+                  <InfoField
+                    icon={<FaCalendarAlt />}
+                    label="Fecha de pago"
+                    value={selectedItem.creationDate
+                      ? new Date(selectedItem.creationDate).toLocaleDateString("es-ES", {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })
+                      : "-"}
+                  />
+                  <InfoField
+                    icon={<FaDollarSign />}
+                    label="Deuda a la fecha"
+                    value={selectedItem.debt !== undefined ? `Bs. ${selectedItem.debt.toFixed(2)}` : "-"}
+                    danger={selectedItem.debt > 0}
+                  />
+                  <InfoField
+                    icon={<FaDollarSign />}
+                    label="Monto total"
+                    value={`Bs. ${Number(selectedItem.orderId?.totalAmount || 0).toFixed(2)}`}
+                  />
+                </div>
+
+                {selectedItem.blockchain && (
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FaLink className="text-purple-600" />
+                      <p className="text-sm font-bold text-purple-900">Registrado en blockchain</p>
+                    </div>
+                    {selectedItem.blockchain.transactionHash && (
+                      <a
+                        href={`https://polygonscan.com/tx/${selectedItem.blockchain.transactionHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-purple-700 hover:text-purple-900 font-mono break-all flex items-center gap-1"
+                      >
+                        {selectedItem.blockchain.transactionHash}
+                        <FiExternalLink className="flex-shrink-0" size={12} />
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {selectedItem.saleImage && (
+                  <div>
+                    <label className="text-xs font-semibold text-gray-600 uppercase block mb-1.5 flex items-center gap-1">
+                      <FaImage size={10} /> Comprobante
+                    </label>
+                    <div
+                      onClick={() => setShowImageModal(true)}
+                      className="relative rounded-xl border-2 border-gray-200 overflow-hidden cursor-pointer hover:border-[#D3423E] transition-colors group"
+                    >
+                      <img
+                        src={selectedItem.saleImage}
+                        alt="Recibo"
+                        className="w-full max-h-60 object-contain bg-gray-50"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                        <span className="text-white opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 px-3 py-1 rounded-full text-xs font-bold">
+                          Ver imagen completa
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedItem.paymentStatus === "paid" && (
+                  <div>
+                    <label className="text-xs font-semibold text-gray-600 uppercase block mb-1.5">
+                      ¿Desea confirmar este pago? <span className="text-[#D3423E]">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setSelectedItem({ ...selectedItem, confirmed: "confirmado" })}
+                        className={`p-3 rounded-xl border-2 flex items-center gap-2 justify-center transition-all ${selectedItem.confirmed === "confirmado" ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-400'}`}
+                      >
+                        <FaCheck size={14} />
+                        <span className="font-bold text-gray-600 text-lg">Confirmar</span>
+                      </button>
+                      <button
+                        onClick={() => setSelectedItem({ ...selectedItem, confirmed: "rechazado" })}
+                        className={`p-3 rounded-xl border-2 flex items-center gap-2 justify-center transition-all ${selectedItem.confirmed === "rechazado" ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 hover:border-gray-400'}`}
+                      >
+                        <FaTimes size={14} />
+                        <span className="font-bold text-gray-600 text-lg">Rechazar</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  {selectedItem.paymentStatus === "paid" ? (
+                    <>
                       <button
                         onClick={() => setShowEditModal(false)}
-                        className="w-1/2 px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
+                        className="flex-1 px-4 py-2.5 border-2 border-gray-300 bg-white rounded-xl text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
                       >
                         Cancelar
                       </button>
                       <button
                         onClick={() => uploadProducts(selectedItem._id, selectedItem.orderId)}
-                        className="w-1/2 px-4 py-2 bg-[#D3423E] text-white font-bold uppercase rounded-3xl"
+                        disabled={!selectedItem.confirmed || isProcessing}
+                        className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors ${!selectedItem.confirmed || isProcessing ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#D3423E] hover:bg-red-700'}`}
                       >
-                        Guardar
+                        {isProcessing ? 'Guardando...' : 'Guardar'}
                       </button>
-
-                    </div>
-                  )}
-                  {selectedItem.paymentStatus === "confirmado" && (
-
-                    <div className="flex gap-4 mt-6">
-                      <button
-                        onClick={() => setShowEditModal(false)}
-                        className="w-full px-4 py-2 border-2 border-[#D3423E] bg-white uppercase rounded-3xl text-[#D3423E] font-bold"
-                      >
-                        Cerrar
-                      </button>
-                    </div>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setShowEditModal(false)}
+                      className="w-full px-4 py-2.5 border-2 border-[#D3423E] bg-white rounded-xl text-[#D3423E] font-bold text-sm hover:bg-red-50 transition-colors"
+                    >
+                      Cerrar
+                    </button>
                   )}
                 </div>
               </div>
-            )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showImageModal && selectedItem?.saleImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div className="relative max-w-4xl w-full">
+              <img
+                src={selectedItem.saleImage}
+                alt="Comprobante completo"
+                className="w-full max-h-[90vh] object-contain rounded-xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-900 hover:bg-gray-100 shadow-lg"
+              >
+                <FaTimes />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
+const StatCard = ({ label, value, icon, color }) => (
+  <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex items-center gap-3">
+    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
+      {icon}
+    </div>
+    <div className="min-w-0">
+      <p className="text-xs text-gray-500 font-semibold uppercase truncate">{label}</p>
+      <p className="text-xl font-bold text-gray-900">{value}</p>
+    </div>
+  </div>
+);
+
+const InfoField = ({ icon, label, value, highlight, danger }) => (
+  <div className="bg-gray-50 rounded-xl p-3">
+    <div className="flex items-center gap-1.5 mb-1">
+      <span className="text-gray-400 text-xs">{icon}</span>
+      <p className="text-[10px] text-gray-500 font-semibold uppercase">{label}</p>
+    </div>
+    <p className={`text-sm font-bold ${danger ? 'text-[#D3423E]' : highlight ? 'text-green-700' : 'text-gray-900'}`}>
+      {value}
+    </p>
+  </div>
+);
 
 export default OrderPaymentView;

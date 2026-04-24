@@ -39,7 +39,7 @@ const PAYMENT_METHODS = {
 };
 
 const MIN_USDT_AMOUNT = 10;
-const USD_TO_BS_OFFICIAL = 6.96; // Tipo de cambio oficial Bolivia
+const USD_TO_BS_OFFICIAL = 6.96; 
 
 const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, salesID, totalGeneral }) => {
   const [paymentData, setPaymentData] = useState({
@@ -65,10 +65,8 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [paid, setPaid] = useState(false);
   const [payment, setPayment] = useState(null);
 
-  // Estado para método de pago normal
   const [normalPaymentType, setNormalPaymentType] = useState('cash');
 
-  // Estados para crypto
   const [selectedNetwork, setSelectedNetwork] = useState('polygon');
   const [exchangeRate, setExchangeRate] = useState(null);
   const [loadingRate, setLoadingRate] = useState(false);
@@ -76,7 +74,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [manualRateMode, setManualRateMode] = useState(false);
   const [manualRate, setManualRate] = useState('');
 
-  // Estados para tracking de transacción
 const [txStatus, setTxStatus] = useState('waiting');
 const [txHash, setTxHash] = useState(null);
 const [txConfirmations, setTxConfirmations] = useState(0);
@@ -86,7 +83,6 @@ const [elapsedTime, setElapsedTime] = useState(0);
   const elapsedIntervalRef = useRef(null);
 
   const [initialBalance, setInitialBalance] = useState(null);
-  // Obtener tipo de cambio paralelo desde Binance P2P
   const fetchExchangeRate = async () => {
     setLoadingRate(true);
     try {
@@ -206,7 +202,6 @@ const [elapsedTime, setElapsedTime] = useState(0);
     return Math.round(n * 100);
   };
 
-  // Cálculos
   const amountInUSDTNumber = paymentData.amount && exchangeRate
     ? parseFloat(paymentData.amount) / exchangeRate
     : 0;
@@ -224,7 +219,6 @@ const [elapsedTime, setElapsedTime] = useState(0);
     ? (MIN_USDT_AMOUNT * exchangeRate).toFixed(2)
     : null;
 
-  // Polling para verificar estado de la transacción directamente en blockchain
   useEffect(() => {
     if (!order || txStatus === 'confirmed' || txStatus === 'failed') return;
 
@@ -253,9 +247,8 @@ const [elapsedTime, setElapsedTime] = useState(0);
 
 const checkPayment = async () => {
   try {
-    // Si todavía no tenemos balance inicial, esperar
     if (initialBalance === null) {
-      console.log('⏳ Esperando balance inicial...');
+      console.log('Esperando balance inicial...');
       return;
     }
 
@@ -271,27 +264,24 @@ const checkPayment = async () => {
 
     const usdtContract = new ethers.Contract(usdtAddress, ERC20_ABI, provider);
 
-    // 1. Obtener balance actual
     const usdtBalance = await usdtContract.balanceOf(targetAddress);
     const currentBalance = Number(usdtBalance) / Math.pow(10, decimals);
     const expectedAmount = parseFloat(amountInUSDT);
     const expectedTotal = initialBalance + expectedAmount;
-    const tolerance = expectedAmount * 0.05; // 5% de tolerancia
+    const tolerance = expectedAmount * 0.05; 
 
-    console.log('🔍 Verificando pago...');
+    console.log('   Verificando pago...');
     console.log('   Balance inicial:', initialBalance);
     console.log('   Balance actual:', currentBalance);
     console.log('   Diferencia:', currentBalance - initialBalance);
     console.log('   Esperado recibir:', expectedAmount, 'USDT');
 
-    // 2. Validar que llegó el monto esperado (con tolerancia)
     const amountReceived = currentBalance - initialBalance;
     const isPaymentReceived = amountReceived >= (expectedAmount - tolerance);
 
     if (isPaymentReceived) {
-      console.log('✅ ¡Pago detectado! Monto recibido:', amountReceived, 'USDT');
+      console.log('¡Pago detectado! Monto recibido:', amountReceived, 'USDT');
 
-      // 3. Buscar la transacción específica
       const currentBlock = await provider.getBlockNumber();
       const fromBlock = currentBlock - 5000;
 
@@ -299,47 +289,43 @@ const checkPayment = async () => {
       const events = await usdtContract.queryFilter(filter, fromBlock, currentBlock);
 
       if (events.length > 0) {
-        // Tomar la transacción más reciente
         const latestEvent = events[events.length - 1];
         const confirmations = currentBlock - latestEvent.blockNumber;
 
-        console.log('🔗 TX Hash:', latestEvent.transactionHash);
-        console.log('🔢 Confirmaciones:', confirmations);
+        console.log('TX Hash:', latestEvent.transactionHash);
+        console.log('Confirmaciones:', confirmations);
 
         setTxHash(latestEvent.transactionHash);
 
         if (confirmations >= 12) {
-          console.log('🎉 CONFIRMADO');
           setTxStatus('confirmed');
           setTxConfirmations(confirmations);
           setPaid(true);
           clearInterval(pollingIntervalRef.current);
           clearInterval(elapsedIntervalRef.current);
         } else if (confirmations >= 1) {
-          console.log('⏳ Confirmando...');
+          console.log('Confirmando...');
           setTxStatus('confirming');
           setTxConfirmations(confirmations);
         } else {
-          console.log('🔍 Detectado en mempool');
+          console.log('Detectado en mempool');
           setTxStatus('detected');
         }
       } else {
-        // Tenemos el monto pero no encontramos la TX, confirmamos directamente
-        console.log('💰 Balance correcto sin TX visible, confirmando');
+        console.log('Balance correcto sin TX visible, confirmando');
         setTxStatus('confirmed');
         setPaid(true);
         clearInterval(pollingIntervalRef.current);
         clearInterval(elapsedIntervalRef.current);
       }
     } else if (amountReceived > 0 && amountReceived < (expectedAmount - tolerance)) {
-      // Llegó algo pero menos de lo esperado
-      console.warn('⚠️ Pago insuficiente. Esperado:', expectedAmount, 'Recibido:', amountReceived);
+      console.warn('Pago insuficiente. Esperado:', expectedAmount, 'Recibido:', amountReceived);
       setTxStatus('waiting');
     } else {
-      console.log('⏳ Esperando pago...');
+      console.log('Esperando pago...');
     }
   } catch (error) {
-    console.error('❌ Error verificando pago:', error);
+    console.error('Error verificando pago:', error);
   }
 };
     checkPayment();
@@ -508,7 +494,6 @@ const createPayment = async () => {
       bsc: 18
     };
 
-    // Capturar balance INICIAL antes de generar el QR
     if (newOrder.address) {
       const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
       const usdtContract = new ethers.Contract(

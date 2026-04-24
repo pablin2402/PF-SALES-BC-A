@@ -5,7 +5,7 @@ const ButtonPrincipal = ({ onClick, icon: Icon, children,disabled = false }) => 
     <button
       onClick={onClick}
       disabled={disabled}
-      className="px-3 py-2 h-full text-white text-m bg-red-700 uppercase font-bold rounded-3xl flex items-center justify-center gap-2 transition duration-200"
+      className="px-5 py-2 bg-[#D3423E] text-white rounded-xl hover:bg-red-700 transition-all flex items-center gap-2 font-bold shadow-md"
     >
       {Icon && <Icon className="text-white text-lg" />}
       {children}

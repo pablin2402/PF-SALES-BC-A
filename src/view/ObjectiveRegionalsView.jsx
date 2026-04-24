@@ -445,7 +445,7 @@ const ObjectiveRegionalsView = () => {
                                 </div>
                                 <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
                                     <table className="w-full text-xs text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                        <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
                                             <tr>
                                                 <th className="px-4 py-2 uppercase">Fecha de Inicio</th>
                                                 <th className="px-4 py-2 uppercase">Fecha de Fin</th>
@@ -708,7 +708,7 @@ const ObjectiveRegionalsView = () => {
                             </div>
                             <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto max-w-full">
                                 <table className="w-full text-xs text-left text-gray-500 border border-gray-900 rounded-2xl overflow-hidden">
-                                    <thead className="text-xs text-gray-700 bg-gray-200 border-b border-gray-300 rounded-t-2xl">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
                                         <tr>
                                             <th className="px-4 py-3 uppercase">Fecha de Inicio</th>
                                             <th className="px-4 py-3 uppercase">Fecha de Fin</th>

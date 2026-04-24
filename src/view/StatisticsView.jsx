@@ -40,12 +40,12 @@ const StatisticsView = () => {
 
     useEffect(() => {
         axios.post(API_URL + "/whatsapp/order/products/analysis",
-        {}, 
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
             .then((res) => {
                 setProducts(res.data.data);
                 setLoading2(false);
@@ -240,14 +240,14 @@ const StatisticsView = () => {
                                                     <tr>
                                                         <td colSpan="11" className="px-6 py-10 text-center">
                                                             <div className="flex flex-col items-center justify-center text-gray-500">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                                                            </svg>
-                                                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                                                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                                                                </svg>
+                                                                <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                                                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
                                                             </div>
                                                         </td>
-                                                        </tr>
+                                                    </tr>
                                                 )}
                                             </tbody>
                                         </table>
@@ -345,7 +345,7 @@ const StatisticsView = () => {
                                         <div className="w-full">
                                             <div className="border border-gray-400 rounded-xl overflow-x-auto">
                                                 <table className="w-full text-sm text-left text-gray-500 border border-gray-900 rounded-xl overflow-hidden">
-                                                    <thead className="text-sm text-gray-700 bg-gray-200 border-b rounded-2xl border-gray-300">
+                                                    <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
                                                         <tr className="bg-gray-200">
                                                             <th className="px-6 py-3 uppercase">Producto</th>
                                                             <th className="px-4 py-3">Unidades vendidas hasta la fecha</th>

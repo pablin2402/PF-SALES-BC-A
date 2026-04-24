@@ -72,131 +72,126 @@ export default function ClientInformationOrdenComponent() {
         return "Alguien";
     };
 
-  const exportToPDF = () => {
-    const pdf = new jsPDF();
+    const exportToPDF = () => {
+        const pdf = new jsPDF();
 
-    const formatCurrency = (value) => {
-        return new Intl.NumberFormat("es-BO", {
-            style: "currency",
-            currency: "BOB"
-        }).format(value);
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat("es-BO", {
+                style: "currency",
+                currency: "BOB"
+            }).format(value);
+        };
+
+        const clientName = `${state.files.id_client.name} ${state.files.id_client.lastName}`;
+
+        pdf.setFillColor(211, 66, 62);
+        pdf.rect(0, 0, 210, 30, 'F');
+
+        try {
+            pdf.addImage("/camacho.jpeg", "JPEG", 160, 5, 25, 20);
+        } catch {
+            console.log("Logo no disponible");
+        }
+
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(18);
+        pdf.setFont(undefined, 'bold');
+        pdf.text("RECIBO ELECTRÓNICO", 15, 18);
+
+        pdf.setFontSize(10);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(`N° ${state.files.receiveNumber}`, 15, 25);
+
+        let yPos = 40;
+
+        pdf.setDrawColor(200);
+        pdf.rect(10, yPos, 190, 35);
+
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(10);
+
+        const fecha = state.files.dueDate
+            ? new Date(state.files.dueDate).toLocaleDateString("es-ES")
+            : new Date(state.files.creationDate).toLocaleDateString("es-ES");
+
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Cliente:", 15, yPos + 10);
+        pdf.text("Tipo de pago:", 15, yPos + 18);
+        pdf.text("Fecha:", 15, yPos + 26);
+
+        pdf.setFont(undefined, 'normal');
+        pdf.text(clientName, 60, yPos + 10);
+        pdf.text(state.files.accountStatus, 60, yPos + 18);
+        pdf.text(fecha, 60, yPos + 26);
+
+        autoTable(pdf, {
+            startY: yPos + 45,
+            theme: "grid",
+            headStyles: {
+                fillColor: [211, 66, 62],
+                textColor: 255,
+                halign: 'center'
+            },
+            styles: {
+                fontSize: 9,
+                cellPadding: 3
+            },
+            columns: [
+                { header: "Producto", dataKey: "nombre" },
+                { header: "Cant.", dataKey: "cantidad" },
+                { header: "P. Unitario", dataKey: "precio" },
+                { header: "Desc.", dataKey: "descuento" },
+                { header: "Total", dataKey: "total" }
+            ],
+            body: state.products.map(p => {
+                const precio = p.precio || 0;
+                const cantidad = p.cantidad || 1;
+                const descuento = 0;
+                const total = (precio - descuento) * cantidad;
+
+                return {
+                    nombre: p.nombre || "Sin nombre",
+                    cantidad,
+                    precio: formatCurrency(precio),
+                    descuento: formatCurrency(descuento),
+                    total: formatCurrency(total)
+                };
+            })
+        });
+
+        const finalY = pdf.lastAutoTable.finalY + 10;
+
+        pdf.setDrawColor(220);
+        pdf.line(120, finalY, 200, finalY);
+
+        pdf.setFontSize(11);
+        pdf.setFont(undefined, 'bold');
+
+        pdf.text("Total General:", 120, finalY + 8);
+        pdf.text(formatCurrency(totalGeneral), 200, finalY + 8, { align: "right" });
+
+        pdf.setFont(undefined, 'normal');
+        pdf.text("Total Pagado:", 120, finalY + 16);
+        pdf.text(formatCurrency(totalPaid), 200, finalY + 16, { align: "right" });
+
+        pdf.setTextColor(211, 66, 62);
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Saldo Pendiente:", 120, finalY + 24);
+        pdf.text(formatCurrency(saldoPendiente), 200, finalY + 24, { align: "right" });
+
+        pdf.setTextColor(120);
+        pdf.setFontSize(9);
+        pdf.setFont(undefined, 'italic');
+
+        pdf.text(
+            "Gracias por su compra. Este documento no tiene validez fiscal.",
+            105,
+            285,
+            { align: "center" }
+        );
+
+        pdf.save(`recibo-${state.files.receiveNumber}.pdf`);
     };
-
-    const clientName = `${state.files.id_client.name} ${state.files.id_client.lastName}`;
-
-    // 🔴 HEADER
-    pdf.setFillColor(211, 66, 62);
-    pdf.rect(0, 0, 210, 30, 'F');
-
-    try {
-        pdf.addImage("/camacho.jpeg", "JPEG", 160, 5, 25, 20);
-    } catch {
-        console.log("Logo no disponible");
-    }
-
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(18);
-    pdf.setFont(undefined, 'bold');
-    pdf.text("RECIBO ELECTRÓNICO", 15, 18);
-
-    pdf.setFontSize(10);
-    pdf.setFont(undefined, 'normal');
-    pdf.text(`N° ${state.files.receiveNumber}`, 15, 25);
-
-    // 🔲 CAJA DE INFORMACIÓN
-    let yPos = 40;
-
-    pdf.setDrawColor(200);
-    pdf.rect(10, yPos, 190, 35);
-
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(10);
-
-    const fecha = state.files.dueDate
-        ? new Date(state.files.dueDate).toLocaleDateString("es-ES")
-        : new Date(state.files.creationDate).toLocaleDateString("es-ES");
-
-    pdf.setFont(undefined, 'bold');
-    pdf.text("Cliente:", 15, yPos + 10);
-    pdf.text("Tipo de pago:", 15, yPos + 18);
-    pdf.text("Fecha:", 15, yPos + 26);
-
-    pdf.setFont(undefined, 'normal');
-    pdf.text(clientName, 60, yPos + 10);
-    pdf.text(state.files.accountStatus, 60, yPos + 18);
-    pdf.text(fecha, 60, yPos + 26);
-
-    // 📦 TABLA
-    autoTable(pdf, {
-        startY: yPos + 45,
-        theme: "grid",
-        headStyles: {
-            fillColor: [211, 66, 62],
-            textColor: 255,
-            halign: 'center'
-        },
-        styles: {
-            fontSize: 9,
-            cellPadding: 3
-        },
-        columns: [
-            { header: "Producto", dataKey: "nombre" },
-            { header: "Cant.", dataKey: "cantidad" },
-            { header: "P. Unitario", dataKey: "precio" },
-            { header: "Desc.", dataKey: "descuento" },
-            { header: "Total", dataKey: "total" }
-        ],
-        body: state.products.map(p => {
-            const precio = p.precio || 0;
-            const cantidad = p.cantidad || 1;
-            const descuento = 0;
-            const total = (precio - descuento) * cantidad;
-
-            return {
-                nombre: p.nombre || "Sin nombre",
-                cantidad,
-                precio: formatCurrency(precio),
-                descuento: formatCurrency(descuento),
-                total: formatCurrency(total)
-            };
-        })
-    });
-
-    // 📊 TOTALES
-    const finalY = pdf.lastAutoTable.finalY + 10;
-
-    pdf.setDrawColor(220);
-    pdf.line(120, finalY, 200, finalY);
-
-    pdf.setFontSize(11);
-    pdf.setFont(undefined, 'bold');
-
-    pdf.text("Total General:", 120, finalY + 8);
-    pdf.text(formatCurrency(totalGeneral), 200, finalY + 8, { align: "right" });
-
-    pdf.setFont(undefined, 'normal');
-    pdf.text("Total Pagado:", 120, finalY + 16);
-    pdf.text(formatCurrency(totalPaid), 200, finalY + 16, { align: "right" });
-
-    pdf.setTextColor(211, 66, 62);
-    pdf.setFont(undefined, 'bold');
-    pdf.text("Saldo Pendiente:", 120, finalY + 24);
-    pdf.text(formatCurrency(saldoPendiente), 200, finalY + 24, { align: "right" });
-
-    // 📝 FOOTER
-    pdf.setTextColor(120);
-    pdf.setFontSize(9);
-    pdf.setFont(undefined, 'italic');
-
-    pdf.text(
-        "Gracias por su compra. Este documento no tiene validez fiscal.",
-        105,
-        285,
-        { align: "center" }
-    );
-
-    pdf.save(`recibo-${state.files.receiveNumber}.pdf`);
-};
     useEffect(() => {
         if (Array.isArray(state?.products)) {
             let total = 0;
@@ -451,7 +446,7 @@ export default function ClientInformationOrdenComponent() {
                             <div>
                                 <div className="hidden md:block overflow-x-auto">
                                     <table className="w-full text-sm text-left">
-                                        <thead className="text-xs text-gray-600 uppercase bg-gray-50 rounded-lg">
+                                        <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
                                             <tr>
                                                 <th className="px-4 py-3 rounded-l-lg">Producto</th>
                                                 <th className="px-4 py-3 text-center">Cantidad</th>
