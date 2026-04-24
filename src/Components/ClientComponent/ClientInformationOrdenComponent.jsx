@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ClientPaymentDialog from "./ClientPaymentDialog";
 import axios from "axios";
 import { API_URL, GOOGLE_API_KEY } from "../../config";
-import { FaFilePdf, FaArrowLeft, FaPhone, FaMapMarkedAlt, FaCreditCard, FaUser, FaCalendarAlt } from "react-icons/fa";
+import { FaFilePdf, FaMapMarkedAlt, FaCreditCard, FaUser, FaCalendarAlt } from "react-icons/fa";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { FaCheckCircle, FaTimesCircle, FaExclamationCircle, FaTruck, FaRegClipboard, FaDollarSign, FaMapMarkerAlt, FaBoxOpen, FaHome, FaSpinner } from "react-icons/fa";
 

@@ -196,12 +196,26 @@ id_owner: user,
           <Spinner />
         ) : (
           <div>
-            <div>
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Clientes</h1>
-                <p className="text-sm text-gray-500">Gestiona todos los clientes desde un solo lugar</p>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                 <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-1">Clientes</h1>
+                    <p className="text-sm text-gray-500">Gestiona todos los clientes desde un solo lugar</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={exportToExcel}
+                      className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
+                    >
+                      <FaFileExport color="##726E6E" />
+                      Exportar
+                    </button>
+                    <PrincipalBUtton onClick={() => navigate("/client/creation")}>
+                      Nuevo Cliente
+                    </PrincipalBUtton>
+                  </div>
               </div>
-              <div className="p-6 border-b border-gray-200">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="relative flex-1 max-w-md">
@@ -222,18 +236,7 @@ id_owner: user,
                       <option value="region">Filtrar por region:</option>
                     </select>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={exportToExcel}
-                      className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
-                    >
-                      <FaFileExport color="##726E6E" />
-                      Exportar
-                    </button>
-                    <PrincipalBUtton onClick={() => navigate("/client/creation")}>
-                      Nuevo Cliente
-                    </PrincipalBUtton>
-                  </div>
+                  
                 </div>
                 {selectedFilter === "region" && (
                   <div className="flex gap-2">
@@ -298,10 +301,10 @@ id_owner: user,
                   </button>
                 )}
               </div>
-            </div>
+            
             <div className="hidden lg:block overflow-x-auto">
-              <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                      <thead className="text-s text-gray-700 uppercase bg-gray-200 border-b border-gray-200">
+              <table className="w-full text-sm text-left">
+                <thead className="text-s text-gray-700 uppercase bg-gray-200 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3"></th>
                     <th className="px-6 py-3 uppercase">Nombre</th>
@@ -369,9 +372,7 @@ id_owner: user,
                 </tbody>
               </table>
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-
                   <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
                   <div className="h-4 w-px bg-gray-300"></div>
                   <div className="flex items-center gap-2">
@@ -448,6 +449,7 @@ id_owner: user,
 
                 )}
               </div>
+            </div>
             </div>
           </div>
         )}

@@ -6,7 +6,7 @@ import { API_URL } from "../../config";
 import { MdDelete } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { HiFilter } from "react-icons/hi";
-import { FaCheckCircle, FaSearch, FaShoppingCart, FaUser, FaPhone, FaMapMarkerAlt, FaCity, FaCreditCard, FaCalendarAlt, FaStickyNote, FaArrowLeft, FaArrowRight, FaBox, FaTimes, FaPlus, FaMinus, FaUserTie, FaPercent, FaInfoCircle, FaEdit, FaTrash, FaCheck } from "react-icons/fa";
+import { FaCheckCircle, FaSearch, FaShoppingCart, FaUser, FaPhone, FaMapMarkerAlt, FaCity, FaCalendarAlt, FaStickyNote, FaArrowLeft, FaArrowRight, FaBox, FaTimes, FaPlus, FaMinus, FaUserTie, FaPercent, FaInfoCircle, FaCheck } from "react-icons/fa";
 import AlertModal from "../modal/AlertModal";
 import ErrorModal from "../modal/ErrorModal";
 import { motion, AnimatePresence } from "framer-motion";

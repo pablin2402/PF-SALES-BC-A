@@ -62,8 +62,8 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [isBlockchainProcessing, setIsBlockchainProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("normal");
   const [order, setOrder] = useState(null);
-  const [paid, setPaid] = useState(false);
-  const [payment, setPayment] = useState(null);
+  const [setPaid] = useState(false);
+  const [setPayment] = useState(null);
 
   const [normalPaymentType, setNormalPaymentType] = useState('cash');
 
@@ -77,7 +77,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 const [txStatus, setTxStatus] = useState('waiting');
 const [txHash, setTxHash] = useState(null);
 const [txConfirmations, setTxConfirmations] = useState(0);
-const [txStartTime, setTxStartTime] = useState(null);
+const  [setTxStartTime] = useState(null);
 const [elapsedTime, setElapsedTime] = useState(0);
   const pollingIntervalRef = useRef(null);
   const elapsedIntervalRef = useRef(null);
@@ -267,7 +267,6 @@ const checkPayment = async () => {
     const usdtBalance = await usdtContract.balanceOf(targetAddress);
     const currentBalance = Number(usdtBalance) / Math.pow(10, decimals);
     const expectedAmount = parseFloat(amountInUSDT);
-    const expectedTotal = initialBalance + expectedAmount;
     const tolerance = expectedAmount * 0.05; 
 
     console.log('   Verificando pago...');
