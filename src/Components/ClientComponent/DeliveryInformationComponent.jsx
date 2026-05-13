@@ -4,57 +4,63 @@ import axios from "axios";
 import { API_URL } from "../../config";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { FaFileExport } from "react-icons/fa6";
+import { FaFileExport, FaFilePdf, FaFileExcel } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
 import DateInput from "../LittleComponents/DateInput";
-import Spinner from "../LittleComponents/Spinner";
+import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, FaFilter, FaTruck, FaBoxOpen, FaUser } from "react-icons/fa";
+import { HiFilter } from "react-icons/hi";
+import { motion } from "framer-motion";
 
-import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
+const ACCOUNT_STATUS_CONFIG = {
+  "Crédito": { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300", label: "CRÉDITO" },
+  "Contado": { bg: "bg-green-100", text: "text-green-700", border: "border-green-300", label: "CONTADO" },
+  "Cheque": { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-300", label: "CHEQUE" }
+};
 
 export default function DeliveryInformationComponent() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const [client, setClient] = useState();
+  const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingTable, setLoadingTable] = useState(false);
   const [salesData, setSalesData] = useState([]);
   const [idClient, setClientId] = useState("");
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedEstadoPago, setSelectedEstadoPago] = useState("");
   const [dateFilterActive, setDateFilterActive] = useState(false);
-
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [items, setItems] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [items, setItems] = useState(0);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
-  
+
   const fetchClientData = useCallback(async () => {
     try {
-      const response = await axios.post(API_URL + "/whatsapp/delivery/id", {
-        _id: id,
-        id_owner:user
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setClientId(response.data._id);
-      setClient(response.data);
+      const response = await axios.post(API_URL + "/whatsapp/delivery/id",
+        { _id: id, id_owner: user },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = Array.isArray(response.data) ? response.data[0] : response.data;
+      setClientId(data?._id || "");
+      setClient(data);
     } catch (error) {
-      console.error("Error al obtener los datos del cliente", error);
+      console.error("Error al obtener los datos del repartidor", error);
+    } finally {
+      setLoading(false);
     }
-  }, [id, token,user]);
+  }, [id, token, user]);
+
   useEffect(() => {
     fetchClientData();
   }, [fetchClientData]);
 
-  const fetchProducts = async (pageNumber = 1) => {
-    setLoading(true);
+  const fetchProducts = useCallback(async (pageNumber = 1) => {
+    setLoadingTable(true);
     try {
       const payload = {
         id_owner: user,
@@ -66,470 +72,675 @@ export default function DeliveryInformationComponent() {
         payload.startDate = startDate;
         payload.endDate = endDate;
         setDateFilterActive(true);
-
       }
       if (selectedEstadoPago) {
         payload.payStatus = selectedEstadoPago;
       }
       const response = await axios.post(API_URL + "/whatsapp/order/deliver/id", payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setSalesData(response.data.orders || []);
-      setTotalPages(response.data.totalPages);
-      setItems(response.data.total);
+      setTotalPages(response.data.totalPages || 1);
+      setItems(response.data.total || response.data.orders?.length || 0);
     } catch (error) {
-      console.error("Error al obtener los productos", error);
+      console.error("Error al obtener los pedidos", error);
+      setSalesData([]);
     } finally {
-      setLoading(false);
+      setLoadingTable(false);
     }
-  };
-  useEffect(() => {
-    if (idClient) {
-      fetchProducts(page);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idClient, page, itemsPerPage]);
-  const calculateDaysRemaining = (dueDate) => {
-    if (!dueDate) return '0';
+  }, [user, idClient, itemsPerPage, startDate, endDate, selectedEstadoPago, token]);
 
+  useEffect(() => {
+    if (idClient) fetchProducts(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idClient, page, itemsPerPage, selectedEstadoPago]);
+
+  const calculateDaysRemaining = (dueDate) => {
+    if (!dueDate) return 0;
     const due = new Date(dueDate);
     const today = new Date();
-
-    const diffTime = today - due;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return `${diffDays}`;
-
+    return Math.ceil((today - due) / (1000 * 60 * 60 * 24));
   };
+
   const handleFilterClick = () => {
     setPage(1);
-    setTimeout(() => {
-      fetchProducts();
-    }, 0);
+    fetchProducts(1);
   };
-  const navigate = useNavigate();
+
+  const clearFilter = (type) => {
+    if (type === 'date') {
+      setStartDate('');
+      setEndDate('');
+      setDateFilterActive(false);
+      setPage(1);
+      setTimeout(() => fetchProducts(1), 0);
+    }
+    if (type === 'status') {
+      setSelectedEstadoPago('');
+      setPage(1);
+    }
+  };
+
   const handleRowClick = (item) => {
     navigate(`/deliver/order/${item._id}`, { state: { products: item.products, files: item } });
   };
-  if (!client) {
-    return <p className="text-center mt-10 text-xl">Cargando datos...</p>;
-  }
+
   const exportToExcel = async () => {
     try {
       const payload = {
         id_owner: user,
         orderTrackId: idClient,
         page: 1,
-        limit: items,
+        limit: items || 1000,
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
-        setDateFilterActive(true);
-
       }
       if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
+        payload.payStatus = selectedEstadoPago;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/deliver/id", payload,{
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const response = await axios.post(API_URL + "/whatsapp/order/deliver/id", payload, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const allData = response.data.orders;
+      const allData = response.data.orders || [];
 
       const ws = XLSX.utils.json_to_sheet(
-
         allData.map((item) => {
-
           const creationDateUTC = new Date(item.creationDate);
           creationDateUTC.setHours(creationDateUTC.getHours() - 4);
-          const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
           return {
             "Número de Orden": item.receiveNumber,
-            "Fecha de Venta": formattedDate,
-            "Vendedor": item.salesId.fullName + " " + item.salesId.lastName,
+            "Fecha de Venta": creationDateUTC.toISOString().replace('T', ' ').substring(0, 19),
+            "Cliente": `${item.id_client?.name || ""} ${item.id_client?.lastName || ""}`.trim(),
+            "Vendedor": `${item.salesId?.fullName || ""} ${item.salesId?.lastName || ""}`.trim(),
             "Tipo de pago": item.accountStatus || "",
-            "Total pagado": item.totalPagado,
-            "Saldo": item.restante,
+            "Total pagado": item.totalPagado || 0,
+            "Saldo": item.restante || 0,
             "Fecha prevista de pago": item.dueDate || "",
-            "Total": item.totalAmount || "",
+            "Total": item.totalAmount || 0,
           };
         })
       );
 
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-
-      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-      saveAs(data, "ventas_por_clientes.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "Entregas");
+      const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      saveAs(new Blob([buffer], { type: "application/octet-stream" }),
+        `Entregas_${client?.fullName || "repartidor"}_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+      setExportMenuOpen(false);
     } catch (error) {
-      console.error("Error exporting data:", error);
+      console.error("Error exporting:", error);
     }
   };
+
   const exportToPDF = async () => {
     try {
       const payload = {
         id_owner: user,
         orderTrackId: idClient,
         page: 1,
-        limit: items+1,
+        limit: items || 1000,
       };
       if (startDate && endDate) {
         payload.startDate = startDate;
         payload.endDate = endDate;
-        setDateFilterActive(true);
-
       }
       if (selectedEstadoPago) {
-        payload.estadoPago = selectedEstadoPago;
+        payload.payStatus = selectedEstadoPago;
       }
-      const response = await axios.post(API_URL + "/whatsapp/order/deliver/id", payload,{
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const allData = response.data.orders;
+      const response = await axios.post(API_URL + "/whatsapp/order/deliver/id", payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = response.data.orders || [];
 
       const doc = new jsPDF();
-      doc.addImage("/camacho.jpeg", "PNG", 160, 10, 30, 30);
-      doc.text("Reporte de Ventas", 15, 20);
-      doc.text(`Cliente: ${client[0].name} ${client[0].lastName}`, 15, 40);
 
-      const tableColumn = [
-        "Referencia",
-        "Fecha confirmación",
-        "Tipo de Pago",
-        "Vendedor",
-        "Fecha de Pago",
-        "Total",
-        "Total pagado",
-        "Saldo",
-        "Días de mora"
-      ];
-      const tableRows = allData.map((item) => [
-        item.receiveNumber,
+      doc.setFillColor(211, 66, 62);
+      doc.rect(0, 0, 210, 30, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text("REPORTE DE ENTREGAS", 15, 20);
+
+      try {
+        doc.addImage("/camacho.jpeg", "PNG", 175, 5, 25, 20);
+      } catch (e) {
+        console.warn("Logo no disponible");
+      }
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Repartidor: ${client?.fullName || ""} ${client?.lastName || ""}`, 15, 42);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(9);
+      doc.text(`Fecha del reporte: ${new Date().toLocaleDateString("es-ES")}`, 15, 49);
+      if (startDate && endDate) {
+        doc.text(`Período: ${startDate} → ${endDate}`, 15, 55);
+      }
+
+      const totalVentas = data.reduce((a, i) => a + (i.totalAmount || 0), 0);
+      const totalPagado = data.reduce((a, i) => a + (i.totalPagado || 0), 0);
+      const deuda = data.reduce((a, i) => a + (i.restante || 0), 0);
+
+      const drawCard = (x, y, title, value, color) => {
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(220);
+        doc.roundedRect(x, y, 60, 20, 2, 2, "FD");
+        doc.setFontSize(8);
+        doc.setTextColor(120);
+        doc.setFont(undefined, 'normal');
+        doc.text(title, x + 4, y + 6);
+        doc.setFontSize(11);
+        doc.setTextColor(...color);
+        doc.setFont(undefined, 'bold');
+        doc.text(value, x + 4, y + 15);
+      };
+
+      drawCard(15, 62, "Total entregado", `Bs. ${totalVentas.toFixed(2)}`, [33, 37, 41]);
+      drawCard(80, 62, "Cobrado", `Bs. ${totalPagado.toFixed(2)}`, [40, 167, 69]);
+      drawCard(145, 62, "Por cobrar", `Bs. ${deuda.toFixed(2)}`, [220, 53, 69]);
+
+      const rows = data.map((item) => [
+        item.receiveNumber || "-",
         item.creationDate ? new Date(item.creationDate).toLocaleDateString("es-ES") : '',
-        item.accountStatus === "Crédito" ? "CRÉDITO" : "CONTADO",
-        `${item.salesId.fullName} ${item.salesId.lastName}`,
-        item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : new Date(item.creationDate).toLocaleDateString("es-ES"),
-        `Bs. ${item.totalAmount}`,
-        item.totalPagado,
-        item.restante,
-        calculateDaysRemaining(item.dueDate)
+        `${item.id_client?.name || ""} ${item.id_client?.lastName || ""}`.trim(),
+        item.accountStatus || "-",
+        item.dueDate ? new Date(item.dueDate).toLocaleDateString("es-ES") : "-",
+        `Bs. ${(item.totalAmount || 0).toFixed(2)}`,
+        `Bs. ${(item.totalPagado || 0).toFixed(2)}`,
+        `Bs. ${(item.restante || 0).toFixed(2)}`,
+        calculateDaysRemaining(item.dueDate),
       ]);
 
       doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 70,
-        theme: "grid",
+        startY: 90,
+        head: [["Ref", "Fecha", "Cliente", "Tipo", "Venc.", "Total", "Pagado", "Saldo", "Mora"]],
+        body: rows,
+        theme: "striped",
+        styles: { fontSize: 8, cellPadding: 2 },
         headStyles: {
-          fillColor: [211, 211, 211],
-          textColor: [51, 51, 51],
-          fontSize: 12,
-          font: "Montserrat",
-          halign: "center",
-          valign: "middle"
+          fillColor: [211, 66, 62],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 9,
+          halign: "center"
         },
+        alternateRowStyles: { fillColor: [249, 250, 251] }
       });
 
-      doc.save("Reporte_Ventas.pdf");
+      const pages = doc.internal.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.text(`Página ${i} de ${pages}`, 170, 290);
+      }
+
+      doc.save(`Entregas_${client?.fullName || "repartidor"}_${new Date().toISOString().slice(0, 10)}.pdf`);
+      setExportMenuOpen(false);
     } catch (error) {
-      console.error("Error exporting data to PDF:", error);
+      console.error("Error exporting PDF:", error);
     }
   };
+
+  const getInitials = (name, lastName) => {
+    return ((name?.[0] || '') + (lastName?.[0] || '')).toUpperCase() || '?';
+  };
+
   const totalAmountSum = salesData.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
-  const clearFilter = (type) => {
-    if (type === 'date') {
-      setStartDate('');
-      setEndDate('');
-      setDateFilterActive(false);
-    }
-  };
+  const totalPagadoSum = salesData.reduce((sum, item) => sum + (item.totalPagado || 0), 0);
+  const totalSaldoSum = salesData.reduce((sum, item) => sum + (item.restante || 0), 0);
+  const ordersWithOverdue = salesData.filter(item => calculateDaysRemaining(item.dueDate) > 0 && item.restante > 0).length;
+
+  if (loading) {
+    return (
+      <div className="bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
+          <p className="text-gray-600 font-medium">Cargando datos del repartidor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!client) {
+    return (
+      <div className="bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <FaExclamationCircle className="text-red-500 text-5xl mx-auto mb-3" />
+          <p className="text-gray-700 font-bold text-lg">Repartidor no encontrado</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-4 px-4 py-2 bg-[#D3423E] text-white font-bold text-sm rounded-xl hover:bg-red-700"
+          >
+            Volver
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white max-h-screen rounded-lg p-5 sm:p-6 md:p-8 lg:p-10">
-      {loading ? (
-        <Spinner />
-      ) : (
-        <div className="p-6 bg-white border border-gray-300 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700">
-        <div className="w-full max-w-5xl gap-6">
-            <div className="flex mt-4 mb-4 justify-start space-x-2">
-              <nav className="flex" aria-label="Breadcrumb">
-                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                  <li className="inline-flex items-center" onClick={() => navigate(-1)}>
-                    <button
-                      onClick={() => navigate(-2)}
-                      className="inline-flex items-center text-lg font-medium text-gray-900 "
-                    >
-                      <svg
-                        className="w-3 h-3 me-2.5"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
-                      </svg>
-                      Lista de clientes
-                    </button>
+    <div className="bg-white min-h-screen p-4 sm:p-6">
+      <div className="max-w-[1600px] mx-auto">
+        <div className="mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-gray-500 hover:text-[#D3423E] flex items-center gap-1 transition-colors"
+          >
+            <FaArrowLeft size={11} /> Volver al listado
+          </button>
+        </div>
 
-                  </li>
-                  <li>
-                    <div className="flex items-center">
-                      <svg className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
-                      </svg>
-                      <button
-                        onClick={() => navigate(-1)}
-                        className="ms-1 text-lg font-bold text-[#D3423E] hover:text-[#D3423E] md:ms-2 dark:text-gray-400 dark:hover:text-white"
-                      >
-                       {client?.fullName || client?.lastName
-  ? `${client.fullName ?? ""} ${client.lastName ?? ""}`.trim()
-  : "Nombre no disponible"}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+          <div className="h-32 bg-gradient-to-br from-[#D3423E] to-red-700 relative">
+            <div className="absolute inset-0 opacity-10" style={{
+              backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 80%, white 1px, transparent 1px)',
+              backgroundSize: '40px 40px'
+            }} />
+          </div>
 
-                      </button>
-
-                    </div>
-                  </li>
-                </ol>
-              </nav>
-
-            </div>
-
-            <div className="w-full relative bg-white rounded-lg p-6 flex border border-gray-900 flex-col items-center">
-              <div className="absolute -top-20 w-40 h-40 rounded-full overflow-hidden">
-                <img
-                  src={client.identificationImage || "https://via.placeholder.com/150"}
-                  alt={client.identificationImage}
-                  className="w-full h-full object-cover"
-                />
+          <div className="px-6 pb-6 -mt-16 relative">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+              <div className="relative">
+                {client.identificationImage ? (
+                  <img
+                    src={client.identificationImage}
+                    alt={client.fullName}
+                    className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg bg-white"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#D3423E] to-red-700 border-4 border-white shadow-lg flex items-center justify-center text-white text-4xl font-bold">
+                    {getInitials(client.fullName, client.lastName)}
+                  </div>
+                )}
+                {client.active !== false && (
+                  <span className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 border-4 border-white rounded-full flex items-center justify-center">
+                    <FaCheckCircle className="text-white" size={11} />
+                  </span>
+                )}
               </div>
 
-              <div className="mt-20 text-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                {client?.fullName || client?.lastName
-  ? `${client.fullName ?? ""} ${client.lastName ?? ""}`.trim()
-  : "Nombre no disponible"}
-                </h2>
-              
-                <div className="flex items-center gap-2 text-gray-900">
-                  <FaMapMarkerAlt color="#D3423E" />
-                  <p>{client.client_location.direction || "No disponible"}</p>
+              <div className="flex-1 sm:pt-12">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="bg-red-100 text-[#D3423E] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                    <FaTruck size={9} /> Repartidor
+                  </span>
+                  {client.active !== false && (
+                    <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                      Activo
+                    </span>
+                  )}
                 </div>
-
-                <div className="flex items-center gap-2 text-gray-900">
-                  <FaEnvelope color="#D3423E" />
-                  <p>{client.email || "No disponible"}</p>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-900">
-                  <FaPhone color="#D3423E" />
-                  <p>{client.phoneNumber || "No disponible"}</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {client.fullName} {client.lastName}
+                </h1>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
+                  {client.email && (
+                    <a href={`mailto:${client.email}`} className="flex items-center gap-1 hover:text-[#D3423E] transition-colors">
+                      <FaEnvelope className="text-[#D3423E]" size={11} />
+                      {client.email}
+                    </a>
+                  )}
+                  {client.phoneNumber && (
+                    <a href={`tel:${client.phoneNumber}`} className="flex items-center gap-1 hover:text-[#D3423E] transition-colors">
+                      <FaPhone className="text-[#D3423E]" size={11} />
+                      {client.phoneNumber}
+                    </a>
+                  )}
+                  {client.client_location?.direction && (
+                    <span className="flex items-center gap-1">
+                      <FaMapMarkerAlt className="text-[#D3423E]" size={11} />
+                      {client.client_location.direction}
+                    </span>
+                  )}
+                  {client.region && (
+                    <span className="flex items-center gap-1">
+                      <FaCity className="text-[#D3423E]" size={11} />
+                      {client.region.replace("TOTAL ", "")}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="mt-10 w-full max-w-5xl">
-          <div className="flex flex-col lg:flex-row flex-wrap items-start lg:items-center gap-4 mt-10 mb-4">
-              <div className="flex gap-2">
-                <div className="flex items-center space-x-2">
-                    <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-                </div>
-                <div className="flex items-center space-x-2">
-                    <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-                </div>
-                <div className="flex items-center space-x-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+          <StatCard
+            icon={<FaBoxOpen />}
+            label="Entregas"
+            value={items}
+            color="bg-blue-100 text-blue-700"
+          />
+          <StatCard
+            icon={<FaDollarSign />}
+            label="Total entregado"
+            value={`Bs. ${totalAmountSum.toFixed(2)}`}
+            color="bg-green-100 text-green-700"
+          />
+          <StatCard
+            icon={<FaCheckCircle />}
+            label="Cobrado"
+            value={`Bs. ${totalPagadoSum.toFixed(2)}`}
+            color="bg-emerald-100 text-emerald-700"
+          />
+          <StatCard
+            icon={<FaExclamationCircle />}
+            label="Por cobrar"
+            value={`Bs. ${totalSaldoSum.toFixed(2)}`}
+            color="bg-red-100 text-red-700"
+            warning={ordersWithOverdue > 0 ? `${ordersWithOverdue} en mora` : null}
+          />
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-5 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <FaShoppingCart className="text-[#D3423E]" />
+                  Pedidos asignados
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {dateFilterActive || selectedEstadoPago ? "Resultados filtrados" : "Mostrando todas las entregas"}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <DateInput value={startDate} onChange={setStartDate} label="Desde" />
+                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+
+                <div className="relative">
+                  <FaFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none z-10" />
                   <select
                     value={selectedEstadoPago}
-                    onChange={(e) => setSelectedEstadoPago(e.target.value)}
-                    className="h-10 px-3 py-2 text-sm text-gray-900 border border-gray-900 rounded-3xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
+                    onChange={(e) => { setSelectedEstadoPago(e.target.value); setPage(1); }}
+                    className="pl-9 pr-8 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer appearance-none"
                   >
-                    <option value="">Mostrar Todos</option>
-                    <option value="Pagado">Pagado</option>
-                    <option value="Pendiente">Falta pagar</option>
+                    <option value="">Todos los estados</option>
+                    <option value="Pagado">Pagados</option>
+                    <option value="Pendiente">Con deuda</option>
                   </select>
                 </div>
 
                 <button
                   onClick={handleFilterClick}
-                  className="px-4 py-2 font-bold uppercase text-lg text-white rounded-3xl bg-[#D3423E] flex items-center gap-6"
+                  className="px-4 py-2.5 bg-[#D3423E] text-white font-bold text-sm rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
                 >
+                  <HiFilter size={14} />
                   Filtrar
                 </button>
 
-              </div>
-
-              <div className="flex justify-end items-center space-x-4">
-                <button
-                  onClick={exportToExcel}
-                  className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] border-2 border-[#D3423E] rounded-3xl  flex items-center gap-2"
-                >
-                  <FaFileExport color="##726E6E" />
-                  CSV
-                </button>
-             
-                <button
-                    onClick={exportToPDF}
-                    className="px-4 py-2 bg-white font-bold text-lg text-[#D3423E] uppercase rounded-3xl  border-2 border-[#D3423E] flex items-center gap-5"
-                  >
-                    <FaFileExport color="##726E6E" /> PDF
-                  </button>
-
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 mt-4">
-
-              {dateFilterActive && (
-                <span className="bg-orange-400 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                  Fecha: {startDate} → {endDate}
+                <div className="relative">
                   <button
-                    onClick={() => clearFilter("date")}
-                    className="font-bold"            >
-                    ×
+                    onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                    className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
+                  >
+                    <FaFileExport size={14} />
+                    Exportar
                   </button>
-                </span>
-              )}
+                  {exportMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setExportMenuOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-20"
+                      >
+                        <button
+                          onClick={exportToExcel}
+                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <FaFileExcel className="text-green-600" /> Excel (XLSX)
+                        </button>
+                        <button
+                          onClick={exportToPDF}
+                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <FaFilePdf className="text-red-600" /> PDF
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-            <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                <thead className="text-xs sm:text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                  <tr>
-                    <th className="px-4 py-3 uppercase">Referencia</th>
-                    <th className="px-4 py-3 uppercase">Fecha de creación</th>
-                    <th className="px-4 py-3 uppercase">Cliente</th>
-                    <th className="px-4 py-3 uppercase">Tipo de Pago</th>
-                    <th className="px-4 py-3 uppercase">Total</th>
-                    <th className="px-4 py-3 uppercase">Total Cobrado</th>
-                    <th className="px-4 py-3 uppercase">Saldo por cobrar</th>
-                    <th className="px-4 py-3 uppercase">Días de mora</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesData.map((item) => (
-                    <tr key={item._id} onClick={() => handleRowClick(item)} className="bg-white border-b hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-900">{item.receiveNumber}</td>
-                      <td className="px-4 py-3 text-gray-900">
-                        {item.creationDate
-                          ? new Date(item.creationDate).toLocaleString("es-ES", {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: false,
-                          }).toUpperCase()
-                          : ''}
-                      </td>
-                      <td className="px-4 py-3 text-gray-900">{item.id_client.name + " " + item.id_client.lastName}</td>
-                      <td className="px-4 py-3 text-gray-900 font-bold">
-                        {item.accountStatus === "Crédito" && (
-                          <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full">
-                            CRÉDITO
-                          </span>
-                        )}
-                        {item.accountStatus === "Contado" && (
-                          <span className="bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                            CONTADO
-                          </span>
-                        )}
-                        {item.accountStatus === "Cheque" && (
-                          <span className="bg-red-500 text-white px-2.5 py-0.5 rounded-full">
-                            CHEQUE
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-900">Bs. {item.totalAmount}</td>
-                      <td className="px-4 py-3 text-gray-900">Bs. {item.totalPagado}</td>
-                      <td className="px-4 py-3 text-gray-900">Bs. {item.restante}</td>
-                      <td className="px-4 py-3 text-gray-900">
-                        {calculateDaysRemaining(item.dueDate, item.creationDate)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                    <tr>
-                      <td colSpan={8}>
-                        <div className="flex justify-end px-6 py-4 text-lg text-gray-700 bg-gray-200 border-t mt-2 border-gray-300">
-                        <span className="font-bold">Total: Bs. {totalAmountSum.toFixed(2)}</span>
 
-                        </div>
-                      </td>
+            {(dateFilterActive || selectedEstadoPago) && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {dateFilterActive && (
+                  <span className="bg-[#D3423E] text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2">
+                    <FaCalendarAlt size={10} />
+                    {startDate} → {endDate}
+                    <button onClick={() => clearFilter("date")} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5">
+                      <FaTimes size={10} />
+                    </button>
+                  </span>
+                )}
+                {selectedEstadoPago && (
+                  <span className="bg-purple-500 text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2">
+                    Estado: {selectedEstadoPago === "Pendiente" ? "Con deuda" : "Pagados"}
+                    <button onClick={() => clearFilter("status")} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5">
+                      <FaTimes size={10} />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {loadingTable ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
+              <p className="text-sm">Cargando entregas...</p>
+            </div>
+          ) : salesData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <FaBoxOpen className="text-gray-300 text-3xl" />
+              </div>
+              <p className="text-gray-700 font-semibold">Sin entregas</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {dateFilterActive || selectedEstadoPago ? "No hay entregas con esos filtros" : "Este repartidor todavía no tiene pedidos asignados"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">Ref.</th>
+                      <th className="px-4 py-3 font-semibold">Fecha</th>
+                      <th className="px-4 py-3 font-semibold">Cliente</th>
+                      <th className="px-4 py-3 font-semibold text-center">Tipo</th>
+                      <th className="px-4 py-3 font-semibold text-right">Total</th>
+                      <th className="px-4 py-3 font-semibold text-right">Cobrado</th>
+                      <th className="px-4 py-3 font-semibold text-right">Saldo</th>
+                      <th className="px-4 py-3 font-semibold text-center">Mora</th>
                     </tr>
-                  </tfoot>
-              </table>
-            
-              <div>
-               
-                {totalPages > 1 && (
-                  <div className="flex justify-between items-center px-6 pb-4">
-                    <div className="flex mb-4 justify-end items-center pt-4">
-                      <label htmlFor="itemsPerPage" className="mr-2 text-m font-bold text-gray-700">
-                        Ítems por página:
-                      </label>
+                  </thead>
+                  <tbody>
+                    {salesData.map((item) => {
+                      const config = ACCOUNT_STATUS_CONFIG[item.accountStatus];
+                      const days = calculateDaysRemaining(item.dueDate);
+                      const isOverdue = days > 0 && item.restante > 0;
+                      return (
+                        <tr
+                          key={item._id}
+                          onClick={() => handleRowClick(item)}
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                          <td className="px-4 py-3">
+                            <span className="font-bold text-gray-900">#{item.receiveNumber}</span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-700">
+                            {item.creationDate ? (
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {new Date(item.creationDate).toLocaleDateString("es-ES", {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(item.creationDate).toLocaleTimeString("es-ES", {
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                  })}
+                                </p>
+                              </div>
+                            ) : "-"}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900">
+                            {item.id_client?.name} {item.id_client?.lastName}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {config && (
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full border ${config.bg} ${config.text} ${config.border} text-xs font-bold`}>
+                                {config.label}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right font-bold text-gray-900">
+                            Bs. {Number(item.totalAmount || 0).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-green-600 font-semibold">
+                            Bs. {Number(item.totalPagado || 0).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className={item.restante > 0 ? "text-[#D3423E] font-bold" : "text-gray-400"}>
+                              Bs. {Number(item.restante || 0).toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {isOverdue ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                <FaClock size={9} />
+                                {days}d
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="lg:hidden p-4 space-y-3">
+                {salesData.map((item) => {
+                  const config = ACCOUNT_STATUS_CONFIG[item.accountStatus];
+                  const days = calculateDaysRemaining(item.dueDate);
+                  const isOverdue = days > 0 && item.restante > 0;
+                  return (
+                    <div
+                      key={item._id}
+                      onClick={() => handleRowClick(item)}
+                      className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-bold text-gray-900">#{item.receiveNumber}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(item.creationDate).toLocaleDateString("es-ES")}
+                          </p>
+                        </div>
+                        {config && (
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full border ${config.bg} ${config.text} ${config.border} text-xs font-bold`}>
+                            {config.label}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2 flex items-center gap-1">
+                        <FaUser size={10} className="text-gray-400" />
+                        {item.id_client?.name} {item.id_client?.lastName}
+                      </p>
+                      <div className="flex justify-between pt-2 border-t border-gray-100 text-sm">
+                        <span className="font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</span>
+                        {isOverdue && (
+                          <span className="text-red-700 font-bold flex items-center gap-1 text-xs">
+                            <FaClock size={10} /> {days}d en mora
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div className="flex justify-end mb-3 pb-3 border-b border-gray-200">
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500 uppercase font-semibold">Total general</p>
+                    <p className="text-2xl font-bold text-[#D3423E]">Bs. {totalAmountSum.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <span>
+                      Mostrando <strong className="text-gray-900">{salesData.length}</strong> de <strong className="text-gray-900">{items}</strong> entregas
+                    </span>
+                    <div className="h-4 w-px bg-gray-300"></div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
                       <select
                         id="itemsPerPage"
                         value={itemsPerPage}
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
-                          fetchProducts(page);
                         }}
-                        className="border-2 border-gray-900 rounded-2xl px-2 py-1 text-m text-gray-700"
+                        className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
                       >
-                        {[5, 10, 20, 50, 100].map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
+                        {[5, 10, 20, 50, 100].map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
                         ))}
                       </select>
                     </div>
-                    <nav className="flex items-center justify-center pt-4 space-x-2">
+                  </div>
+
+                  {totalPages > 1 && (
+                    <nav className="flex items-center gap-1">
                       <button
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1
-                          ? "text-[#D3423E] font-bold cursor-not-allowed"
-                          : "text-[#D3423E] hover:bg-gray-200"
-                          }`}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
                       >
-                        ◀
+                        ← Anterior
                       </button>
-
                       <button
                         onClick={() => setPage(1)}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === 1 ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                        className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                       >
                         1
                       </button>
-
-                      {page > 3 && <span className="px-2 text-gray-900">…</span>}
+                      {page > 3 && <span className="px-1 text-gray-400">…</span>}
                       {Array.from({ length: 3 }, (_, i) => page - 1 + i)
                         .filter((p) => p > 1 && p < totalPages)
                         .map((p) => (
                           <button
                             key={p}
                             onClick={() => setPage(p)}
-                            className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === p ? "bg-[#D3423E] text-white font-bold" : "text-gray-900 font-bold"}`}
+                            className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                           >
                             {p}
                           </button>
                         ))}
-                      {page < totalPages - 2 && <span className="px-2 text-gray-900 font-bold">…</span>}
-
+                      {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
                       {totalPages > 1 && (
                         <button
                           onClick={() => setPage(totalPages)}
-                          className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages ? "bg-red-500 text-white font-bold" : "text-gray-900 font-bold"}`}
+                          className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
                         >
                           {totalPages}
                         </button>
@@ -537,24 +748,38 @@ export default function DeliveryInformationComponent() {
                       <button
                         onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
                         disabled={page === totalPages}
-                        className={`px-3 py-1 border-2 border-[#D3423E] rounded-lg ${page === totalPages
-                          ? "text-[#D3423E] cursor-not-allowed"
-                          : "text-[#D3423E] font-bold"
-                          }`}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
                       >
-                        ▶
+                        Siguiente →
                       </button>
                     </nav>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-
-            </div>
-
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
-
   );
 }
+
+const StatCard = ({ icon, label, value, color, warning }) => (
+  <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all">
+    <div className="flex items-center gap-3">
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-gray-500 font-semibold uppercase truncate">{label}</p>
+        <p className="text-lg font-bold text-gray-900 truncate">{value}</p>
+        {warning && (
+          <p className="text-[10px] text-red-600 font-bold flex items-center gap-1 mt-0.5">
+            <FaExclamationCircle size={9} />
+            {warning}
+          </p>
+        )}
+      </div>
+    </div>
+  </div>
+);

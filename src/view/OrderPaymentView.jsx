@@ -4,7 +4,7 @@ import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS } from "../config";
 import { HiFilter } from "react-icons/hi";
 import { FaFileExport } from "react-icons/fa6";
 import { ethers, Contract, id, Interface } from "ethers";
-import { FaCheckCircle, FaTimesCircle, FaEllipsisV, FaSearch, FaCalendarAlt, FaReceipt, FaUser, FaDollarSign, FaCheck, FaTimes, FaImage, FaLink } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaEllipsisV, FaCalendarAlt, FaReceipt, FaUser, FaDollarSign, FaCheck, FaTimes, FaImage, FaLink } from "react-icons/fa";
 import { FiExternalLink, FiGrid, FiList } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -14,7 +14,6 @@ import OrderCalendarView from "./OrderCalendarView";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
-import Spinner from "../Components/LittleComponents/Spinner";
 
 const PAYMENT_STATUS_CONFIG = {
   "paid": {
@@ -284,10 +283,71 @@ const OrderPaymentView = () => {
   };
 
   const totalAmount = salesData.reduce((sum, s) => sum + (s.total || 0), 0);
+  const POLYGON_CONFIG = {
+    color: "#8247E5",
+    bg: "from-purple-500 to-indigo-600",
+    network: "Polygon Mainnet",
+    contractShort: `${CONTRACT_ADDRESS.slice(0, 6)}...${CONTRACT_ADDRESS.slice(-4)}`,
+    polygonScan: `https://polygonscan.com/address/${CONTRACT_ADDRESS}`
+  };
 
+  const truncateHash = (hash, start = 6, end = 4) => {
+    if (!hash) return "";
+    return `${hash.slice(0, start)}...${hash.slice(-end)}`;
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error("Error copying:", err);
+    }
+  };
   return (
     <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white shadow-xl"
+        >
+          <div className="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+
+                <h2 className="text-xl font-black tracking-wide">
+                  POLYGON BLOCKCHAIN VERIFIED
+                </h2>
+              </div>
+
+              <p className="text-sm text-purple-100">
+                Todos los pagos registrados pueden verificarse públicamente on-chain.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-xs">
+                <span className="bg-white/10 px-3 py-1 rounded-full font-mono">
+                  {POLYGON_CONFIG.network}
+                </span>
+
+                <span className="bg-white/10 px-3 py-1 rounded-full font-mono">
+                  {POLYGON_CONFIG.contractShort}
+                </span>
+              </div>
+            </div>
+
+            <a
+              href={POLYGON_CONFIG.polygonScan}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white text-purple-700 hover:bg-purple-50 transition-all font-bold px-5 py-3 rounded-xl flex items-center gap-2 self-start"
+            >
+              Ver contrato
+              <FiExternalLink />
+            </a>
+          </div>
+        </motion.div>
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Lista de pagos</h1>
@@ -336,8 +396,36 @@ const OrderPaymentView = () => {
                   <StatCard label="Ingresados" value={stats.ingresados} icon={<FaReceipt />} color="bg-blue-100 text-blue-700" />
                   <StatCard label="Confirmados" value={stats.confirmados} icon={<FaCheckCircle />} color="bg-green-100 text-green-700" />
                   <StatCard label="Rechazados" value={stats.rechazados} icon={<FaTimesCircle />} color="bg-red-100 text-red-700" />
-                  <StatCard label="En blockchain" value={stats.enBlockchain} icon={<FaLink />} color="bg-purple-100 text-purple-700" />
-                </div>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-xl text-white"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+                          <FaLink />
+                        </div>
+
+                        <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                      </div>
+
+                      <p className="text-xs uppercase text-purple-100 font-bold tracking-wider">
+                        On-chain
+                      </p>
+
+                      <h3 className="text-3xl font-black mt-1">
+                        {stats.enBlockchain}
+                      </h3>
+
+                      <p className="text-sm text-purple-100 mt-1">
+                        {stats.total > 0
+                          ? `${Math.round((stats.enBlockchain / stats.total) * 100)}% verificados`
+                          : "0%"}
+                      </p>
+                    </div>
+                  </motion.div>                </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className="p-6 border-b border-gray-200">
@@ -412,8 +500,17 @@ const OrderPaymentView = () => {
                             const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
                             const StatusIcon = statusConfig?.icon;
                             return (
-                              <tr key={item._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                <td className="px-4 py-3">
+                              <tr
+                                key={item._id}
+                                className={`
+    border-b border-gray-100 transition-all
+    hover:bg-gray-50
+ ${item.blockchain
+                                    ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5 shadow-[0_0_30px_rgba(168,85,247,0.15)]"
+                                    : "bg-white/0"
+                                  }
+  `}
+                              >                                <td className="px-4 py-3">
                                   <span className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</span>
                                 </td>
                                 <td className="px-4 py-3 text-gray-700">
@@ -463,31 +560,26 @@ const OrderPaymentView = () => {
                                   )}
                                 </td>
                                 <td className="px-4 py-3">
-                                  <div className="flex justify-center items-center">
-                                    {item.blockchain ? (
-                                      item.blockchain.transactionHash ? (
-                                        <a
-                                          href={`https://polygonscan.com/tx/${item.blockchain.transactionHash}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          onClick={(e) => e.stopPropagation()}
-                                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full text-xs font-bold transition-colors"
-                                          title="Ver en Polygonscan"
-                                        >
-                                          <FaCheckCircle size={10} />
-                                          Ver TX
-                                          <FiExternalLink size={10} />
-                                        </a>
-                                      ) : (
-                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                          <FaCheckCircle size={10} />
-                                          Registrado
+                                  <div className="flex justify-center">
+                                    {item.blockchain?.transactionHash ? (
+                                      <a
+                                        href={`https://polygonscan.com/tx/${item.blockchain.transactionHash}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="group flex flex-col items-center"
+                                      >
+                                        <span className="text-[11px] font-mono text-purple-700 font-bold">
+                                          {truncateHash(item.blockchain.transactionHash, 8, 6)}
                                         </span>
-                                      )
+
+                                        <span className="text-[10px] text-purple-500 flex items-center gap-1 opacity-70 group-hover:opacity-100">
+                                          Polygon
+                                          <FiExternalLink size={9} />
+                                        </span>
+                                      </a>
                                     ) : (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold">
-                                        <FaTimesCircle size={10} />
-                                        No
+                                      <span className="text-xs text-gray-400">
+                                        —
                                       </span>
                                     )}
                                   </div>
@@ -721,23 +813,91 @@ const OrderPaymentView = () => {
                 </div>
 
                 {selectedItem.blockchain && (
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaLink className="text-purple-600" />
-                      <p className="text-sm font-bold text-purple-900">Registrado en blockchain</p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 p-5 text-white shadow-xl"
+                  >
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+
+                            <h3 className="font-black tracking-wide text-lg">
+                              VERIFICADO EN POLYGON
+                            </h3>
+                          </div>
+
+                          <p className="text-sm text-purple-100">
+                            Pago registrado públicamente on-chain
+                          </p>
+                        </div>
+
+                        <FaCheckCircle className="text-3xl text-green-300" />
+                      </div>
+
+                      <div className="space-y-3">
+
+                        <div className="bg-white/10 rounded-xl p-3">
+                          <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">
+                            Transaction Hash
+                          </p>
+
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-mono text-sm break-all">
+                              {selectedItem.blockchain.transactionHash}
+                            </p>
+
+                            <button
+                              onClick={() => copyToClipboard(selectedItem.blockchain.transactionHash)}
+                              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold"
+                            >
+                              Copiar
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+
+                          <div className="bg-white/10 rounded-xl p-3">
+                            <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">
+                              Wallet
+                            </p>
+
+                            <p className="font-mono text-xs break-all">
+                              {selectedItem.blockchain.sender}
+                            </p>
+                          </div>
+
+                          <div className="bg-white/10 rounded-xl p-3">
+                            <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">
+                              Timestamp
+                            </p>
+
+                            <p className="font-bold">
+                              {new Date(
+                                selectedItem.blockchain.timestamp * 1000
+                              ).toLocaleString("es-ES")}
+                            </p>
+                          </div>
+
+                        </div>
+
+                        <a
+                          href={`https://polygonscan.com/tx/${selectedItem.blockchain.transactionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full mt-2 bg-white text-purple-700 hover:bg-purple-50 transition-all rounded-xl py-3 font-black flex items-center justify-center gap-2"
+                        >
+                          Ver transacción en PolygonScan
+                          <FiExternalLink />
+                        </a>
+                      </div>
                     </div>
-                    {selectedItem.blockchain.transactionHash && (
-                      <a
-                        href={`https://polygonscan.com/tx/${selectedItem.blockchain.transactionHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-purple-700 hover:text-purple-900 font-mono break-all flex items-center gap-1"
-                      >
-                        {selectedItem.blockchain.transactionHash}
-                        <FiExternalLink className="flex-shrink-0" size={12} />
-                      </a>
-                    )}
-                  </div>
+                  </motion.div>
                 )}
 
                 {selectedItem.saleImage && (

@@ -246,7 +246,7 @@ export default function SalesManInformationComponent() {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
           <p className="text-gray-600 font-medium">Cargando datos del vendedor...</p>
@@ -257,7 +257,7 @@ export default function SalesManInformationComponent() {
 
   if (!client) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <FaExclamationCircle className="text-red-500 text-5xl mx-auto mb-3" />
           <p className="text-gray-700 font-bold text-lg">Vendedor no encontrado</p>

@@ -39,7 +39,7 @@ const PAYMENT_METHODS = {
 };
 
 const MIN_USDT_AMOUNT = 10;
-const USD_TO_BS_OFFICIAL = 6.96; 
+const USD_TO_BS_OFFICIAL = 6.96;
 
 const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, salesID, totalGeneral }) => {
   const [paymentData, setPaymentData] = useState({
@@ -74,11 +74,11 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [manualRateMode, setManualRateMode] = useState(false);
   const [manualRate, setManualRate] = useState('');
 
-const [txStatus, setTxStatus] = useState('waiting');
-const [txHash, setTxHash] = useState(null);
-const [txConfirmations, setTxConfirmations] = useState(0);
-const  [setTxStartTime] = useState(null);
-const [elapsedTime, setElapsedTime] = useState(0);
+  const [txStatus, setTxStatus] = useState('waiting');
+  const [txHash, setTxHash] = useState(null);
+  const [txConfirmations, setTxConfirmations] = useState(0);
+  const [setTxStartTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const pollingIntervalRef = useRef(null);
   const elapsedIntervalRef = useRef(null);
 
@@ -139,7 +139,7 @@ const [elapsedTime, setElapsedTime] = useState(0);
     if (paymentMethod === 'crypto' && !exchangeRate) {
       fetchExchangeRate();
     }
-  }, [paymentMethod]);
+  }, [paymentMethod, exchangeRate]);
 
   const formatElapsedTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -228,11 +228,11 @@ const [elapsedTime, setElapsedTime] = useState(0);
       setElapsedTime(prev => prev + 1);
     }, 1000);
 
-   const RPC_URLS = {
-  polygon: 'https://polygon-bor-rpc.publicnode.com',
-  ethereum: 'https://ethereum-rpc.publicnode.com',
-  bsc: 'https://bsc-rpc.publicnode.com'
-};
+    const RPC_URLS = {
+      polygon: 'https://polygon-bor-rpc.publicnode.com',
+      ethereum: 'https://ethereum-rpc.publicnode.com',
+      bsc: 'https://bsc-rpc.publicnode.com'
+    };
     const USDT_ADDRESSES = {
       polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
       ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -245,88 +245,88 @@ const [elapsedTime, setElapsedTime] = useState(0);
       bsc: 18
     };
 
-const checkPayment = async () => {
-  try {
-    if (initialBalance === null) {
-      console.log('Esperando balance inicial...');
-      return;
-    }
-
-    const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
-    const usdtAddress = USDT_ADDRESSES[selectedNetwork];
-    const decimals = USDT_DECIMALS[selectedNetwork];
-    const targetAddress = order.address;
-
-    const ERC20_ABI = [
-      "event Transfer(address indexed from, address indexed to, uint256 value)",
-      "function balanceOf(address account) view returns (uint256)"
-    ];
-
-    const usdtContract = new ethers.Contract(usdtAddress, ERC20_ABI, provider);
-
-    const usdtBalance = await usdtContract.balanceOf(targetAddress);
-    const currentBalance = Number(usdtBalance) / Math.pow(10, decimals);
-    const expectedAmount = parseFloat(amountInUSDT);
-    const tolerance = expectedAmount * 0.05; 
-
-    console.log('   Verificando pago...');
-    console.log('   Balance inicial:', initialBalance);
-    console.log('   Balance actual:', currentBalance);
-    console.log('   Diferencia:', currentBalance - initialBalance);
-    console.log('   Esperado recibir:', expectedAmount, 'USDT');
-
-    const amountReceived = currentBalance - initialBalance;
-    const isPaymentReceived = amountReceived >= (expectedAmount - tolerance);
-
-    if (isPaymentReceived) {
-      console.log('¡Pago detectado! Monto recibido:', amountReceived, 'USDT');
-
-      const currentBlock = await provider.getBlockNumber();
-      const fromBlock = currentBlock - 5000;
-
-      const filter = usdtContract.filters.Transfer(null, targetAddress);
-      const events = await usdtContract.queryFilter(filter, fromBlock, currentBlock);
-
-      if (events.length > 0) {
-        const latestEvent = events[events.length - 1];
-        const confirmations = currentBlock - latestEvent.blockNumber;
-
-        console.log('TX Hash:', latestEvent.transactionHash);
-        console.log('Confirmaciones:', confirmations);
-
-        setTxHash(latestEvent.transactionHash);
-
-        if (confirmations >= 12) {
-          setTxStatus('confirmed');
-          setTxConfirmations(confirmations);
-          setPaid(true);
-          clearInterval(pollingIntervalRef.current);
-          clearInterval(elapsedIntervalRef.current);
-        } else if (confirmations >= 1) {
-          console.log('Confirmando...');
-          setTxStatus('confirming');
-          setTxConfirmations(confirmations);
-        } else {
-          console.log('Detectado en mempool');
-          setTxStatus('detected');
+    const checkPayment = async () => {
+      try {
+        if (initialBalance === null) {
+          console.log('Esperando balance inicial...');
+          return;
         }
-      } else {
-        console.log('Balance correcto sin TX visible, confirmando');
-        setTxStatus('confirmed');
-        setPaid(true);
-        clearInterval(pollingIntervalRef.current);
-        clearInterval(elapsedIntervalRef.current);
+
+        const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
+        const usdtAddress = USDT_ADDRESSES[selectedNetwork];
+        const decimals = USDT_DECIMALS[selectedNetwork];
+        const targetAddress = order.address;
+
+        const ERC20_ABI = [
+          "event Transfer(address indexed from, address indexed to, uint256 value)",
+          "function balanceOf(address account) view returns (uint256)"
+        ];
+
+        const usdtContract = new ethers.Contract(usdtAddress, ERC20_ABI, provider);
+
+        const usdtBalance = await usdtContract.balanceOf(targetAddress);
+        const currentBalance = Number(usdtBalance) / Math.pow(10, decimals);
+        const expectedAmount = parseFloat(amountInUSDT);
+        const tolerance = expectedAmount * 0.05;
+
+        console.log('   Verificando pago...');
+        console.log('   Balance inicial:', initialBalance);
+        console.log('   Balance actual:', currentBalance);
+        console.log('   Diferencia:', currentBalance - initialBalance);
+        console.log('   Esperado recibir:', expectedAmount, 'USDT');
+
+        const amountReceived = currentBalance - initialBalance;
+        const isPaymentReceived = amountReceived >= (expectedAmount - tolerance);
+
+        if (isPaymentReceived) {
+          console.log('¡Pago detectado! Monto recibido:', amountReceived, 'USDT');
+
+          const currentBlock = await provider.getBlockNumber();
+          const fromBlock = currentBlock - 5000;
+
+          const filter = usdtContract.filters.Transfer(null, targetAddress);
+          const events = await usdtContract.queryFilter(filter, fromBlock, currentBlock);
+
+          if (events.length > 0) {
+            const latestEvent = events[events.length - 1];
+            const confirmations = currentBlock - latestEvent.blockNumber;
+
+            console.log('TX Hash:', latestEvent.transactionHash);
+            console.log('Confirmaciones:', confirmations);
+
+            setTxHash(latestEvent.transactionHash);
+
+            if (confirmations >= 12) {
+              setTxStatus('confirmed');
+              setTxConfirmations(confirmations);
+              setPaid(true);
+              clearInterval(pollingIntervalRef.current);
+              clearInterval(elapsedIntervalRef.current);
+            } else if (confirmations >= 1) {
+              console.log('Confirmando...');
+              setTxStatus('confirming');
+              setTxConfirmations(confirmations);
+            } else {
+              console.log('Detectado en mempool');
+              setTxStatus('detected');
+            }
+          } else {
+            console.log('Balance correcto sin TX visible, confirmando');
+            setTxStatus('confirmed');
+            setPaid(true);
+            clearInterval(pollingIntervalRef.current);
+            clearInterval(elapsedIntervalRef.current);
+          }
+        } else if (amountReceived > 0 && amountReceived < (expectedAmount - tolerance)) {
+          console.warn('Pago insuficiente. Esperado:', expectedAmount, 'Recibido:', amountReceived);
+          setTxStatus('waiting');
+        } else {
+          console.log('Esperando pago...');
+        }
+      } catch (error) {
+        console.error('Error verificando pago:', error);
       }
-    } else if (amountReceived > 0 && amountReceived < (expectedAmount - tolerance)) {
-      console.warn('Pago insuficiente. Esperado:', expectedAmount, 'Recibido:', amountReceived);
-      setTxStatus('waiting');
-    } else {
-      console.log('Esperando pago...');
-    }
-  } catch (error) {
-    console.error('Error verificando pago:', error);
-  }
-};
+    };
     checkPayment();
     pollingIntervalRef.current = setInterval(checkPayment, 8000);
 
@@ -334,7 +334,13 @@ const checkPayment = async () => {
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
       if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
     };
-}, [order, txStatus, selectedNetwork, initialBalance, amountInUSDT]);
+  }, [order,
+  txStatus,
+  selectedNetwork,
+  initialBalance,
+  amountInUSDT,
+  setPaid,
+  setTxStartTime]);
   const sendPayment = async (orderId, amount, payer) => {
     try {
       if (!window.ethereum) {
@@ -463,60 +469,60 @@ const checkPayment = async () => {
     }
   };
 
-const createPayment = async () => {
-  try {
-    const payload = {
-      amount: amountInUSDT,
-      network: selectedNetwork
-    };
-    const response = await axios.post(API_URL + "/whatsapp/create", payload, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  const createPayment = async () => {
+    try {
+      const payload = {
+        amount: amountInUSDT,
+        network: selectedNetwork
+      };
+      const response = await axios.post(API_URL + "/whatsapp/create", payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    const newOrder = response.data || {};
+      const newOrder = response.data || {};
 
-    const RPC_URLS = {
-      polygon: 'https://polygon-bor-rpc.publicnode.com',
-      ethereum: 'https://ethereum-rpc.publicnode.com',
-      bsc: 'https://bsc-rpc.publicnode.com'
-    };
+      const RPC_URLS = {
+        polygon: 'https://polygon-bor-rpc.publicnode.com',
+        ethereum: 'https://ethereum-rpc.publicnode.com',
+        bsc: 'https://bsc-rpc.publicnode.com'
+      };
 
-    const USDT_ADDRESSES = {
-      polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-      ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-      bsc: '0x55d398326f99059fF775485246999027B3197955'
-    };
+      const USDT_ADDRESSES = {
+        polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+        ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        bsc: '0x55d398326f99059fF775485246999027B3197955'
+      };
 
-    const USDT_DECIMALS = {
-      polygon: 6,
-      ethereum: 6,
-      bsc: 18
-    };
+      const USDT_DECIMALS = {
+        polygon: 6,
+        ethereum: 6,
+        bsc: 18
+      };
 
-    if (newOrder.address) {
-      const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
-      const usdtContract = new ethers.Contract(
-        USDT_ADDRESSES[selectedNetwork],
-        ["function balanceOf(address account) view returns (uint256)"],
-        provider
-      );
-      const balance = await usdtContract.balanceOf(newOrder.address);
-      const balanceFormatted = Number(balance) / Math.pow(10, USDT_DECIMALS[selectedNetwork]);
+      if (newOrder.address) {
+        const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
+        const usdtContract = new ethers.Contract(
+          USDT_ADDRESSES[selectedNetwork],
+          ["function balanceOf(address account) view returns (uint256)"],
+          provider
+        );
+        const balance = await usdtContract.balanceOf(newOrder.address);
+        const balanceFormatted = Number(balance) / Math.pow(10, USDT_DECIMALS[selectedNetwork]);
 
-      console.log('💰 Balance inicial:', balanceFormatted, 'USDT');
-      console.log('🎯 Balance esperado tras pago:', balanceFormatted + parseFloat(amountInUSDT), 'USDT');
-      setInitialBalance(balanceFormatted);
+        console.log('💰 Balance inicial:', balanceFormatted, 'USDT');
+        console.log('🎯 Balance esperado tras pago:', balanceFormatted + parseFloat(amountInUSDT), 'USDT');
+        setInitialBalance(balanceFormatted);
+      }
+
+      setOrder(newOrder);
+      setPayment(response.data);
+      setTxStatus('waiting');
+      setElapsedTime(0);
+      setTxHash(null);
+    } catch (error) {
+      console.error("Error al crear pago:", error);
     }
-
-    setOrder(newOrder);
-    setPayment(response.data);
-    setTxStatus('waiting');
-    setElapsedTime(0);
-    setTxHash(null);
-  } catch (error) {
-    console.error("Error al crear pago:", error);
-  }
-};
+  };
 
   const qrValue = order?.address ? String(order.address) : "";
 
@@ -572,67 +578,67 @@ const createPayment = async () => {
     const config = statusConfig[txStatus];
     const isAnimated = txStatus === 'waiting' || txStatus === 'detected' || txStatus === 'confirming';
 
-  return (
-    <div className={`${config.bgColor} ${config.borderColor} border-2 rounded-xl p-4 mb-4`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <span className={`text-2xl ${isAnimated ? 'animate-pulse' : ''}`}>{config.icon}</span>
-          <div>
-            <p className={`font-bold ${config.textColor}`}>{config.title}</p>
-            <p className={`text-xs ${config.textColor} opacity-80`}>{config.description}</p>
+    return (
+      <div className={`${config.bgColor} ${config.borderColor} border-2 rounded-xl p-4 mb-4`}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <span className={`text-2xl ${isAnimated ? 'animate-pulse' : ''}`}>{config.icon}</span>
+            <div>
+              <p className={`font-bold ${config.textColor}`}>{config.title}</p>
+              <p className={`text-xs ${config.textColor} opacity-80`}>{config.description}</p>
+            </div>
           </div>
+          {(txStatus === 'waiting' || txStatus === 'detected' || txStatus === 'confirming') && (
+            <div className="text-right">
+              <p className={`text-xs ${config.textColor} opacity-70`}>Tiempo</p>
+              <p className={`font-mono font-bold ${config.textColor}`}>{formatElapsedTime(elapsedTime)}</p>
+            </div>
+          )}
         </div>
-        {(txStatus === 'waiting' || txStatus === 'detected' || txStatus === 'confirming') && (
-          <div className="text-right">
-            <p className={`text-xs ${config.textColor} opacity-70`}>Tiempo</p>
-            <p className={`font-mono font-bold ${config.textColor}`}>{formatElapsedTime(elapsedTime)}</p>
+
+        <div className="flex items-center gap-1 mb-3">
+          {['waiting', 'detected', 'confirming', 'confirmed'].map((step, idx) => {
+            const stepIndex = ['waiting', 'detected', 'confirming', 'confirmed'].indexOf(txStatus);
+            const isActive = idx <= stepIndex;
+            return (
+              <div
+                key={step}
+                className="flex-1 h-1.5 rounded-full"
+                style={{ backgroundColor: isActive ? (txStatus === 'confirmed' ? '#10b981' : '#3b82f6') : '#d1d5db' }}
+              />
+            );
+          })}
+        </div>
+
+        {txHash && (
+          <div className="bg-white rounded-lg p-2 mt-2">
+            <p className={`text-xs ${config.textColor} font-bold mb-1`}>Hash de transacción:</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-gray-700 font-mono truncate flex-1">{txHash}</p>
+              <a
+                href={NETWORKS[selectedNetwork].explorerUrl + txHash}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:underline whitespace-nowrap font-bold"
+              >
+                Ver en explorador →
+              </a>
+            </div>
+          </div>
+        )}
+
+        {isAnimated && (
+          <div className="flex justify-center mt-3">
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
+            </div>
           </div>
         )}
       </div>
-
-      <div className="flex items-center gap-1 mb-3">
-        {['waiting', 'detected', 'confirming', 'confirmed'].map((step, idx) => {
-          const stepIndex = ['waiting', 'detected', 'confirming', 'confirmed'].indexOf(txStatus);
-          const isActive = idx <= stepIndex;
-          return (
-            <div
-              key={step}
-              className="flex-1 h-1.5 rounded-full"
-              style={{ backgroundColor: isActive ? (txStatus === 'confirmed' ? '#10b981' : '#3b82f6') : '#d1d5db' }}
-            />
-          );
-        })}
-      </div>
-
-      {txHash && (
-        <div className="bg-white rounded-lg p-2 mt-2">
-          <p className={`text-xs ${config.textColor} font-bold mb-1`}>Hash de transacción:</p>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-gray-700 font-mono truncate flex-1">{txHash}</p>
-            <a
-              href={NETWORKS[selectedNetwork].explorerUrl + txHash}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:underline whitespace-nowrap font-bold"
-            >
-              Ver en explorador →
-            </a>
-          </div>
-        </div>
-      )}
-
-      {isAnimated && (
-        <div className="flex justify-center mt-3">
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">

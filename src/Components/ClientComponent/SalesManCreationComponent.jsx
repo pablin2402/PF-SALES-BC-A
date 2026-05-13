@@ -274,7 +274,7 @@ const SalesManCreationComponent = () => {
   const pwColors = ["bg-red-500", "bg-red-400", "bg-yellow-400", "bg-yellow-500", "bg-green-400", "bg-green-500"];
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <button

@@ -14,7 +14,7 @@ const ClientsLayout = () => {
 
         <div>
 
-            <nav className="bg-white border-gray-200 dark:bg-gray-900">
+            <nav className="bg-gray-50 border-gray-200 dark:bg-gray-900">
                 <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                     <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
                     </a>
@@ -27,7 +27,7 @@ const ClientsLayout = () => {
                     {isAdmin && (
                         <>
                             <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-                                <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
+                                <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-100 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
                                     <li>
                                         <a href="/admin" className="block py-2 px-3 text-m font-bold text-[#3A3737] md:hover:text-lg rounded-sm md:bg-transparent md:p-0 md:hover:text-[#D3423E]">
                                             Administradores

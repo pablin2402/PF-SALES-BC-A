@@ -14,7 +14,7 @@ import { FaFileExport } from "react-icons/fa6";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ObjectiveSalesManComponent from "../Components/ObjectiveComponent/ObjectiveSalesManComponent";
-import { HiOutlineShoppingCart, HiOutlineCurrencyDollar, HiOutlineUserGroup, HiOutlineDotsVertical, HiOutlineTrendingUp, HiOutlineChartBar } from 'react-icons/hi';
+import { HiOutlineShoppingCart, HiOutlineCurrencyDollar, HiOutlineDotsVertical, HiOutlineTrendingUp, HiOutlineChartBar } from 'react-icons/hi';
 import { MdLocalShipping } from 'react-icons/md';
 import VentasChart from "../Components/charts/VentasChart";
 import { useNavigate } from 'react-router-dom';

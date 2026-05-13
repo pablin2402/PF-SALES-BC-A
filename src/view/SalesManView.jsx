@@ -228,7 +228,7 @@ const SalesManView = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

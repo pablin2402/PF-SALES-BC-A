@@ -38,10 +38,10 @@ const CategoryCreation = ({ onClose }) => {
                     <form >
                         <div className="grid gap-6">
                             <div className="flex flex-col">
-                                <label className="text-left text-sm font-medium text-gray-900 mb-1">Nombre de categoría</label>
+                                <label className="text-left text-s font-medium text-gray-900 mb-1">Nombre de categoría</label>
                                 <input
                                     type="text"
-                                    className="bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-3xl focus:ring-black focus:border-black block p-2.5"
+                                    className="bg-gray-50 border border-gray-900 text-gray-900 text-s rounded-3xl focus:ring-black focus:border-black block p-2.5"
                                     placeholder="Categoría"
                                     value={categoryName}
                                     onChange={(e) => setCategoryName(e.target.value)}

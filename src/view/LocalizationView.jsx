@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { useJsApiLoader, GoogleMap, Marker, OverlayView } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY, UPLOAD_TIME } from "../config";
-import { FaMapMarkerAlt, FaUser, FaStore, FaSearch, FaChevronLeft, FaChevronRight, FaBuilding, FaUsers, FaTruck, FaFilter } from "react-icons/fa";
+import { FaMapMarkerAlt, FaUser, FaStore, FaChevronLeft, FaChevronRight, FaBuilding, FaUsers, FaTruck, FaFilter } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/pin-de-ubicacion.png";
 import deliveryIcon from "../icons/entrega-rapida.png";

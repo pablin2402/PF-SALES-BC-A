@@ -6,7 +6,6 @@ import tiendaIcon2 from "../icons/tienda.png";
 import { HiFilter } from "react-icons/hi";
 import { FaMapMarkerAlt, FaClock, FaUser, FaCalendarAlt, FaRoute, FaCheckCircle, FaPlayCircle, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
-import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 const DETAILS_CONFIG = {
     "Visita al cliente": {

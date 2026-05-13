@@ -183,7 +183,7 @@ const DeliveryView = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -280,7 +280,7 @@ const DeliveryView = () => {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
               <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
               <p className="text-sm">Cargando repartidores...</p>
             </div>
@@ -305,7 +305,7 @@ const DeliveryView = () => {
           ) : viewMode === "table" ? (
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
+                <thead className="text-s text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3"></th>
                     <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("name")}>
@@ -410,7 +410,7 @@ const DeliveryView = () => {
                 <div
                   key={item._id}
                   onClick={() => goToClientDetails(item)}
-                  className={`bg-white border-2 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer ${item.active ? 'border-gray-200 hover:border-gray-300' : 'border-gray-200 opacity-75'}`}
+                  className={`bg-white border-2 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer ${item.active ? 'border-gray-400 hover:border-gray-300' : 'border-gray-200 opacity-75'}`}
                 >
                   <div className="flex items-start gap-3 mb-3">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0 ${getColor(item.fullName, item.lastName)}`}>

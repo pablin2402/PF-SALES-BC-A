@@ -10,7 +10,6 @@ import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-import { IoPersonAdd } from "react-icons/io5";
 import Spinner from "../Components/LittleComponents/Spinner";
 
 import * as XLSX from "xlsx";
@@ -50,23 +49,24 @@ const ClientView = () => {
     const lastInitial = lastName?.charAt(0).toUpperCase() || '';
     return firstInitial + lastInitial;
   };
-  const colorClasses = [
-    'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
-    'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
-  ];
-  const getColor = useCallback((name, lastName) => {
-  const hash = (name + lastName)
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return colorClasses[hash % colorClasses.length];
-}, []);
-useEffect(() => {
-  const delay = setTimeout(() => {
-    setPage(1);
-  }, 400);
 
-  return () => clearTimeout(delay);
-}, [searchTerm]);
+  const getColor = useCallback((name, lastName) => {
+    const colorClasses = [
+      'bg-red-500', 'bg-red-600', 'bg-red-700', 'bg-yellow-300',
+      'bg-red-800', 'bg-red-900', 'bg-yellow-600', 'bg-yellow-800'
+    ];
+    const hash = (name + lastName)
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colorClasses[hash % colorClasses.length];
+  }, []);
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setPage(1);
+    }, 400);
+
+    return () => clearTimeout(delay);
+  }, [searchTerm]);
   useEffect(() => {
     const fetchVendedores = async () => {
       try {
@@ -147,8 +147,9 @@ useEffect(() => {
         "Dirección": item.client_location.direction || "",
         "Teléfono Celular": item.number,
         "Vendedor": item.sales_id
-        ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
-        : "",      }))
+          ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
+          : "",
+      }))
     );
 
     const wb = XLSX.utils.book_new();
@@ -172,7 +173,7 @@ useEffect(() => {
     try {
       await axios.put(API_URL + "/whatsapp/client/user/id", {
         _id: client._id,
-id_owner: user,
+        id_owner: user,
         name: client.name,
         lastName: client.lastName,
         sales_id: selectedSaler1,
@@ -190,32 +191,32 @@ id_owner: user,
     }
   };
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
         {loading ? (
           <Spinner />
         ) : (
           <div>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-1">Clientes</h1>
-                    <p className="text-sm text-gray-500">Gestiona todos los clientes desde un solo lugar</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={exportToExcel}
-                      className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
-                    >
-                      <FaFileExport color="##726E6E" />
-                      Exportar
-                    </button>
-                    <PrincipalBUtton onClick={() => navigate("/client/creation")}>
-                      Nuevo Cliente
-                    </PrincipalBUtton>
-                  </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">Clientes</h1>
+                <p className="text-sm text-gray-500">Gestiona todos los clientes desde un solo lugar</p>
               </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
+                >
+                  <FaFileExport color="##726E6E" />
+                  Exportar
+                </button>
+                <PrincipalBUtton onClick={() => navigate("/client/creation")}>
+                  Nuevo Cliente
+                </PrincipalBUtton>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="relative flex-1 max-w-md">
@@ -236,7 +237,7 @@ id_owner: user,
                       <option value="region">Filtrar por region:</option>
                     </select>
                   </div>
-                  
+
                 </div>
                 {selectedFilter === "region" && (
                   <div className="flex gap-2">
@@ -301,155 +302,155 @@ id_owner: user,
                   </button>
                 )}
               </div>
-            
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-s text-gray-700 uppercase bg-gray-200 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3"></th>
-                    <th className="px-6 py-3 uppercase">Nombre</th>
-                    <th className="px-6 py-3 uppercase">Categoría</th>
-                    <th className="px-6 py-3 uppercase">Dirección</th>
-                    <th className="px-6 py-3 uppercase">Telefono Celular</th>
-                    <th className="px-6 py-3 uppercase">Vendedor</th>
-                    <th className="px-6 py-3 uppercase">Ciudad asignada</th>
-                    <th className="px-6 py-3 uppercase"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesData.length > 0 ? (
-                    salesData.map((item) => (
-                      <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          <div
-                            className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
-                          >
-                            <span className="font-medium text-white">
-                              {getInitials(item.name, item.lastName)}
-                            </span>
+
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-s text-gray-700 uppercase bg-gray-200 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3"></th>
+                      <th className="px-6 py-3 uppercase">Nombre</th>
+                      <th className="px-6 py-3 uppercase">Categoría</th>
+                      <th className="px-6 py-3 uppercase">Dirección</th>
+                      <th className="px-6 py-3 uppercase">Telefono Celular</th>
+                      <th className="px-6 py-3 uppercase">Vendedor</th>
+                      <th className="px-6 py-3 uppercase">Ciudad asignada</th>
+                      <th className="px-6 py-3 uppercase"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.length > 0 ? (
+                      salesData.map((item) => (
+                        <tr onClick={() => goToClientDetails(item)} key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            <div
+                              className={`relative inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full ${getColor(item.name, item.lastName)}`}
+                            >
+                              <span className="font-medium text-white">
+                                {getInitials(item.name, item.lastName)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {item.name + " " + item.lastName}
+                          </td>
+
+                          <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
+                          <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
+                          <td>
+                            {item.sales_id
+                              ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
+                              : "Sin asignar"}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenDialog(item);
+                              }}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <FaUserEdit size={22} />
+
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="11" className="px-6 py-10 text-center">
+                          <div className="flex flex-col items-center justify-center text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
+                            </svg>
+                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
+                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          {item.name + " " + item.lastName}
-                        </td>
-
-                        <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
-                        <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                        <td>
-                          {item.sales_id
-                            ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
-                            : "Sin asignar"}
-                        </td>                        
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenDialog(item);
-                            }}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <FaUserEdit size={22} />
-
-                          </button>
-                        </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="11" className="px-6 py-10 text-center">
-                        <div className="flex flex-col items-center justify-center text-gray-500">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                          </svg>
-                          <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                          <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
-                  <div className="h-4 w-px bg-gray-300"></div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
-                    <select
-                      id="itemsPerPage"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setPage(1);
-                        fetchProducts(page);
-                      }}
-                      className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
-                    >
-                      {[5, 10, 20, 50, 100].map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                {totalPages > 1 && searchTerm === "" && (
-
-                  <nav className="flex items-center justify-center pt-4 space-x-2">
-                    <button
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={page === 1}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      ← Anterior
-                    </button>
-
-                    <button
-                      onClick={() => setPage(1)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      1
-                    </button>
-
-                    {page > 3 && <span className="px-1 text-gray-400">…</span>}
-
-                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                      .filter((p) => p > 1 && p < totalPages)
-                      .map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setPage(p)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-
-                    {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-
-                    {totalPages > 1 && (
-                      <button
-                        onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        {totalPages}
-                      </button>
                     )}
+                  </tbody>
+                </table>
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                    <div className="h-4 w-px bg-gray-300"></div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                      <select
+                        id="itemsPerPage"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setPage(1);
+                          fetchProducts(page);
+                        }}
+                        className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                      >
+                        {[5, 10, 20, 50, 100].map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  {totalPages > 1 && searchTerm === "" && (
 
-                    <button
-                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={page === totalPages}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      Siguiente →
-                    </button>
-                  </nav>
+                    <nav className="flex items-center justify-center pt-4 space-x-2">
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
+                      >
+                        ← Anterior
+                      </button>
 
-                )}
+                      <button
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
+                      >
+                        1
+                      </button>
+
+                      {page > 3 && <span className="px-1 text-gray-400">…</span>}
+
+                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                        .filter((p) => p > 1 && p < totalPages)
+                        .map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+
+                      {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
+
+                      {totalPages > 1 && (
+                        <button
+                          onClick={() => setPage(totalPages)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={page === totalPages}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
+                      >
+                        Siguiente →
+                      </button>
+                    </nav>
+
+                  )}
+                </div>
               </div>
-            </div>
             </div>
           </div>
         )}

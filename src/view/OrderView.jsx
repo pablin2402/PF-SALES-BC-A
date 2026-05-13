@@ -342,7 +342,7 @@ const OrderView = () => {
   const hasActiveFilters = selectedSaler || selectedStatus || selectedPaymentType || selectedPayment || selectedRegion || dateFilterActive || inputValue;
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
         {loading ? (
           <div className="flex justify-center items-center min-h-[60vh]">
