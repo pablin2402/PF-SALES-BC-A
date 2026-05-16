@@ -10,10 +10,10 @@ import vendedoraIcon from "../icons/vendedora.png";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 const CANALES = [
-    { canal: "Mayorista", icon: "🏭", color: "bg-purple-100 text-purple-700 border-purple-300" },
-    { canal: "Tienda", icon: "🏪", color: "bg-blue-100 text-blue-700 border-blue-300" },
-    { canal: "Bar", icon: "🍺", color: "bg-amber-100 text-amber-700 border-amber-300" },
-    { canal: "Restaurante", icon: "🍽️", color: "bg-orange-100 text-orange-700 border-orange-300" }
+    { canal: "Mayorista", color: "bg-purple-100 text-purple-700 border-purple-300" },
+    { canal: "Tienda", color: "bg-blue-100 text-blue-700 border-blue-300" },
+    { canal: "Bar", color: "bg-amber-100 text-amber-700 border-amber-300" },
+    { canal: "Restaurante", color: "bg-orange-100 text-orange-700 border-orange-300" }
 ];
 
 const containerStyle = {
@@ -205,7 +205,7 @@ export default function LocalizationView() {
                                         >
                                             <option value="">Todos</option>
                                             {CANALES.map((c, i) => (
-                                                <option key={i} value={c.canal}>{c.icon} {c.canal}</option>
+                                                <option key={i} value={c.canal}>{c.canal}</option>
                                             ))}
                                         </select>
                                     </div>

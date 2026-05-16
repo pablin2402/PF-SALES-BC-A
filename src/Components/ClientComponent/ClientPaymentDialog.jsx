@@ -645,7 +645,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] overflow-y-auto">
         <h3 className="text-2xl text-left text-gray-900 font-bold mb-4">Registrar Pago</h3>
 
-        {/* Resumen de saldo */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 mb-4 border border-gray-200">
           <div className="flex justify-between items-start">
             <div>
@@ -733,7 +732,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
           )}
         </div>
 
-        {/* Selector método principal */}
         <div className="flex gap-x-2 mb-4">
           <button
             className={`flex-1 px-4 py-3 rounded-xl font-bold text-center transition-all ${paymentMethod === 'normal' ? 'bg-[#D3423E] text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
@@ -745,13 +743,12 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
             className={`flex-1 px-4 py-3 rounded-xl font-bold text-center transition-all ${paymentMethod === 'crypto' ? 'bg-[#D3423E] text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
             onClick={() => setPaymentMethod('crypto')}
           >
-            🪙 Pagar con Cripto
+            Pagar con Cripto
           </button>
         </div>
 
         {paymentMethod === 'normal' && (
           <>
-            {/* 1. Tipo de pago */}
             <div className="mb-4">
               <label className="text-m font-bold block text-left text-gray-700 mb-2">
                 1. Tipo de pago
@@ -773,7 +770,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               </div>
             </div>
 
-            {/* 2. Datos */}
             <div className="mb-4">
               <label className="text-m font-bold block text-left text-gray-700 mb-2">
                 2. Datos del pago
@@ -813,7 +809,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                 </div>
               </div>
 
-              {/* Botones rápidos de monto */}
               {!paymentData.amount && (
                 <div className="flex gap-2 mt-3">
                   <button
@@ -832,7 +827,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               )}
             </div>
 
-            {/* 3. Comprobante */}
             <div className="mb-6">
               <label className="text-m font-bold block text-left text-gray-700 mb-2">
                 3. Comprobante de pago {normalPaymentType === 'cash' ? '(opcional)' : '(recomendado)'}
@@ -870,7 +864,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               )}
             </div>
 
-            {/* Botones */}
             <div className="flex flex-col w-full space-y-4">
               {!isBlockchainProcessing && !blockchainSuccess && (
                 <div className="flex flex-col sm:flex-row w-full sm:space-x-4 sm:space-y-0 space-y-4">
@@ -929,7 +922,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 
         {paymentMethod === 'crypto' && (
           <>
-            {/* 1. Selector de red */}
             <div className="mb-4">
               <label className="text-m font-bold block text-left text-gray-700 mb-2">
                 1. Selecciona la red de pago
@@ -960,7 +952,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               </p>
             </div>
 
-            {/* 2. Importe */}
             <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 space-y-4 sm:space-y-0">
               <div className="flex-1">
                 <label htmlFor="amount" className="text-m font-bold text-left block text-gray-700">
@@ -1013,7 +1004,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               </div>
             </div>
 
-            {/* 3. Generar pago */}
             {!order && paymentData.amount && paymentData.payer && !amountError && !isAmountTooLow && (
               <button
                 onClick={createPayment}
@@ -1023,13 +1013,10 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               </button>
             )}
 
-            {/* QR, dirección y estado */}
             {order && (
               <>
-                {/* Estado de la transacción */}
                 <TransactionStatus />
 
-                {/* Solo mostrar QR si no está confirmado */}
                 {txStatus !== 'confirmed' && (
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
                     <h2 className="text-gray-900 font-bold mb-2">
@@ -1073,7 +1060,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               </>
             )}
 
-            {/* Subir comprobante */}
             <div className="mb-6">
               <label className="text-m font-bold block text-left text-gray-700 mb-2">
                 4. Comprobante de la transacción (opcional)
@@ -1104,7 +1090,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               )}
             </div>
 
-            {/* Botones */}
             <div className="flex flex-col sm:flex-row w-full sm:space-x-4 sm:space-y-0 space-y-4">
               <button
                 onClick={onClose}

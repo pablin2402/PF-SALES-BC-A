@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState, useRef } from "react";
 import axios from "axios";
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../../config";
-import { FaMapMarkerAlt, FaUser, FaSearch, FaChevronLeft, FaChevronRight, FaRoute, FaTrash, FaPlus, FaMinus, FaCheck, FaBuilding, FaCalendarAlt, FaTimes, FaArrowLeft, FaInfoCircle, FaClock } from "react-icons/fa";
+import { FaMapMarkerAlt, FaUser, FaChevronLeft, FaChevronRight, FaRoute, FaTrash, FaPlus, FaMinus, FaCheck, FaBuilding, FaCalendarAlt, FaTimes, FaInfoCircle, FaClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../../icons/tienda.png";
 import TextInputFilter from "../LittleComponents/TextInputFilter";
@@ -296,12 +296,7 @@ export default function CreateRouteComponent() {
             <div className="p-5 border-b border-gray-200 bg-red-700 rounded-r-3xl text-white">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="text-xs text-red-100 hover:text-white flex items-center gap-1 mb-1 transition-colors"
-                  >
-                    <FaArrowLeft size={10} /> Volver
-                  </button>
+                 
                   <h1 className="text-xl font-bold flex items-center gap-2">
                     <FaRoute />
                     Crear nueva ruta
@@ -561,7 +556,6 @@ export default function CreateRouteComponent() {
         <div className="absolute top-4 left-4 right-4 z-10 flex items-start gap-3">
           <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 p-2 flex items-center gap-2">
             <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none z-10" />
               <TextInputFilter
                 value={searchTerm}
                 onChange={setSearchTerm}

@@ -7,7 +7,7 @@ import { saveAs } from "file-saver";
 import { FaFileExport, FaFilePdf, FaFileExcel } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
 import DateInput from "../LittleComponents/DateInput";
-import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, FaFilter, FaTruck, FaBoxOpen, FaUser } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, FaFilter, FaTruck, FaBoxOpen, FaUser } from "react-icons/fa";
 import { HiFilter } from "react-icons/hi";
 import { motion } from "framer-motion";
 
@@ -326,14 +326,6 @@ export default function DeliveryInformationComponent() {
   return (
     <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
-        <div className="mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-sm text-gray-500 hover:text-[#D3423E] flex items-center gap-1 transition-colors"
-          >
-            <FaArrowLeft size={11} /> Volver al listado
-          </button>
-        </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
           <div className="h-32 bg-gradient-to-br from-[#D3423E] to-red-700 relative">

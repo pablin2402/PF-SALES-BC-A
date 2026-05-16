@@ -153,337 +153,352 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
         }
     };
 
-    return (
-        <div className="bg-white min-h-screen rounded-lg p-5">
-            {loading ? (
-                <Spinner />
-            ) : (
-                <div className="ml-1 mr-1 mt-10 relative overflow-x-auto">
-                    <div className="flex flex-col w-full space-y-4">
-                        <div className="flex justify-end items-center space-x-4">
-                            <button
-                                onClick={() => setModalOpen(true)}
-                                className="px-4 py-2 font-bold text-lg text-white rounded-3xl uppercase bg-[#D3423E] hover:bg-white hover:text-[#D3423E] flex items-center gap-2"
-                            >
-                                Nuevo Objetivo
-                            </button>
-                        </div>
+  return (
+  <div className="min-h-screen bg-[#f8f8f8] rounded-[30px] p-6">
+    {loading ? (
+      <Spinner />
+    ) : (
+      <div className="space-y-6">
 
-                        <div className="flex items-center gap-2">
-                            <select
-                                value={selectedFilter}
-                                onChange={(e) => setSelectedFilter(e.target.value)}
-                                className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                            >
-                                <option value="">Filtrar por: </option>
-                                <option value="payment">Filtrar por estado de pago:</option>
-                                <option value="date">Filtrar por fecha:</option>
-                            </select>
-                            {selectedFilter === "date" && (
-                                <div className="flex gap-2">
-                                    <div className="flex items-center space-x-2">
+        <div className="bg-gradient-to-r from-red-700 to-red-600 rounded-[28px] p-8 shadow-xl">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 
-                                        <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
+            <div>
+              <h1 className="text-xl font-black text-white tracking-tight">
+                Objetivos por región
+              </h1>
 
-                                    </div>
+              <p className="text-red-100 mt-2 text-lg">
+                Control y monitoreo de rendimiento comercial
+              </p>
+            </div>
 
-                                    <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="bg-white text-red-700 hover:bg-red-50 transition-all duration-300 font-bold px-6 py-4 rounded-2xl shadow-lg text-lg"
+            >
+              + Nuevo Objetivo
+            </button>
+          </div>
+        </div>
 
-                                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
+        <div className="bg-white rounded-[28px] border border-red-100 shadow-sm p-5">
+          <div className="flex flex-col xl:flex-row xl:items-center gap-4">
 
-                                    </div>
+            <div className="flex-1">
+              <select
+                value={selectedFilter}
+                onChange={(e) => setSelectedFilter(e.target.value)}
+                className="w-full bg-[#fafafa] border-2 border-red-100 rounded-2xl px-5 py-4 text-gray-800 font-semibold focus:outline-none focus:border-red-500 transition"
+              >
+                <option value="">Filtrar por</option>
+                <option value="payment">Estado de pago</option>
+                <option value="date">Fecha</option>
+              </select>
+            </div>
 
-                                    <PrincipalBUtton onClick={() => {
-                                        applyFilters();
-                                        setDateFilterActive(true);
-                                    }} icon={HiFilter}>Filtrar</PrincipalBUtton>
-                                </div>
-                            )}
-                            {selectedFilter === "payment" && (
-                                <div className="flex gap-2">
-                                    <select
-                                        value={selectedPayment}
-                                        onChange={(e) => setSelectedPayment(e.target.value)}
-                                        className="block p-2 text-m text-gray-900 border border-gray-900 rounded-2xl bg-gray-50 focus:outline-none focus:ring-0 focus:border-red-500"
-                                    >
-                                        <option value="">Selecciona un estado</option>
-                                        <option value="">Mostrar Todos</option>
-                                        <option value="Pagado">Pagado</option>
-                                        <option value="Pendiente">Pendiente</option>
-                                    </select>
-                                    <button
-                                        onClick={() => {
-                                            applyFilters();
-                                            setPaymentActive(true);
-                                        }}
-                                        className="px-4 py-2 font-bold text-lg text-white bg-[#D3423E] uppercase rounded-2xl hover:bg-gray-100 hover:text-[#D3423E] flex items-center gap-2"
-                                    >
-                                        Filtrar
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 mt-4">
-                        {dateFilterActive && (
-                            <span className="bg-green-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                                Fecha: {startDate} → {endDate}
-                                <button onClick={() => clearFilter("date")} className="font-bold">×</button>
-                            </span>
-                        )}
-                        {paymentFilterActive && (
-                            <span className="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                                Estado de pago: {selectedPayment}
-                                <button onClick={() => clearFilter("date")} className="font-bold">×</button>
-                            </span>
-                        )}
-                    </div>
+            {selectedFilter === "date" && (
+              <div className="flex flex-col lg:flex-row gap-4 w-full">
 
-                    <div className="mt-5 border border-gray-400 rounded-xl overflow-x-auto">
-                    <table className="min-w-[600px] w-full text-sm text-left text-gray-500 rounded-2xl">
-                    <thead className="text-sm text-gray-700 bg-gray-200 border-b border-gray-300">
-                                <tr>
-
-                                    <th className="px-6 py-3 uppercase">Region</th>
-                                    <th className="px-6 py-3 uppercase">Linea</th>
-                                    <th className="px-6 py-3 uppercase">Objetivo</th>
-                                    <th className="px-6 py-3 uppercase">VTA AA</th>
-                                    <th className="px-6 py-3 uppercase">VTA ACUM</th>
-                                    <th className="px-6 py-3 uppercase">VS AA</th>
-                                    <th className="px-6 py-3 uppercase">VS OBJETIVO</th>
-                                    <th className="px-6 py-3 uppercase">TENDENCIA</th>
-                                    <th className="px-6 py-3 uppercase">POR VENDER</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {objectiveData.length > 0 ? (
-                                    objectiveData.map((item) => (
-                                        <tr onClick={() => {
-                                            setSelectedRegion(item.region);
-                                            setSelectedLyne(item.categoria)
-                                            setViewMode("sales");
-                                        }}
-                                            key={item._id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.region}</td>
-                                            <td className="px-6 py-4 text-gray-900">{item.categoria}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.objective}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.saleLastYear}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{item.totalCajas}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.saleLastYear) * 100).toFixed(2) + "%"}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / item.objective) * 100).toFixed(2) + "%"}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{((item.totalCajas / 14) * 31).toFixed(2)}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">{(item.objective - item.totalCajas).toFixed(2)}</td>
-
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="11" className="px-6 py-10 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 114 0v2m-4 4h4m-6-4H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4" />
-                                                </svg>
-                                                <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o busca otra información.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                            <tfoot>
-                                <tr className="bg-gray-200 font-semibold text-gray-900">
-
-                                    <td className="px-6 py-3" ></td>
-                                    <td className="px-6 py-3"></td>
-                                    <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.objective || 0), 0).toFixed(2)}
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0).toFixed(2)}
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + (item.totalCajas || 0), 0).toFixed(2)}
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                            (
-                                                objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.saleLastYear) * 100), 0) /
-                                                objectiveData.length
-                                            ).toFixed(2) + "%"
-                                        }
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                            (
-                                                objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.objective) * 100), 0) /
-                                                objectiveData.length
-                                            ).toFixed(2) + "%"
-                                        }
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                            (
-                                                objectiveData.reduce((sum, item) => sum + ((item.totalCajas / 14) * 31), 0) /
-                                                objectiveData.length
-                                            ).toFixed(2)
-                                        }
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {objectiveData.reduce((sum, item) => sum + ((item.objective - item.totalCajas) || 0), 0).toFixed(2)}
-                                    </td>
-
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    {modalOpen && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                            <div className="bg-white w-full max-w-4xl p-6 rounded-lg relative">
-                                <button
-                                    onClick={() => setModalOpen(false)}
-                                    className="absolute top-2 text-gray-900 right-3 text-3xl font-bold"
-                                >
-                                    &times;
-                                </button>
-                                <h2 className="text-xl font-bold mb-2 text-gray-900">Insertar Objetivos de Venta a nivel de Departamento</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-900 mb-1">Seleccionar Categoría</label>
-                                        <select
-                                            className="text-gray-900 hover:text-red-700focus:outline-none focus:ring-0 focus:border-red-500 rounded-2xl p-2"
-                                            name="categoria"
-                                            value={formData.categoria}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="">Seleccione una categoría</option>
-                                            {salesData.map((categoria) => (
-                                                <option key={categoria._id} value={categoria.categoryName}>
-                                                    {categoria.categoryName}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-900 mb-1">Seleccionar Ciudad</label>
-                                        <select
-                                            className="text-gray-900 rounded-2xl p-2 focus:outline-none focus:ring-0 focus:border-red-500"
-                                            name="ciudad"
-                                            value={formData.ciudad}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="">Seleccione una ciudad</option>
-                                            <option value="TOTAL CBB">Cochabamba</option>
-                                            <option value="TOTAL SC">Santa Cruz</option>
-                                            <option value="TOTAL LP">La Paz</option>
-                                            <option value="TOTAL OR">Oruro</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-900 mb-1">Número de Cajas</label>
-                                        <input
-                                            type="number"
-                                            name="numberOfBoxes"
-                                            value={formData.numberOfBoxes}
-                                            onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-900 mb-1">Venta Año Pasado</label>
-                                        <input
-                                            type="number"
-                                            name="saleLastYear1"
-                                            value={formData.saleLastYear1}
-                                            onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-900 mb-1">Fecha Inicial</label>
-                                        <input
-                                            type="date"
-                                            name="startDate"
-                                            value={formData.startDate || ''}
-                                            onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <label className="text-sm font-medium text-gray-900 mb-1">Fecha Final</label>
-                                        <input
-                                            type="date"
-                                            name="endDate"
-                                            value={formData.endDate || ''}
-                                            onChange={handleChange}
-                                            className="text-gray-900 border p-2 rounded-2xl focus:outline-none focus:ring-0 focus:border-red-500"
-                                        />
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={
-                                        !formData.categoria ||
-                                        !formData.ciudad ||
-                                        !formData.numberOfBoxes ||
-                                        !formData.saleLastYear1 ||
-                                        !formData.startDate ||
-                                        !formData.endDate
-                                    }
-                                    className={`mt-6 w-full text-lg px-4 py-2 rounded-3xl uppercase font-bold transition-colors duration-300 ${!formData.categoria ||
-                                        !formData.ciudad ||
-                                        !formData.numberOfBoxes ||
-                                        !formData.saleLastYear1 ||
-                                        !formData.startDate ||
-                                        !formData.endDate
-                                        ? "bg-gray-400 cursor-not-allowed text-white"
-                                        : "bg-[#D3423E] text-white hover:bg-red-700"
-                                        }`}
-                                >
-                                    Insertar Objetivos
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
+                <div className="w-full">
+                  <DateInput
+                    value={startDate}
+                    onChange={setStartDate}
+                    label="Fecha inicial"
+                  />
                 </div>
 
-            )}
-{showObjectiveErrorModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="bg-white rounded-2xl p-8 flex flex-col items-center justify-center shadow-xl max-w-sm w-full"
-    >
-      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shadow-lg mb-4">
-        <FaTimesCircle className="text-red-500" size={80} />
-      </div>
-      <h2 className="text-2xl font-bold text-red-600 mb-2">Error al crear el objetivo</h2>
-      <p className="text-center text-gray-700 text-sm">
-        Ocurrió un problema al guardar los datos. Intenta nuevamente.
-      </p>
-      <button
-        onClick={() => setShowObjectiveErrorModal(false)}
-        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
-      >
-        Cerrar
-      </button>
-    </motion.div>
-  </div>
-)}
+                <div className="w-full">
+                  <DateInput
+                    value={endDate}
+                    onChange={setEndDate}
+                    min={startDate}
+                    label="Fecha final"
+                  />
+                </div>
 
+                <button
+                  onClick={() => {
+                    applyFilters();
+                    setDateFilterActive(true);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl px-8 py-4 transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <HiFilter className="text-xl" />
+                  Filtrar
+                </button>
+              </div>
+            )}
+
+            {selectedFilter === "payment" && (
+              <div className="flex flex-col lg:flex-row gap-4 w-full">
+
+                <select
+                  value={selectedPayment}
+                  onChange={(e) => setSelectedPayment(e.target.value)}
+                  className="w-full bg-[#fafafa] border-2 border-red-100 rounded-2xl px-5 py-4 text-gray-800 font-semibold focus:outline-none focus:border-red-500 transition"
+                >
+                  <option value="">Selecciona un estado</option>
+                  <option value="">Mostrar todos</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Pendiente">Pendiente</option>
+                </select>
+
+                <button
+                  onClick={() => {
+                    applyFilters();
+                    setPaymentActive(true);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl px-8 py-4 transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <HiFilter className="text-xl" />
+                  Filtrar
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-3 mt-5">
+            {dateFilterActive && (
+              <div className="bg-red-100 text-red-700 px-4 py-2 rounded-full font-bold flex items-center gap-3">
+                {startDate} → {endDate}
+
+                <button
+                  onClick={() => clearFilter("date")}
+                  className="text-red-700 text-lg"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {paymentFilterActive && (
+              <div className="bg-red-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-3">
+                {selectedPayment}
+
+                <button
+                  onClick={() => clearFilter("date")}
+                  className="text-white text-lg"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-    );
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+
+          <div className="bg-white rounded-[26px] p-6 border border-red-100 shadow-sm">
+            <p className="text-sm font-bold text-gray-500 uppercase">
+              Objetivos
+            </p>
+
+            <h2 className="text-4xl font-black text-red-600 mt-3">
+              {objectiveData.reduce((sum, item) => sum + (item.objective || 0), 0).toFixed(0)}
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-[26px] p-6 border border-red-100 shadow-sm">
+            <p className="text-sm font-bold text-gray-500 uppercase">
+              Venta acumulada
+            </p>
+
+            <h2 className="text-4xl font-black text-red-600 mt-3">
+              {objectiveData.reduce((sum, item) => sum + (item.totalCajas || 0), 0).toFixed(0)}
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-[26px] p-6 border border-red-100 shadow-sm">
+            <p className="text-sm font-bold text-gray-500 uppercase">
+              Venta año pasado
+            </p>
+
+            <h2 className="text-4xl font-black text-red-600 mt-3">
+              {objectiveData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0).toFixed(0)}
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-[26px] p-6 border border-red-100 shadow-sm">
+            <p className="text-sm font-bold text-gray-500 uppercase">
+              Por vender
+            </p>
+
+            <h2 className="text-4xl font-black text-red-600 mt-3">
+              {objectiveData.reduce((sum, item) => sum + ((item.objective - item.totalCajas) || 0), 0).toFixed(0)}
+            </h2>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-[30px] border border-red-100 shadow-sm overflow-hidden">
+
+          <div className="px-8 py-6 border-b border-red-100 bg-red-50">
+            <h2 className="text-2xl font-black text-gray-900">
+              Objetivos nacionales
+            </h2>
+
+            <p className="text-gray-500 mt-1">
+              Rendimiento consolidado por línea
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full min-w-[1200px]">
+
+              <thead className="bg-[#fff5f5]">
+                <tr className="text-left">
+
+                  {[
+                    "REGIÓN",
+                    "LÍNEA",
+                    "OBJETIVO",
+                    "VTA AA",
+                    "VTA ACUM",
+                    "VS AA",
+                    "VS OBJ",
+                    "TENDENCIA",
+                    "POR VENDER"
+                  ].map((head) => (
+                    <th
+                      key={head}
+                      className="px-6 py-5 text-xs font-black tracking-wider text-red-700 uppercase"
+                    >
+                      {head}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {objectiveData.length > 0 ? (
+                  objectiveData.map((item) => (
+                    <tr
+                      key={item._id}
+                      onClick={() => {
+                        setSelectedRegion(item.region);
+                        setSelectedLyne(item.categoria);
+                        setViewMode("sales");
+                      }}
+                      className="border-b border-red-50 hover:bg-red-50/40 transition-all duration-200 cursor-pointer"
+                    >
+                      <td className="px-6 py-5 font-bold text-gray-900">
+                        {item.region}
+                      </td>
+
+                      <td className="px-6 py-5 font-semibold text-gray-700">
+                        {item.categoria}
+                      </td>
+
+                      <td className="px-6 py-5 font-black text-red-600">
+                        {item.objective}
+                      </td>
+
+                      <td className="px-6 py-5 font-semibold text-gray-700">
+                        {item.saleLastYear}
+                      </td>
+
+                      <td className="px-6 py-5 font-black text-gray-900">
+                        {item.totalCajas}
+                      </td>
+
+                      <td className="px-6 py-5">
+                        <span className="bg-red-100 text-red-700 px-3 py-2 rounded-full text-sm font-bold">
+                          {((item.totalCajas / item.saleLastYear) * 100).toFixed(2)}%
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-5">
+                        <span className="bg-red-600 text-white px-3 py-2 rounded-full text-sm font-bold">
+                          {((item.totalCajas / item.objective) * 100).toFixed(2)}%
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-5 font-bold text-gray-700">
+                        {((item.totalCajas / 14) * 31).toFixed(2)}
+                      </td>
+
+                      <td className="px-6 py-5 font-black text-red-600">
+                        {(item.objective - item.totalCajas).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="py-24 text-center">
+
+                      <div className="flex flex-col items-center justify-center">
+
+                        <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center mb-5">
+                          <FaTimesCircle className="text-red-500 text-5xl" />
+                        </div>
+
+                        <h2 className="text-2xl font-black text-gray-800">
+                          No hay datos disponibles
+                        </h2>
+
+                        <p className="text-gray-500 mt-2">
+                          Ajusta los filtros o intenta nuevamente
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+
+              <tfoot className="bg-[#fff5f5] border-t border-red-100">
+                <tr>
+
+                  <td className="px-6 py-5"></td>
+                  <td className="px-6 py-5 font-black text-gray-900">
+                    TOTAL
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-red-700">
+                    {objectiveData.reduce((sum, item) => sum + (item.objective || 0), 0).toFixed(2)}
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-gray-900">
+                    {objectiveData.reduce((sum, item) => sum + (item.saleLastYear || 0), 0).toFixed(2)}
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-gray-900">
+                    {objectiveData.reduce((sum, item) => sum + (item.totalCajas || 0), 0).toFixed(2)}
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-red-700">
+                    {(
+                      objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.saleLastYear) * 100), 0) /
+                      objectiveData.length
+                    ).toFixed(2)}%
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-red-700">
+                    {(
+                      objectiveData.reduce((sum, item) => sum + ((item.totalCajas / item.objective) * 100), 0) /
+                      objectiveData.length
+                    ).toFixed(2)}%
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-gray-900">
+                    {(
+                      objectiveData.reduce((sum, item) => sum + ((item.totalCajas / 14) * 31), 0) /
+                      objectiveData.length
+                    ).toFixed(2)}
+                  </td>
+
+                  <td className="px-6 py-5 font-black text-red-700">
+                    {objectiveData.reduce((sum, item) => sum + ((item.objective - item.totalCajas) || 0), 0).toFixed(2)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
 };
 
 export default ObjectiveDepartmentComponent;

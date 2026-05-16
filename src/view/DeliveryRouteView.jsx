@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../config";
-import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaRoute, FaTrash, FaCheck, FaPlus, FaBuilding, FaTimes, FaTruck, FaReceipt, FaDollarSign, FaInfoCircle, FaArrowLeft } from "react-icons/fa";
+import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaRoute, FaTrash, FaCheck, FaPlus, FaBuilding, FaTimes, FaTruck, FaReceipt, FaDollarSign, FaInfoCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import tiendaIcon from "../icons/tienda.png";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
@@ -302,12 +302,7 @@ export default function DeliveryRouteView() {
             <div className="p-5 border-b border-gray-200  bg-red-700 rounded-r-3xl text-white">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="text-xs text-red-100 hover:text-white flex items-center gap-1 mb-1 transition-colors"
-                  >
-                    <FaArrowLeft size={10} /> Volver
-                  </button>
+                  
                   <h1 className="text-xl font-bold flex items-center gap-2">
                     <FaTruck />
                     Rutas de entrega

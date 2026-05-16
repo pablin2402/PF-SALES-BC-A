@@ -9,7 +9,7 @@ import { jsPDF } from "jspdf";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import { HiFilter } from "react-icons/hi";
-import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaUser, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, FaSignOutAlt, FaCog } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaUser, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const ACCOUNT_STATUS_CONFIG = {
@@ -113,12 +113,6 @@ export default function ProfileView() {
   const handleRowClick = (item) => {
     navigate(`/client/order/${item._id}`, { state: { products: item.products, files: item } });
   };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
   const exportToExcel = async () => {
     try {
       const payload = { id_owner: user, salesId: id, page: 1, limit: items || 1000 };
@@ -280,20 +274,6 @@ export default function ProfileView() {
               backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 80%, white 1px, transparent 1px)',
               backgroundSize: '40px 40px'
             }} />
-            <div className="absolute top-4 right-4 flex items-center gap-2">
-              <button
-                onClick={() => navigate("/settings")}
-                className="px-3 py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 transition-colors backdrop-blur-sm"
-              >
-                <FaCog size={11} /> Ajustes
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 transition-colors backdrop-blur-sm"
-              >
-                <FaSignOutAlt size={11} /> Cerrar sesión
-              </button>
-            </div>
           </div>
 
           <div className="px-6 pb-6 -mt-16 relative">
