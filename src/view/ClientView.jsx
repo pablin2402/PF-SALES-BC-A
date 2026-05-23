@@ -30,7 +30,7 @@ const ClientView = () => {
   const [selectedSaler1, setSelectedSaler1] = useState("");
 
   const [items, setItems] = useState();
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -107,6 +107,7 @@ const ClientView = () => {
           Authorization: `Bearer ${token}`
         }
       });
+      console.log(response.data.clients)
       setSalesData(response.data.clients);
       setTotalPages(response.data.totalPages);
       setItems(response.data.totalItems);
@@ -337,7 +338,7 @@ const ClientView = () => {
                           <td className="px-6 py-4 text-gray-900">{item.userCategory}</td>
                           <td className="px-6 py-4 text-gray-900">{item.client_location.direction}</td>
                           <td className="px-6 py-4 font-medium text-gray-900">{item.number}</td>
-                          <td>
+                          <td className="px-6 py-4 text-gray-900">
                             {item.sales_id
                               ? `${item.sales_id.fullName} ${item.sales_id.lastName}`
                               : "Sin asignar"}
@@ -374,7 +375,7 @@ const ClientView = () => {
                 </table>
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                    <span>Total: <strong className="text-gray-900">{items || 0}</strong> clientes</span>
                     <div className="h-4 w-px bg-gray-300"></div>
                     <div className="flex items-center gap-2">
                       <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>

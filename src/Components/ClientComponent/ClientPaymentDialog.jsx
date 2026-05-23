@@ -11,7 +11,9 @@ const NETWORKS = {
     color: '#8247E5',
     estimatedFee: '~$0.01 USD',
     description: 'Recomendado: Comisiones bajas y rápido',
-    explorerUrl: 'https://polygonscan.com/token/'
+    explorerUrl: 'https://polygonscan.com/tx/',
+    chainId: 137,
+    chainIdHex: '0x89',
   },
   ethereum: {
     name: 'Ethereum',
@@ -19,7 +21,9 @@ const NETWORKS = {
     color: '#627EEA',
     estimatedFee: '~$5 - $30 USD',
     description: 'Red principal, comisiones más altas',
-    explorerUrl: 'https://etherscan.io/tx/'
+    explorerUrl: 'https://etherscan.io/tx/',
+    chainId: 1,
+    chainIdHex: '0x1',
   },
   bsc: {
     name: 'BNB Chain',
@@ -27,7 +31,9 @@ const NETWORKS = {
     color: '#F0B90B',
     estimatedFee: '~$0.30 USD',
     description: 'Comisiones bajas, alta liquidez',
-    explorerUrl: 'https://bscscan.com/tx/'
+    explorerUrl: 'https://bscscan.com/tx/',
+    chainId: 56,
+    chainIdHex: '0x38',
   }
 };
 
@@ -40,12 +46,10 @@ const PAYMENT_METHODS = {
 
 const MIN_USDT_AMOUNT = 10;
 const USD_TO_BS_OFFICIAL = 6.96;
+const POLYGON_CHAIN_ID = 137;
 
 const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, salesID, totalGeneral }) => {
-  const [paymentData, setPaymentData] = useState({
-    amount: '',
-    payer: ''
-  });
+  const [paymentData, setPaymentData] = useState({ amount: '', payer: '' });
   const id_user = localStorage.getItem("id_user");
   const [amountError, setAmountError] = useState('');
   const total = totalGeneral - totalPaid;
@@ -62,8 +66,8 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [isBlockchainProcessing, setIsBlockchainProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("normal");
   const [order, setOrder] = useState(null);
-  const [setPaid] = useState(false);
-  const [setPayment] = useState(null);
+  const [paid, setPaid] = useState(false);
+  const [payment, setPayment] = useState(null);
 
   const [normalPaymentType, setNormalPaymentType] = useState('cash');
 
@@ -77,49 +81,30 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [txStatus, setTxStatus] = useState('waiting');
   const [txHash, setTxHash] = useState(null);
   const [txConfirmations, setTxConfirmations] = useState(0);
-  const [setTxStartTime] = useState(null);
+  const [txStartTime, setTxStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const pollingIntervalRef = useRef(null);
   const elapsedIntervalRef = useRef(null);
 
   const [initialBalance, setInitialBalance] = useState(null);
+
   const fetchExchangeRate = async () => {
     setLoadingRate(true);
     try {
       const buyResponse = await axios.post(
         'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
-        {
-          fiat: 'BOB',
-          page: 1,
-          rows: 10,
-          tradeType: 'BUY',
-          asset: 'USDT',
-          countries: [],
-          payTypes: []
-        }
+        { fiat: 'BOB', page: 1, rows: 10, tradeType: 'BUY', asset: 'USDT', countries: [], payTypes: [] }
       );
-
       const sellResponse = await axios.post(
         'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
-        {
-          fiat: 'BOB',
-          page: 1,
-          rows: 10,
-          tradeType: 'SELL',
-          asset: 'USDT',
-          countries: [],
-          payTypes: []
-        }
+        { fiat: 'BOB', page: 1, rows: 10, tradeType: 'SELL', asset: 'USDT', countries: [], payTypes: [] }
       );
 
       const buyPrices = buyResponse.data?.data?.map(item => parseFloat(item.adv.price)) || [];
       const sellPrices = sellResponse.data?.data?.map(item => parseFloat(item.adv.price)) || [];
-
       const allPrices = [...buyPrices, ...sellPrices].sort((a, b) => a - b);
 
-      if (allPrices.length === 0) {
-        throw new Error('No hay precios disponibles');
-      }
+      if (allPrices.length === 0) throw new Error('No hay precios disponibles');
 
       const trimCount = Math.floor(allPrices.length * 0.2);
       const trimmedPrices = allPrices.slice(trimCount, allPrices.length - trimCount);
@@ -222,7 +207,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   useEffect(() => {
     if (!order || txStatus === 'confirmed' || txStatus === 'failed') return;
 
-    setTxStartTime(Date.now());
+    if (!txStartTime) setTxStartTime(Date.now());
 
     elapsedIntervalRef.current = setInterval(() => {
       setElapsedTime(prev => prev + 1);
@@ -238,19 +223,11 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
       ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
       bsc: '0x55d398326f99059fF775485246999027B3197955'
     };
-
-    const USDT_DECIMALS = {
-      polygon: 6,
-      ethereum: 6,
-      bsc: 18
-    };
+    const USDT_DECIMALS = { polygon: 6, ethereum: 6, bsc: 18 };
 
     const checkPayment = async () => {
       try {
-        if (initialBalance === null) {
-          console.log('Esperando balance inicial...');
-          return;
-        }
+        if (initialBalance === null) return;
 
         const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
         const usdtAddress = USDT_ADDRESSES[selectedNetwork];
@@ -269,18 +246,10 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         const expectedAmount = parseFloat(amountInUSDT);
         const tolerance = expectedAmount * 0.05;
 
-        console.log('   Verificando pago...');
-        console.log('   Balance inicial:', initialBalance);
-        console.log('   Balance actual:', currentBalance);
-        console.log('   Diferencia:', currentBalance - initialBalance);
-        console.log('   Esperado recibir:', expectedAmount, 'USDT');
-
         const amountReceived = currentBalance - initialBalance;
         const isPaymentReceived = amountReceived >= (expectedAmount - tolerance);
 
         if (isPaymentReceived) {
-          console.log('¡Pago detectado! Monto recibido:', amountReceived, 'USDT');
-
           const currentBlock = await provider.getBlockNumber();
           const fromBlock = currentBlock - 5000;
 
@@ -291,42 +260,34 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
             const latestEvent = events[events.length - 1];
             const confirmations = currentBlock - latestEvent.blockNumber;
 
-            console.log('TX Hash:', latestEvent.transactionHash);
-            console.log('Confirmaciones:', confirmations);
-
             setTxHash(latestEvent.transactionHash);
 
             if (confirmations >= 12) {
               setTxStatus('confirmed');
               setTxConfirmations(confirmations);
               setPaid(true);
-              clearInterval(pollingIntervalRef.current);
-              clearInterval(elapsedIntervalRef.current);
+              if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+              if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
             } else if (confirmations >= 1) {
-              console.log('Confirmando...');
               setTxStatus('confirming');
               setTxConfirmations(confirmations);
             } else {
-              console.log('Detectado en mempool');
               setTxStatus('detected');
             }
           } else {
-            console.log('Balance correcto sin TX visible, confirmando');
             setTxStatus('confirmed');
             setPaid(true);
-            clearInterval(pollingIntervalRef.current);
-            clearInterval(elapsedIntervalRef.current);
+            if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+            if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
           }
         } else if (amountReceived > 0 && amountReceived < (expectedAmount - tolerance)) {
-          console.warn('Pago insuficiente. Esperado:', expectedAmount, 'Recibido:', amountReceived);
           setTxStatus('waiting');
-        } else {
-          console.log('Esperando pago...');
         }
       } catch (error) {
         console.error('Error verificando pago:', error);
       }
     };
+
     checkPayment();
     pollingIntervalRef.current = setInterval(checkPayment, 8000);
 
@@ -334,43 +295,62 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
       if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
     };
-  }, [order,
-  txStatus,
-  selectedNetwork,
-  initialBalance,
-  amountInUSDT,
-  setPaid,
-  setTxStartTime]);
-  const sendPayment = async (orderId, amount, payer) => {
-    try {
-      if (!window.ethereum) {
-        throw new Error("MetaMask no está instalado");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order, txStatus, selectedNetwork, initialBalance, amountInUSDT]);
+
+  const ensurePolygonNetwork = async () => {
+    if (!window.ethereum) throw new Error("MetaMask no está instalado");
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const network = await provider.getNetwork();
+
+    if (Number(network.chainId) !== POLYGON_CHAIN_ID) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x89" }],
+        });
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: "0x89",
+              chainName: "Polygon Mainnet",
+              nativeCurrency: { name: "POL", symbol: "POL", decimals: 18 },
+              rpcUrls: ["https://polygon-rpc.com"],
+              blockExplorerUrls: ["https://polygonscan.com"],
+            }],
+          });
+        } else {
+          throw new Error("Cambia a Polygon Mainnet para continuar");
+        }
       }
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-      setIsBlockchainProcessing(true);
-      setStatus("Registrando pago en blockchain...");
-      const amountCents = toCents(amount);
-
-      const tx = await contract.registerPayment(orderId, amountCents, payer);
-      await tx.wait();
-
-      setStatus("Registro guardado en blockchain");
-      setBlockchainSuccess(true);
-
-      setTimeout(() => {
-        setStatus("");
-        setIsBlockchainProcessing(false);
-        setBlockchainSuccess(false);
-        onClose();
-      }, 2000);
-    } catch (err) {
-      console.error(err);
-      setStatus("Error: " + err.message);
-      setIsBlockchainProcessing(false);
     }
+
+    const updatedProvider = new ethers.BrowserProvider(window.ethereum);
+    return await updatedProvider.getSigner();
+  };
+
+  const sendPaymentToBlockchain = async (registryOrderId, amount, payer) => {
+    const signer = await ensurePolygonNetwork();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+    setIsBlockchainProcessing(true);
+    setStatus("Registrando pago en Polygon...");
+    const amountCents = toCents(amount);
+
+    const tx = await contract.registerPayment(registryOrderId, amountCents, payer);
+    setStatus("Esperando confirmación on-chain...");
+    const receipt = await tx.wait();
+
+    setStatus("Registro guardado en blockchain");
+    setBlockchainSuccess(true);
+
+    return {
+      transactionHash: receipt.hash,
+      blockNumber: receipt.blockNumber,
+    };
   };
 
   const handleSavePayment = async () => {
@@ -397,6 +377,26 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         }
       }
 
+      let blockchainTxHash = null;
+      let blockchainBlock = null;
+
+      try {
+        const result = await sendPaymentToBlockchain(
+          String(orderId),
+          paymentData.amount,
+          paymentData.payer
+        );
+        blockchainTxHash = result.transactionHash;
+        blockchainBlock = result.blockNumber;
+      } catch (err) {
+        console.error("Error en blockchain:", err);
+        setStatus("Error blockchain: " + err.message);
+        clearInterval(dotInterval);
+        setIsSaving(false);
+        setIsBlockchainProcessing(false);
+        return;
+      }
+
       const jsonData = {
         saleImage: imageUrl,
         total: paymentData.amount,
@@ -409,22 +409,21 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         delivery_id: null,
         id_owner: user,
         paymentType: paymentMethod === 'normal' ? normalPaymentType : 'crypto',
-        network: paymentMethod === 'crypto' ? selectedNetwork : null,
-        txHash: txHash || null
+        network: paymentMethod === 'crypto' ? selectedNetwork : 'polygon',
+        txHash: blockchainTxHash,
+        blockNumber: blockchainBlock,
+        contractAddress: CONTRACT_ADDRESS,
       };
 
       const orderResponse = await Promise.race([
         axios.post(API_URL + "/whatsapp/order/pay", jsonData, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 30000))
       ]);
 
       if (orderResponse.status === 200) {
         onSave();
-        const savedOrder = orderResponse.data;
-        const orderId1 = savedOrder._id;
-        await sendPayment(orderId1, paymentData.amount, paymentData.payer);
         setPaymentData({ amount: '', payer: '' });
 
         if (navigator.geolocation) {
@@ -457,6 +456,9 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         setTimeout(() => {
           setIsSaving(false);
           setSaveSuccess(false);
+          setIsBlockchainProcessing(false);
+          setBlockchainSuccess(false);
+          setStatus("");
           setSavingText("Guardando");
           onClose();
         }, 2000);
@@ -465,16 +467,14 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
       console.error("Error al registrar el pago", error);
       clearInterval(dotInterval);
       setIsSaving(false);
+      setIsBlockchainProcessing(false);
       setSavingText("Guardando");
     }
   };
 
   const createPayment = async () => {
     try {
-      const payload = {
-        amount: amountInUSDT,
-        network: selectedNetwork
-      };
+      const payload = { amount: amountInUSDT, network: selectedNetwork };
       const response = await axios.post(API_URL + "/whatsapp/create", payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -486,18 +486,12 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         ethereum: 'https://ethereum-rpc.publicnode.com',
         bsc: 'https://bsc-rpc.publicnode.com'
       };
-
       const USDT_ADDRESSES = {
         polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
         ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
         bsc: '0x55d398326f99059fF775485246999027B3197955'
       };
-
-      const USDT_DECIMALS = {
-        polygon: 6,
-        ethereum: 6,
-        bsc: 18
-      };
+      const USDT_DECIMALS = { polygon: 6, ethereum: 6, bsc: 18 };
 
       if (newOrder.address) {
         const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
@@ -509,8 +503,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         const balance = await usdtContract.balanceOf(newOrder.address);
         const balanceFormatted = Number(balance) / Math.pow(10, USDT_DECIMALS[selectedNetwork]);
 
-        console.log('💰 Balance inicial:', balanceFormatted, 'USDT');
-        console.log('🎯 Balance esperado tras pago:', balanceFormatted + parseFloat(amountInUSDT), 'USDT');
         setInitialBalance(balanceFormatted);
       }
 
@@ -519,6 +511,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
       setTxStatus('waiting');
       setElapsedTime(0);
       setTxHash(null);
+      setTxStartTime(Date.now());
     } catch (error) {
       console.error("Error al crear pago:", error);
     }
@@ -528,51 +521,11 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 
   const TransactionStatus = () => {
     const statusConfig = {
-      waiting: {
-        icon: '⏳',
-        title: 'Esperando pago',
-        description: 'Envía el monto exacto a la dirección mostrada',
-        color: 'yellow',
-        bgColor: 'bg-yellow-50',
-        borderColor: 'border-yellow-300',
-        textColor: 'text-yellow-800'
-      },
-      detected: {
-        icon: '🔍',
-        title: 'Pago detectado',
-        description: 'Tu transacción está en la red, esperando confirmaciones',
-        color: 'blue',
-        bgColor: 'bg-blue-50',
-        borderColor: 'border-blue-300',
-        textColor: 'text-blue-800'
-      },
-      confirming: {
-        icon: '⚙️',
-        title: 'Confirmando',
-        description: `${txConfirmations} confirmaciones recibidas`,
-        color: 'blue',
-        bgColor: 'bg-blue-50',
-        borderColor: 'border-blue-300',
-        textColor: 'text-blue-800'
-      },
-      confirmed: {
-        icon: '✅',
-        title: 'Pago confirmado',
-        description: 'La transacción se completó exitosamente',
-        color: 'green',
-        bgColor: 'bg-green-50',
-        borderColor: 'border-green-300',
-        textColor: 'text-green-800'
-      },
-      failed: {
-        icon: '❌',
-        title: 'Transacción fallida',
-        description: 'Hubo un problema con la transacción',
-        color: 'red',
-        bgColor: 'bg-red-50',
-        borderColor: 'border-red-300',
-        textColor: 'text-red-800'
-      }
+      waiting: { icon: '⏳', title: 'Esperando pago', description: 'Envía el monto exacto a la dirección mostrada', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', textColor: 'text-yellow-800' },
+      detected: { icon: '🔍', title: 'Pago detectado', description: 'Tu transacción está en la red, esperando confirmaciones', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-800' },
+      confirming: { icon: '⚙️', title: 'Confirmando', description: `${txConfirmations} confirmaciones recibidas`, bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-800' },
+      confirmed: { icon: '✅', title: 'Pago confirmado', description: 'La transacción se completó exitosamente', bgColor: 'bg-green-50', borderColor: 'border-green-300', textColor: 'text-green-800' },
+      failed: { icon: '❌', title: 'Transacción fallida', description: 'Hubo un problema con la transacción', bgColor: 'bg-red-50', borderColor: 'border-red-300', textColor: 'text-red-800' }
     };
 
     const config = statusConfig[txStatus];
@@ -588,7 +541,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               <p className={`text-xs ${config.textColor} opacity-80`}>{config.description}</p>
             </div>
           </div>
-          {(txStatus === 'waiting' || txStatus === 'detected' || txStatus === 'confirming') && (
+          {isAnimated && (
             <div className="text-right">
               <p className={`text-xs ${config.textColor} opacity-70`}>Tiempo</p>
               <p className={`font-mono font-bold ${config.textColor}`}>{formatElapsedTime(elapsedTime)}</p>
@@ -678,22 +631,13 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 
                   {!manualRateMode ? (
                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <p className="text-xs text-gray-500">
-                        1 USDT = Bs. {exchangeRate.toFixed(2)}
-                      </p>
-                      <button onClick={fetchExchangeRate} className="text-xs text-blue-600 hover:underline">
-                        Actualizar
-                      </button>
+                      <p className="text-xs text-gray-500">1 USDT = Bs. {exchangeRate.toFixed(2)}</p>
+                      <button onClick={fetchExchangeRate} className="text-xs text-blue-600 hover:underline">Actualizar</button>
                       <span className="text-xs text-gray-400">|</span>
                       <button
-                        onClick={() => {
-                          setManualRateMode(true);
-                          setManualRate(exchangeRate.toFixed(2));
-                        }}
+                        onClick={() => { setManualRateMode(true); setManualRate(exchangeRate.toFixed(2)); }}
                         className="text-xs text-blue-600 hover:underline"
-                      >
-                        Editar manualmente
-                      </button>
+                      >Editar manualmente</button>
                     </div>
                   ) : (
                     <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -706,25 +650,13 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                         className="w-24 px-2 py-1 text-sm border border-gray-300 rounded text-gray-900"
                         placeholder="9.50"
                       />
-                      <button onClick={applyManualRate} className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                        Aplicar
-                      </button>
-                      <button
-                        onClick={() => {
-                          setManualRateMode(false);
-                          setManualRate('');
-                        }}
-                        className="text-xs text-gray-600 hover:underline"
-                      >
-                        Cancelar
-                      </button>
+                      <button onClick={applyManualRate} className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Aplicar</button>
+                      <button onClick={() => { setManualRateMode(false); setManualRate(''); }} className="text-xs text-gray-600 hover:underline">Cancelar</button>
                     </div>
                   )}
 
                   {rateUpdatedAt && !manualRateMode && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      Actualizado: {rateUpdatedAt.toLocaleTimeString()}
-                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Actualizado: {rateUpdatedAt.toLocaleTimeString()}</p>
                   )}
                 </>
               )}
@@ -737,7 +669,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
             className={`flex-1 px-4 py-3 rounded-xl font-bold text-center transition-all ${paymentMethod === 'normal' ? 'bg-[#D3423E] text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
             onClick={() => setPaymentMethod('normal')}
           >
-            💰 Pago Normal
+            Pago Normal
           </button>
           <button
             className={`flex-1 px-4 py-3 rounded-xl font-bold text-center transition-all ${paymentMethod === 'crypto' ? 'bg-[#D3423E] text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
@@ -750,18 +682,13 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         {paymentMethod === 'normal' && (
           <>
             <div className="mb-4">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">
-                1. Tipo de pago
-              </label>
+              <label className="text-m font-bold block text-left text-gray-700 mb-2">1. Tipo de pago</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {Object.entries(PAYMENT_METHODS).map(([key, method]) => (
                   <button
                     key={key}
                     onClick={() => setNormalPaymentType(key)}
-                    className={`p-3 rounded-xl border-2 text-center transition-all ${normalPaymentType === key
-                      ? 'border-[#D3423E] bg-red-50'
-                      : 'border-gray-200 hover:border-gray-400'
-                      }`}
+                    className={`p-3 rounded-xl border-2 text-center transition-all ${normalPaymentType === key ? 'border-[#D3423E] bg-red-50' : 'border-gray-200 hover:border-gray-400'}`}
                   >
                     <div className="text-2xl mb-1">{method.icon}</div>
                     <p className="text-xs font-bold text-gray-800">{method.name}</p>
@@ -771,9 +698,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
             </div>
 
             <div className="mb-4">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">
-                2. Datos del pago
-              </label>
+              <label className="text-m font-bold block text-left text-gray-700 mb-2">2. Datos del pago</label>
               <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
                 <div className="flex-1">
                   <label htmlFor="amount" className="text-sm text-left block text-gray-600">Importe (Bs.)</label>
@@ -846,17 +771,10 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                 </div>
               ) : (
                 <div className="relative bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <img
-                    src={imagePreview}
-                    alt="Comprobante"
-                    className="max-h-48 mx-auto rounded"
-                  />
+                  <img src={imagePreview} alt="Comprobante" className="max-h-48 mx-auto rounded" />
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-xs text-gray-600 truncate">{imageFile?.name}</p>
-                    <button
-                      onClick={removeImage}
-                      className="text-xs text-red-600 hover:underline font-bold"
-                    >
+                    <button onClick={removeImage} className="text-xs text-red-600 hover:underline font-bold">
                       Quitar imagen
                     </button>
                   </div>
@@ -876,10 +794,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                   <button
                     onClick={handleSavePayment}
                     disabled={!paymentData.amount || !paymentData.payer || amountError || isSaving}
-                    className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isSaving
-                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#D3423E] text-white hover:bg-red-600'
-                      }`}
+                    className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isSaving ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-[#D3423E] text-white hover:bg-red-600'}`}
                   >
                     {isSaving ? savingText : saveSuccess ? "Guardado" : "Guardar"}
                   </button>
@@ -888,9 +803,9 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 
               {status && (
                 <div className="mt-4 flex justify-center items-center space-x-2 text-lg font-medium">
-                  {status.includes("Registrando") && (
+                  {(status.includes("Registrando") || status.includes("Esperando")) && (
                     <>
-                      <span className="text-gray-600">Registrando pago en la blockchain</span>
+                      <span className="text-gray-600">{status}</span>
                       <span className="flex space-x-1">
                         <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                         <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -903,7 +818,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                       <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                      <span>Registro guardado en la blockchain</span>
+                      <span>Registro guardado en Polygon</span>
                     </span>
                   )}
                   {(status.includes("Error") || status.includes("MetaMask")) && (
@@ -923,23 +838,16 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
         {paymentMethod === 'crypto' && (
           <>
             <div className="mb-4">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">
-                1. Selecciona la red de pago
-              </label>
+              <label className="text-m font-bold block text-left text-gray-700 mb-2">1. Selecciona la red de pago</label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {Object.entries(NETWORKS).map(([key, network]) => (
                   <button
                     key={key}
                     onClick={() => setSelectedNetwork(key)}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${selectedNetwork === key
-                      ? 'border-[#D3423E] bg-red-50'
-                      : 'border-gray-200 hover:border-gray-400'
-                      }`}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${selectedNetwork === key ? 'border-[#D3423E] bg-red-50' : 'border-gray-200 hover:border-gray-400'}`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-sm" style={{ color: network.color }}>
-                        {network.name}
-                      </span>
+                      <span className="font-bold text-sm" style={{ color: network.color }}>{network.name}</span>
                       {selectedNetwork === key && <span className="text-[#D3423E] text-xs">✓</span>}
                     </div>
                     <p className="text-xs text-gray-600">Comisión: {network.estimatedFee}</p>
@@ -954,9 +862,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 
             <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 space-y-4 sm:space-y-0">
               <div className="flex-1">
-                <label htmlFor="amount" className="text-m font-bold text-left block text-gray-700">
-                  2. Importe a pagar (Bs.)
-                </label>
+                <label htmlFor="amount" className="text-m font-bold text-left block text-gray-700">2. Importe a pagar (Bs.)</label>
                 <input
                   type="number"
                   id="amount"
@@ -964,34 +870,27 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                   value={paymentData.amount}
                   onChange={handleInputChange}
                   max={total}
-                  className={`mt-2 text-gray-900 border ${amountError || isAmountTooLow ? 'border-red-500' : 'border-gray-900'
-                    } focus:outline-none focus:ring-0 w-full px-4 py-2 rounded-2xl`}
+                  className={`mt-2 text-gray-900 border ${amountError || isAmountTooLow ? 'border-red-500' : 'border-gray-900'} focus:outline-none focus:ring-0 w-full px-4 py-2 rounded-2xl`}
                   placeholder={minimumBsRequired ? `Mínimo Bs. ${minimumBsRequired}` : 'Ingrese el importe'}
                 />
                 {amountError && <p className="text-sm text-red-600 mt-2">{amountError}</p>}
-
                 {paymentData.amount && exchangeRate && (
                   <p className={`text-sm mt-2 font-medium ${isAmountTooLow ? 'text-red-600' : 'text-green-700'}`}>
                     Equivale a: {amountInUSDT} USDT
                   </p>
                 )}
-
                 {isAmountTooLow && (
                   <div className="mt-2 bg-red-50 border border-red-200 rounded-lg p-2">
                     <p className="text-xs text-red-700">
                       ⚠️ El monto mínimo para pagos en cripto es <span className="font-bold">{MIN_USDT_AMOUNT} USDT</span> (≈ Bs. {minimumBsRequired}).
                     </p>
-                    <p className="text-xs text-red-600 mt-1">
-                      Esto es debido a las comisiones mínimas de la red.
-                    </p>
+                    <p className="text-xs text-red-600 mt-1">Esto es debido a las comisiones mínimas de la red.</p>
                   </div>
                 )}
               </div>
 
               <div className="flex-1">
-                <label htmlFor="payer" className="text-m block font-bold text-left text-gray-700">
-                  Quién paga
-                </label>
+                <label htmlFor="payer" className="text-m block font-bold text-left text-gray-700">Quién paga</label>
                 <input
                   type="text"
                   id="payer"
@@ -1019,9 +918,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
 
                 {txStatus !== 'confirmed' && (
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
-                    <h2 className="text-gray-900 font-bold mb-2">
-                      Envía {amountInUSDT} USDT a esta dirección
-                    </h2>
+                    <h2 className="text-gray-900 font-bold mb-2">Envía {amountInUSDT} USDT a esta dirección</h2>
                     <p className="text-sm text-gray-700 mb-3">
                       Red: <span className="font-bold" style={{ color: NETWORKS[selectedNetwork].color }}>
                         {NETWORKS[selectedNetwork].name}
@@ -1061,9 +958,7 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
             )}
 
             <div className="mb-6">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">
-                4. Comprobante de la transacción (opcional)
-              </label>
+              <label className="text-m font-bold block text-left text-gray-700 mb-2">4. Comprobante de la transacción (opcional)</label>
               {!imagePreview ? (
                 <div>
                   <input
@@ -1099,19 +994,8 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
               </button>
               <button
                 onClick={handleSavePayment}
-                disabled={
-                  !paymentData.amount ||
-                  !paymentData.payer ||
-                  amountError ||
-                  isAmountTooLow ||
-                  isSaving ||
-                  !order ||
-                  txStatus !== 'confirmed'
-                }
-                className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isAmountTooLow || isSaving || !order || txStatus !== 'confirmed'
-                  ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  : 'bg-[#D3423E] text-white hover:bg-red-600'
-                  }`}
+                disabled={!paymentData.amount || !paymentData.payer || amountError || isAmountTooLow || isSaving || !order || txStatus !== 'confirmed'}
+                className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isAmountTooLow || isSaving || !order || txStatus !== 'confirmed' ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-[#D3423E] text-white hover:bg-red-600'}`}
               >
                 {isSaving ? savingText : saveSuccess ? "Guardado" : txStatus !== 'confirmed' ? "Esperando confirmación..." : "Confirmar Pago"}
               </button>

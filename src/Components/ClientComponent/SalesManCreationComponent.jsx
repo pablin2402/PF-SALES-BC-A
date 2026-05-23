@@ -277,12 +277,7 @@ const SalesManCreationComponent = () => {
     <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-sm text-gray-500 hover:text-[#D3423E] flex items-center gap-1 mb-2 transition-colors"
-          >
-            <FaArrowLeft size={11} /> Volver
-          </button>
+         
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">

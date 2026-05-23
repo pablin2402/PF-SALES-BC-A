@@ -117,7 +117,11 @@ export default function CreateRouteComponent() {
     setLoading(true);
     try {
       const response = await axios.post(API_URL + "/whatsapp/maps/list/id",
-        { id_owner: user, sales_id: sales_id },
+        { 
+          id_owner: user, 
+          salesCategory: sales_id,
+          limit: 10000,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMarkers(response.data.users || []);

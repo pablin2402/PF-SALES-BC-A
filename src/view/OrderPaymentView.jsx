@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS } from "../config";
+import { API_URL, CONTRACT_ADDRESS } from "../config";
 import { HiFilter } from "react-icons/hi";
 import { FaFileExport } from "react-icons/fa6";
-import { ethers, Contract, id, Interface } from "ethers";
-import { FaCheckCircle, FaTimesCircle, FaEllipsisV, FaCalendarAlt, FaReceipt, FaUser, FaDollarSign, FaCheck, FaTimes, FaImage, FaLink } from "react-icons/fa";
+import { JsonRpcProvider } from "ethers";
+import {
+  FaCheckCircle, FaTimesCircle, FaEllipsisV, FaCalendarAlt, FaReceipt,
+  FaUser, FaDollarSign, FaCheck, FaTimes, FaImage, FaLink, FaShieldAlt
+} from "react-icons/fa";
 import { FiExternalLink, FiGrid, FiList } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -14,6 +17,12 @@ import OrderCalendarView from "./OrderCalendarView";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
+
+const POLYGON_RPC_URLS = [
+  "https://polygon-bor-rpc.publicnode.com",
+  "https://1rpc.io/matic",
+  "https://polygon.drpc.org",
+];
 
 const PAYMENT_STATUS_CONFIG = {
   "paid": {
@@ -39,6 +48,71 @@ const PAYMENT_STATUS_CONFIG = {
   }
 };
 
+const extractTxHash = (item) => {
+  return (
+    item?.txHash ||
+    item?.tx_hash ||
+    item?.transactionHash ||
+    item?.transaction_hash ||
+    item?.hash ||
+    item?.blockchain?.txHash ||
+    item?.blockchain?.transactionHash ||
+    item?.blockchain?.hash ||
+    item?.chain?.txHash ||
+    item?.chain?.hash ||
+    item?.onChain?.txHash ||
+    null
+  );
+};
+
+const extractBlockNumber = (item) => {
+  return (
+    item?.blockNumber ||
+    item?.block_number ||
+    item?.block ||
+    item?.blockchain?.blockNumber ||
+    item?.blockchain?.block ||
+    null
+  );
+};
+
+const extractContractAddress = (item) => {
+  return (
+    item?.contractAddress ||
+    item?.contract_address ||
+    item?.blockchain?.contractAddress ||
+    null
+  );
+};
+
+const withTimeout = (promise, ms) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("RPC timeout")), ms)),
+  ]);
+};
+
+const verifyOnChain = async (txHash) => {
+  for (const url of POLYGON_RPC_URLS) {
+    try {
+      const provider = new JsonRpcProvider(url, { chainId: 137, name: "polygon" });
+      const receipt = await withTimeout(provider.getTransactionReceipt(txHash), 5000);
+      if (receipt) {
+        return {
+          exists: true,
+          blockNumber: receipt.blockNumber,
+          status: receipt.status,
+          from: receipt.from,
+          to: receipt.to,
+        };
+      }
+    } catch (e) {
+      continue;
+    }
+  }
+  return { exists: false };
+};
+
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,66 +131,13 @@ const OrderPaymentView = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [copiedHash, setCopiedHash] = useState(null);
+  const [verifyingTx, setVerifyingTx] = useState(false);
+  const [verifyResult, setVerifyResult] = useState(null);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
   const id_user = localStorage.getItem("id_user");
-
-  const getBlockchainPayments = async () => {
-    try {
-      if (!window.ethereum) return [];
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const code = await provider.getCode(CONTRACT_ADDRESS);
-
-      if (code === "0x") {
-        console.warn("No existe contrato en esa address en esta red");
-        return [];
-      }
-
-      const signer = await provider.getSigner();
-      const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const count = await contract.getPaymentsCount();
-      const payments = [];
-      for (let i = 0; i < count; i++) {
-        const payment = await contract.getPayment(i);
-        payments.push({
-          orderId: payment[0],
-          amount: Number(payment[1]),
-          payer: payment[2],
-          sender: payment[3],
-          timestamp: Number(payment[4]),
-          transactionHash: null,
-        });
-      }
-
-      const contractInterface = new Interface(CONTRACT_ABI);
-      const eventTopic = id("PaymentRegistered(string,uint256,string,address,uint256)");
-
-      const logs = await provider.getLogs({
-        fromBlock: 0,
-        toBlock: "latest",
-        address: CONTRACT_ADDRESS,
-        topics: [eventTopic],
-      });
-
-      for (const log of logs) {
-        try {
-          const parsed = contractInterface.parseLog(log);
-          const orderId = parsed.args[0];
-          const match = payments.find((p) => p.orderId === orderId);
-          if (match) match.transactionHash = log.transactionHash;
-        } catch (e) {
-          console.warn("Error parsing log", e);
-        }
-      }
-
-      return payments;
-    } catch (error) {
-      console.error("Error fetching payments from blockchain:", error);
-      return [];
-    }
-  };
 
   const fetchProducts = useCallback(async (pageNumber = 1) => {
     setLoading(true);
@@ -140,26 +161,24 @@ const OrderPaymentView = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const backendData = response.data.data || [];
-      const blockchainPayments = await getBlockchainPayments();
-      const mergedData = backendData.map((item) => {
-        const blockchainEntry = blockchainPayments.find(
-          (payment) => payment.orderId === item._id
-        );
-        return {
-          ...item,
-          blockchain: blockchainEntry ? {
-            amount: blockchainEntry.amount,
-            payer: blockchainEntry.payer,
-            sender: blockchainEntry.sender,
-            orderId: blockchainEntry.orderId,
-            timestamp: blockchainEntry.timestamp,
-            transactionHash: blockchainEntry.transactionHash
-          } : null,
-        };
-      });
+      const rawData = response.data.data || [];
 
-      setSalesData(mergedData);
+      const normalizedData = rawData.map((item) => ({
+        ...item,
+        txHash: extractTxHash(item),
+        blockNumber: extractBlockNumber(item),
+        contractAddress: extractContractAddress(item),
+      }));
+
+      if (rawData.length > 0 && !normalizedData.some(i => i.txHash)) {
+        console.warn(
+          "[OrderPaymentView] Ningún registro tiene txHash. " +
+          "Verifica que el backend devuelve el campo en la respuesta de /whatsapp/order/pay/list/id. " +
+          "Estructura del primer item:", rawData[0]
+        );
+      }
+
+      setSalesData(normalizedData);
       setItems(response.data.pagination?.totalRecords || 0);
       setTotalPages(response.data.pagination?.totalPages || 1);
     } catch (error) {
@@ -208,6 +227,9 @@ const OrderPaymentView = () => {
             "Pago": item.total || "",
             "Monto total": item.orderId?.totalAmount || "",
             "Deuda de la nota": item.debt?.toFixed(2) || "",
+            "TX Hash": extractTxHash(item) || "",
+            "Bloque": extractBlockNumber(item) || "",
+            "Contrato": extractContractAddress(item) || "",
           };
         })
       );
@@ -241,7 +263,7 @@ const OrderPaymentView = () => {
     }
   };
 
-  const uploadProducts = async (id, orderId1) => {
+  const uploadProducts = async (id, orderRef) => {
     setIsProcessing(true);
     try {
       const response = await axios.put(
@@ -254,8 +276,11 @@ const OrderPaymentView = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.status === 200) {
+        const trackingOrderId =
+          typeof orderRef === "object" && orderRef !== null ? orderRef._id : orderRef;
+
         await axios.post(API_URL + "/whatsapp/order/track", {
-          orderId: orderId1._id,
+          orderId: trackingOrderId,
           eventType: "Ha aprobado un pago",
           triggeredBySalesman: id_user,
           triggeredByDelivery: "",
@@ -274,18 +299,30 @@ const OrderPaymentView = () => {
     }
   };
 
+  const handleVerifyOnChain = async (txHash) => {
+    setVerifyingTx(true);
+    setVerifyResult(null);
+    try {
+      const result = await verifyOnChain(txHash);
+      setVerifyResult(result);
+    } catch (e) {
+      setVerifyResult({ exists: false, error: e.message });
+    } finally {
+      setVerifyingTx(false);
+    }
+  };
+
   const stats = {
     total: salesData.length,
     ingresados: salesData.filter(s => s.paymentStatus === "paid").length,
     confirmados: salesData.filter(s => s.paymentStatus === "confirmado").length,
     rechazados: salesData.filter(s => s.paymentStatus === "rechazado").length,
-    enBlockchain: salesData.filter(s => s.blockchain).length
+    enBlockchain: salesData.filter(s => s.txHash).length
   };
 
   const totalAmount = salesData.reduce((sum, s) => sum + (s.total || 0), 0);
   const POLYGON_CONFIG = {
     color: "#8247E5",
-    bg: "from-purple-500 to-indigo-600",
     network: "Polygon Mainnet",
     contractShort: `${CONTRACT_ADDRESS.slice(0, 6)}...${CONTRACT_ADDRESS.slice(-4)}`,
     polygonScan: `https://polygonscan.com/address/${CONTRACT_ADDRESS}`
@@ -299,10 +336,13 @@ const OrderPaymentView = () => {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
+      setCopiedHash(text);
+      setTimeout(() => setCopiedHash(null), 2000);
     } catch (err) {
       console.error("Error copying:", err);
     }
   };
+
   return (
     <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
@@ -312,14 +352,10 @@ const OrderPaymentView = () => {
           className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white shadow-xl"
         >
           <div className="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-
-                <h2 className="text-xl font-black tracking-wide">
-                  POLYGON BLOCKCHAIN VERIFIED
-                </h2>
+                <h2 className="text-xl font-black tracking-wide">POLYGON BLOCKCHAIN VERIFIED</h2>
               </div>
 
               <p className="text-sm text-purple-100">
@@ -327,13 +363,8 @@ const OrderPaymentView = () => {
               </p>
 
               <div className="flex flex-wrap items-center gap-3 mt-3 text-xs">
-                <span className="bg-white/10 px-3 py-1 rounded-full font-mono">
-                  {POLYGON_CONFIG.network}
-                </span>
-
-                <span className="bg-white/10 px-3 py-1 rounded-full font-mono">
-                  {POLYGON_CONFIG.contractShort}
-                </span>
+                <span className="bg-white/10 px-3 py-1 rounded-full font-mono">{POLYGON_CONFIG.network}</span>
+                <span className="bg-white/10 px-3 py-1 rounded-full font-mono">{POLYGON_CONFIG.contractShort}</span>
               </div>
             </div>
 
@@ -348,6 +379,7 @@ const OrderPaymentView = () => {
             </a>
           </div>
         </motion.div>
+
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Lista de pagos</h1>
@@ -407,17 +439,12 @@ const OrderPaymentView = () => {
                         <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
                           <FaLink />
                         </div>
-
                         <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                       </div>
 
-                      <p className="text-xs uppercase text-purple-100 font-bold tracking-wider">
-                        On-chain
-                      </p>
+                      <p className="text-xs uppercase text-purple-100 font-bold tracking-wider">On-chain</p>
 
-                      <h3 className="text-3xl font-black mt-1">
-                        {stats.enBlockchain}
-                      </h3>
+                      <h3 className="text-3xl font-black mt-1">{stats.enBlockchain}</h3>
 
                       <p className="text-sm text-purple-100 mt-1">
                         {stats.total > 0
@@ -425,7 +452,8 @@ const OrderPaymentView = () => {
                           : "0%"}
                       </p>
                     </div>
-                  </motion.div>                </div>
+                  </motion.div>
+                </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className="p-6 border-b border-gray-200">
@@ -499,18 +527,19 @@ const OrderPaymentView = () => {
                           salesData.map((item) => {
                             const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
                             const StatusIcon = statusConfig?.icon;
+                            const itemTxHash = item.txHash;
+                            const hasChain = !!itemTxHash;
+
                             return (
                               <tr
                                 key={item._id}
-                                className={`
-    border-b border-gray-100 transition-all
-    hover:bg-gray-50
- ${item.blockchain
-                                    ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5 shadow-[0_0_30px_rgba(168,85,247,0.15)]"
-                                    : "bg-white/0"
-                                  }
-  `}
-                              >                                <td className="px-4 py-3">
+                                className={`border-b border-gray-100 transition-all hover:bg-gray-50 ${
+                                  hasChain
+                                    ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5"
+                                    : ""
+                                }`}
+                              >
+                                <td className="px-4 py-3">
                                   <span className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</span>
                                 </td>
                                 <td className="px-4 py-3 text-gray-700">
@@ -518,15 +547,12 @@ const OrderPaymentView = () => {
                                     <div>
                                       <p className="font-medium text-gray-900">
                                         {new Date(item.creationDate).toLocaleDateString("es-ES", {
-                                          day: 'numeric',
-                                          month: 'short',
-                                          year: 'numeric'
+                                          day: 'numeric', month: 'short', year: 'numeric'
                                         })}
                                       </p>
                                       <p className="text-xs text-gray-500">
                                         {new Date(item.creationDate).toLocaleTimeString("es-ES", {
-                                          hour: "2-digit",
-                                          minute: "2-digit"
+                                          hour: "2-digit", minute: "2-digit"
                                         })}
                                       </p>
                                     </div>
@@ -561,26 +587,23 @@ const OrderPaymentView = () => {
                                 </td>
                                 <td className="px-4 py-3">
                                   <div className="flex justify-center">
-                                    {item.blockchain?.transactionHash ? (
+                                    {hasChain ? (
                                       <a
-                                        href={`https://polygonscan.com/tx/${item.blockchain.transactionHash}`}
+                                        href={`https://polygonscan.com/tx/${itemTxHash}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="group flex flex-col items-center"
                                       >
                                         <span className="text-[11px] font-mono text-purple-700 font-bold">
-                                          {truncateHash(item.blockchain.transactionHash, 8, 6)}
+                                          {truncateHash(itemTxHash, 8, 6)}
                                         </span>
-
                                         <span className="text-[10px] text-purple-500 flex items-center gap-1 opacity-70 group-hover:opacity-100">
                                           Polygon
                                           <FiExternalLink size={9} />
                                         </span>
                                       </a>
                                     ) : (
-                                      <span className="text-xs text-gray-400">
-                                        —
-                                      </span>
+                                      <span className="text-xs text-gray-400">—</span>
                                     )}
                                   </div>
                                 </td>
@@ -588,6 +611,7 @@ const OrderPaymentView = () => {
                                   <button
                                     onClick={() => {
                                       setSelectedItem(item);
+                                      setVerifyResult(null);
                                       setShowEditModal(true);
                                     }}
                                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -617,10 +641,15 @@ const OrderPaymentView = () => {
                     {salesData.length > 0 ? salesData.map((item) => {
                       const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
                       const StatusIcon = statusConfig?.icon;
+                      const hasChain = !!item.txHash;
                       return (
                         <div
                           key={item._id}
-                          onClick={() => { setSelectedItem(item); setShowEditModal(true); }}
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setVerifyResult(null);
+                            setShowEditModal(true);
+                          }}
                           className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
                         >
                           <div className="flex justify-between items-start mb-2">
@@ -642,7 +671,7 @@ const OrderPaymentView = () => {
                           </p>
                           <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                             <span className="text-xs text-gray-500">
-                              {item.blockchain ? (
+                              {hasChain ? (
                                 <span className="text-purple-700 font-bold flex items-center gap-1">
                                   <FaLink size={10} /> En blockchain
                                 </span>
@@ -772,31 +801,14 @@ const OrderPaymentView = () => {
 
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <InfoField
-                    icon={<FaReceipt />}
-                    label="Número de nota"
-                    value={`#${selectedItem.orderId?.receiveNumber}`}
-                  />
-                  <InfoField
-                    icon={<FaDollarSign />}
-                    label="Monto pagado"
-                    value={`Bs. ${Number(selectedItem.total).toFixed(2)}`}
-                    highlight
-                  />
-                  <InfoField
-                    icon={<FaUser />}
-                    label="Cliente"
-                    value={`${selectedItem.id_client?.name} ${selectedItem.id_client?.lastName}`}
-                  />
+                  <InfoField icon={<FaReceipt />} label="Número de nota" value={`#${selectedItem.orderId?.receiveNumber}`} />
+                  <InfoField icon={<FaDollarSign />} label="Monto pagado" value={`Bs. ${Number(selectedItem.total).toFixed(2)}`} highlight />
+                  <InfoField icon={<FaUser />} label="Cliente" value={`${selectedItem.id_client?.name} ${selectedItem.id_client?.lastName}`} />
                   <InfoField
                     icon={<FaCalendarAlt />}
                     label="Fecha de pago"
                     value={selectedItem.creationDate
-                      ? new Date(selectedItem.creationDate).toLocaleDateString("es-ES", {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })
+                      ? new Date(selectedItem.creationDate).toLocaleDateString("es-ES", { day: 'numeric', month: 'long', year: 'numeric' })
                       : "-"}
                   />
                   <InfoField
@@ -812,7 +824,7 @@ const OrderPaymentView = () => {
                   />
                 </div>
 
-                {selectedItem.blockchain && (
+                {selectedItem.txHash && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -825,69 +837,93 @@ const OrderPaymentView = () => {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
-
-                            <h3 className="font-black tracking-wide text-lg">
-                              VERIFICADO EN POLYGON
-                            </h3>
+                            <h3 className="font-black tracking-wide text-lg">VERIFICADO EN POLYGON</h3>
                           </div>
-
-                          <p className="text-sm text-purple-100">
-                            Pago registrado públicamente on-chain
-                          </p>
+                          <p className="text-sm text-purple-100">Pago registrado públicamente on-chain</p>
                         </div>
-
                         <FaCheckCircle className="text-3xl text-green-300" />
                       </div>
 
                       <div className="space-y-3">
-
                         <div className="bg-white/10 rounded-xl p-3">
-                          <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">
-                            Transaction Hash
-                          </p>
-
+                          <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">Transaction Hash</p>
                           <div className="flex items-center justify-between gap-3">
-                            <p className="font-mono text-sm break-all">
-                              {selectedItem.blockchain.transactionHash}
-                            </p>
-
+                            <p className="font-mono text-sm break-all">{selectedItem.txHash}</p>
                             <button
-                              onClick={() => copyToClipboard(selectedItem.blockchain.transactionHash)}
-                              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold"
+                              onClick={() => copyToClipboard(selectedItem.txHash)}
+                              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold whitespace-nowrap"
                             >
-                              Copiar
+                              {copiedHash === selectedItem.txHash ? "✓ Copiado" : "Copiar"}
                             </button>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
+                          {selectedItem.blockNumber && (
+                            <div className="bg-white/10 rounded-xl p-3">
+                              <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">Bloque</p>
+                              <p className="font-mono text-sm">#{Number(selectedItem.blockNumber).toLocaleString()}</p>
+                            </div>
+                          )}
 
-                          <div className="bg-white/10 rounded-xl p-3">
-                            <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">
-                              Wallet
-                            </p>
-
-                            <p className="font-mono text-xs break-all">
-                              {selectedItem.blockchain.sender}
-                            </p>
-                          </div>
-
-                          <div className="bg-white/10 rounded-xl p-3">
-                            <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">
-                              Timestamp
-                            </p>
-
-                            <p className="font-bold">
-                              {new Date(
-                                selectedItem.blockchain.timestamp * 1000
-                              ).toLocaleString("es-ES")}
-                            </p>
-                          </div>
-
+                          {selectedItem.contractAddress && (
+                            <div className="bg-white/10 rounded-xl p-3">
+                              <p className="text-[11px] uppercase text-purple-200 font-bold mb-1">Contrato</p>
+                              <p className="font-mono text-xs break-all">{truncateHash(selectedItem.contractAddress, 6, 4)}</p>
+                            </div>
+                          )}
                         </div>
 
+                        <button
+                          onClick={() => handleVerifyOnChain(selectedItem.txHash)}
+                          disabled={verifyingTx}
+                          className="w-full bg-white/20 hover:bg-white/30 transition-all rounded-xl py-2.5 font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {verifyingTx ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                              Verificando on-chain...
+                            </>
+                          ) : (
+                            <>
+                              <FaShieldAlt size={12} />
+                              Verificar autenticidad en Polygon
+                            </>
+                          )}
+                        </button>
+
+                        {verifyResult && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`rounded-xl p-3 text-sm ${
+                              verifyResult.exists ? "bg-green-500/20 border border-green-400/30" : "bg-red-500/20 border border-red-400/30"
+                            }`}
+                          >
+                            {verifyResult.exists ? (
+                              <>
+                                <p className="font-bold flex items-center gap-2 mb-1">
+                                  <FaCheckCircle className="text-green-300" />
+                                  TX confirmada on-chain
+                                </p>
+                                <p className="text-xs text-purple-100">
+                                  Status: <span className="font-mono">{verifyResult.status === 1 ? "Exitosa" : "Fallida"}</span>
+                                </p>
+                                <p className="text-xs text-purple-100">
+                                  Bloque: <span className="font-mono">#{verifyResult.blockNumber?.toLocaleString()}</span>
+                                </p>
+                              </>
+                            ) : (
+                              <p className="font-bold flex items-center gap-2">
+                                <FaTimesCircle className="text-red-300" />
+                                No se pudo confirmar (RPCs ocupados, intenta de nuevo)
+                              </p>
+                            )}
+                          </motion.div>
+                        )}
+
                         <a
-                          href={`https://polygonscan.com/tx/${selectedItem.blockchain.transactionHash}`}
+                          href={`https://polygonscan.com/tx/${selectedItem.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-full mt-2 bg-white text-purple-700 hover:bg-purple-50 transition-all rounded-xl py-3 font-black flex items-center justify-center gap-2"
@@ -902,18 +938,15 @@ const OrderPaymentView = () => {
 
                 {selectedItem.saleImage && (
                   <div>
-                    <label className="text-xs font-semibold text-gray-600 uppercase block mb-1.5 flex items-center gap-1">
-                      <FaImage size={10} /> Comprobante
-                    </label>
+                    <div className="flex items-center gap-1 mb-1.5">
+                      <FaImage size={10} className="text-gray-600" />
+                      <label className="text-xs font-semibold text-gray-600 uppercase">Comprobante</label>
+                    </div>
                     <div
                       onClick={() => setShowImageModal(true)}
                       className="relative rounded-xl border-2 border-gray-200 overflow-hidden cursor-pointer hover:border-[#D3423E] transition-colors group"
                     >
-                      <img
-                        src={selectedItem.saleImage}
-                        alt="Recibo"
-                        className="w-full max-h-60 object-contain bg-gray-50"
-                      />
+                      <img src={selectedItem.saleImage} alt="Recibo" className="w-full max-h-60 object-contain bg-gray-50" />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
                         <span className="text-white opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 px-3 py-1 rounded-full text-xs font-bold">
                           Ver imagen completa

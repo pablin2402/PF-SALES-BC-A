@@ -94,7 +94,6 @@ export default function Sidebars() {
         transition-all duration-300
       "
     >
-      <div className="absolute top-0 right-[-80px] w-40 h-40 bg-red-400/20 blur-3xl rounded-full"></div>
 
       <div className="relative px-4 pt-6 pb-8">
         <Link to="/">
@@ -167,7 +166,6 @@ export default function Sidebars() {
                   }
                 `}
               >
-                {/* Glow active */}
                 {isActive(item.path) && (
                   <div className="absolute inset-0 bg-gradient-to-r from-red-100 to-white opacity-60"></div>
                 )}
@@ -201,7 +199,6 @@ export default function Sidebars() {
                   </span>
                 </div>
 
-                {/* Active indicator */}
                 {isActive(item.path) && (
                   <div className="absolute right-3 w-2 h-2 rounded-full bg-red-600"></div>
                 )}
@@ -211,7 +208,6 @@ export default function Sidebars() {
         </ul>
       </div>
 
-      {/* BOTTOM */}
       <div className="p-3 border-t border-white/10">
         <div className="space-y-2">
           {isAdmin && (
