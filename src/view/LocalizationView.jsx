@@ -1010,7 +1010,7 @@ export default function LocalizationView() {
                         title="Restablecer vista"
                     >
                         <FaMapMarkerAlt className="text-gray-600" size={13} />
-                        <span className="text-xs font-bold text-gray-700">Reset</span>
+                        <span className="text-xs font-bold text-gray-700">Limpiar filtros</span>
                     </button>
                 </div>
 
