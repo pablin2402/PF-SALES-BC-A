@@ -34,7 +34,7 @@ const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchu
 
 const DEFAULT_CENTER = { lat: -17.3835, lng: -66.1568 };
 const DEFAULT_ZOOM = 12;
-const VIEW_ALL_LIMIT = 1000;
+const VIEW_ALL_LIMIT = 500;
 
 export default function LocalizationView() {
     const navigate = useNavigate();
@@ -167,7 +167,7 @@ export default function LocalizationView() {
                     limit: VIEW_ALL_LIMIT,
                     sortBy: "name",
                     hasLocation: true,
-                },
+                },  
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             const allClients = response.data.users || [];
@@ -1001,7 +1001,7 @@ export default function LocalizationView() {
                         title="Encuadrar visibles"
                     >
                         <FaExpand className="text-[#D3423E]" size={13} />
-                        <span className="text-xs font-bold text-gray-700">Encuadrar</span>
+                        <span className="text-xs font-bold text-gray-700">Centrar</span>
                     </button>
 
                     <button

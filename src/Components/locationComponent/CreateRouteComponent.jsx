@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import {
-    useJsApiLoader, GoogleMap, Marker, DirectionsRenderer,
+    useJsApiLoader, GoogleMap, Marker,
     OverlayView, Polygon, Polyline,
 } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../../config";
@@ -9,7 +9,7 @@ import {
     FaMapMarkerAlt, FaUser, FaChevronLeft, FaChevronRight, FaRoute, FaTrash,
     FaPlus, FaMinus, FaCheck, FaBuilding, FaCalendarAlt, FaTimes, FaInfoCircle,
     FaClock, FaMagic, FaCity, FaCog, FaLayerGroup, FaExpand, FaEye, FaEyeSlash,
-    FaSearch, FaArrowDown,
+    FaSearch,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,21 +36,39 @@ const containerStyle = {
     height: "100%",
 };
 
-const buildSelectedPinUrl = (orderIndex, channelColor = "#D3423E", pulsing = false) => {
-    const ringOpacity = pulsing ? 0.5 : 0;
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-    <svg width="50" height="50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+const buildOrderedChannelMarker = (orderIndex, channel, isSelected = true, pulsing = false) => {
+    const config = getChannelConfig(channel);
+    const size = 52;
+    const color = config.color;
+    const colorDark = config.colorDark;
+    const ringOpacity = pulsing ? 0.4 : 0;
+    const imageSrc = config.imageBase64 || null;
+
+    const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
       <defs>
         <filter id="ds-${orderIndex}" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.4"/>
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="0" dy="2" result="offsetblur"/>
+          <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
+        <clipPath id="ic-${orderIndex}">
+          <circle cx="${size / 2}" cy="${size / 2}" r="20"/>
+        </clipPath>
       </defs>
-      <circle cx="25" cy="25" r="23" fill="${channelColor}" opacity="${ringOpacity}"/>
-      <circle cx="25" cy="25" r="19" fill="white" stroke="${channelColor}" stroke-width="3" filter="url(#ds-${orderIndex})"/>
-      <circle cx="25" cy="25" r="14" fill="${channelColor}"/>
-      <text x="25" y="30" text-anchor="middle" fill="white" font-size="14" font-weight="900" font-family="Arial, sans-serif">${orderIndex + 1}</text>
+      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="${color}" opacity="${ringOpacity}"/>
+      <circle cx="${size / 2}" cy="${size / 2}" r="22" fill="white" stroke="${color}" stroke-width="3" filter="url(#ds-${orderIndex})"/>
+      ${imageSrc
+        ? `<image href="${imageSrc}" x="${size / 2 - 14}" y="${size / 2 - 14}" width="28" height="28" clip-path="url(#ic-${orderIndex})" preserveAspectRatio="xMidYMid meet"/>`
+        : `<text x="${size / 2}" y="${size / 2 + 6}" text-anchor="middle" font-size="16" font-weight="bold" fill="${colorDark}">${config.emoji}</text>`
+    }
+      <circle cx="${size - 11}" cy="11" r="10" fill="${colorDark}" stroke="white" stroke-width="2"/>
+      <text x="${size - 11}" y="15" text-anchor="middle" fill="white" font-size="11" font-weight="900" font-family="Arial, sans-serif">${orderIndex + 1}</text>
     </svg>
-  `)}`;
+  `;
+
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
 export default function CreateRouteComponent() {
@@ -84,7 +102,6 @@ export default function CreateRouteComponent() {
     const [creating, setCreating] = useState(false);
     const [iconsReady, setIconsReady] = useState(false);
 
-    const [directionsResponse, setDirectionsResponse] = useState(null);
     const [routeStats, setRouteStats] = useState({ distance: 0, duration: 0 });
     const [lastAddedId, setLastAddedId] = useState(null);
     const [routePath, setRoutePath] = useState([]);
@@ -92,7 +109,6 @@ export default function CreateRouteComponent() {
     const [showMunicipios, setShowMunicipios] = useState(true);
     const [showAvailable, setShowAvailable] = useState(true);
     const [showViewOptions, setShowViewOptions] = useState(false);
-    const [activeZoneSegment, setActiveZoneSegment] = useState(null);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -113,16 +129,13 @@ export default function CreateRouteComponent() {
         setSelectedMarkers([]);
         setStartDate("");
         setEndDate("");
-        setActiveZoneSegment(null);
     };
 
     const goToRouteList = () => {
         navigate("/localization/list/route");
     };
 
-    const validateForm = () => {
-        return routeName && startDate && endDate;
-    };
+    const validateForm = () => routeName && startDate && endDate;
 
     const handleCreateRoute = async () => {
         if (!validateForm()) return;
@@ -253,7 +266,6 @@ export default function CreateRouteComponent() {
             );
 
             if (validMarkers.length < 2) {
-                setDirectionsResponse(null);
                 setRouteStats({ distance: 0, duration: 0 });
                 setRoutePath([]);
                 return;
@@ -286,7 +298,6 @@ export default function CreateRouteComponent() {
                 },
                 (result, status) => {
                     if (status === "OK") {
-                        setDirectionsResponse(result);
                         const legs = result.routes[0].legs;
                         const totalDistance = legs.reduce((s, l) => s + l.distance.value, 0);
                         const totalDuration = legs.reduce((s, l) => s + l.duration.value, 0);
@@ -306,7 +317,6 @@ export default function CreateRouteComponent() {
                 }
             );
         } else {
-            setDirectionsResponse(null);
             setRouteStats({ distance: 0, duration: 0 });
             setRoutePath([]);
         }
@@ -318,7 +328,6 @@ export default function CreateRouteComponent() {
             const lng = parseFloat(location.client_location.longitud);
             if (!isNaN(lat) && !isNaN(lng) && mapRef.current) {
                 mapRef.current.panTo({ lat, lng });
-             //   setTimeout(() => mapRef.current?.setZoom(15), 300);
             }
         }
     };
@@ -393,7 +402,7 @@ export default function CreateRouteComponent() {
             }
         });
         if (has) {
-            mapRef.current.fitBounds(bounds, { top: 100, right: 60, bottom: 200, left: 60 });
+            mapRef.current.fitBounds(bounds, { top: 120, right: 240, bottom: 200, left: 60 });
         }
     };
 
@@ -404,7 +413,7 @@ export default function CreateRouteComponent() {
         const bounds = new window.google.maps.LatLngBounds();
         bounds.extend({ lat: m.bounds.north, lng: m.bounds.east });
         bounds.extend({ lat: m.bounds.south, lng: m.bounds.west });
-        mapRef.current.fitBounds(bounds, { top: 80, right: 60, bottom: 200, left: 60 });
+        mapRef.current.fitBounds(bounds, { top: 100, right: 240, bottom: 200, left: 60 });
     };
 
     const handleOptimize = () => {
@@ -424,7 +433,6 @@ export default function CreateRouteComponent() {
 
         setSelectedMarkers(result.route);
         setOptimizerOpen(false);
-
         setTimeout(() => fitToMarkers(result.route), 300);
     };
 
@@ -436,10 +444,7 @@ export default function CreateRouteComponent() {
         loadMarkersFromAPI(vendorId || "todos");
     };
 
-    const clearAll = () => {
-        setSelectedMarkers([]);
-        setActiveZoneSegment(null);
-    };
+    const clearAll = () => setSelectedMarkers([]);
 
     const exceedsCapacity = capacityCheck.exceeded;
 
@@ -537,44 +542,51 @@ export default function CreateRouteComponent() {
                                         ))}
                                     </select>
                                 </div>
-                                {!selectedSaler ? (
+                                {!selectedSaler && (
                                     <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
                                         <FaInfoCircle size={10} />
                                         Selecciona un vendedor para empezar
                                     </p>
-                                ) : (
-                                    <div className="mt-1.5 flex items-center justify-between text-xs">
-                                        <span className="text-gray-500">Capacidad de visitas:</span>
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                onClick={() => setVendorCapacity(Math.max(1, vendorCapacity - 5))}
-                                                className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
-                                            >
-                                                <FaMinus size={8} />
-                                            </button>
-                                            <input
-                                                type="number"
-                                                value={vendorCapacity}
-                                                onChange={(e) => setVendorCapacity(Math.max(1, parseInt(e.target.value) || 1))}
-                                                className="w-12 text-center font-bold text-gray-900 border border-gray-200 rounded text-xs py-1"
-                                                min="1"
-                                            />
-                                            <button
-                                                onClick={() => setVendorCapacity(vendorCapacity + 5)}
-                                                className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
-                                            >
-                                                <FaPlus size={8} />
-                                            </button>
-                                        </div>
-                                    </div>
                                 )}
                             </div>
+
+                            {selectedSaler && (
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-600 uppercase block mb-1.5">
+                                        Capacidad de visitas
+                                    </label>
+                                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-1.5 border border-gray-200">
+                                        <button
+                                            onClick={() => setVendorCapacity(Math.max(1, vendorCapacity - 5))}
+                                            className="w-9 h-9 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-700 transition-colors"
+                                        >
+                                            <FaMinus size={10} />
+                                        </button>
+                                        <input
+                                            type="number"
+                                            value={vendorCapacity}
+                                            onChange={(e) => setVendorCapacity(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="flex-1 text-center font-bold text-base text-gray-900 bg-white border border-gray-200 rounded-lg py-1.5 focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+                                            min="1"
+                                        />
+                                        <button
+                                            onClick={() => setVendorCapacity(vendorCapacity + 5)}
+                                            className="w-9 h-9 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-700 transition-colors"
+                                        >
+                                            <FaPlus size={10} />
+                                        </button>
+                                        <span className="text-[10px] font-bold text-gray-500 uppercase pr-2">
+                                            visitas
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-2 gap-2">
                                 <select
                                     value={selectedChannel}
                                     onChange={(e) => setSelectedChannel(e.target.value)}
-                                    className="text-xs px-2 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
+                                    className="text-xs px-2 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:border-[#D3423E]"
                                 >
                                     <option value="">Canal: Todos</option>
                                     {CHANNEL_LIST.map(c => (
@@ -587,7 +599,7 @@ export default function CreateRouteComponent() {
                                         setSelectedMunicipio(e.target.value);
                                         if (e.target.value) fitMunicipio(e.target.value);
                                     }}
-                                    className="text-xs px-2 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
+                                    className="text-xs px-2 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:border-[#D3423E]"
                                 >
                                     <option value="">Zona: Todas</option>
                                     {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
@@ -627,11 +639,10 @@ export default function CreateRouteComponent() {
                                                     exit={{ opacity: 0, x: 20, scale: 0.9 }}
                                                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                                                     onClick={() => findLocation(client)}
-                                                    className={`bg-white border-2 rounded-2xl p-3 cursor-pointer hover:shadow-md transition-all ${
-                                                        client._id === lastAddedId
-                                                            ? "border-[#D3423E] shadow-lg ring-4 ring-red-100"
-                                                            : "border-gray-200 hover:border-[#D3423E]"
-                                                    }`}
+                                                    className={`bg-white border-2 rounded-2xl p-3 cursor-pointer hover:shadow-md transition-all ${client._id === lastAddedId
+                                                        ? "border-[#D3423E] shadow-lg ring-4 ring-red-100"
+                                                        : "border-gray-200 hover:border-[#D3423E]"
+                                                        }`}
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex flex-col gap-0.5">
@@ -764,7 +775,7 @@ export default function CreateRouteComponent() {
                             zoomControl: false,
                             streetViewControl: false,
                             mapTypeControl: false,
-                            fullscreenControl: true,
+                            fullscreenControl: false,
                             styles: [
                                 { featureType: "poi", stylers: [{ visibility: "off" }] },
                                 { featureType: "transit", stylers: [{ visibility: "off" }] },
@@ -834,7 +845,6 @@ export default function CreateRouteComponent() {
 
                         {selectedMarkers.map((client, index) => {
                             if (!client.client_location?.latitud || !client.client_location?.longitud) return null;
-                            const channelConf = getChannelConfig(client.userCategory);
                             const isPulsing = client._id === lastAddedId;
                             return (
                                 <Marker
@@ -844,9 +854,9 @@ export default function CreateRouteComponent() {
                                         lng: Number(client.client_location.longitud),
                                     }}
                                     icon={window.google ? {
-                                        url: buildSelectedPinUrl(index, channelConf.color, isPulsing),
-                                        scaledSize: new window.google.maps.Size(50, 50),
-                                        anchor: new window.google.maps.Point(25, 25),
+                                        url: buildOrderedChannelMarker(index, client.userCategory, true, isPulsing),
+                                        scaledSize: new window.google.maps.Size(52, 52),
+                                        anchor: new window.google.maps.Point(26, 26),
                                     } : null}
                                     animation={isPulsing ? window.google.maps.Animation.DROP : null}
                                     onClick={() => handleMarkerClick(client)}
@@ -900,14 +910,15 @@ export default function CreateRouteComponent() {
                 )}
 
                 <div className="absolute top-4 left-4 right-4 z-10 flex items-start gap-3">
-                    <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 px-3 py-2 flex items-center gap-2">
-                        <FaSearch className="text-gray-400" size={14} />
+                    <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 px-3 py-2 flex items-center gap-2 max-w-2xl">
+                        <FaSearch className="text-gray-400 flex-shrink-0" size={14} />
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Buscar cliente, empresa..."
-                            className="flex-1 text-sm text-gray-900 bg-transparent outline-none"
+                            className="flex-1 text-sm text-gray-900 bg-transparent border-none outline-none focus:ring-0 focus:outline-none focus:border-transparent"
+                            style={{ boxShadow: "none" }}
                         />
                         {searchTerm && (
                             <button
@@ -925,58 +936,63 @@ export default function CreateRouteComponent() {
                     <div className="relative">
                         <button
                             onClick={() => setShowViewOptions(!showViewOptions)}
-                            className="bg-white rounded-2xl shadow-lg p-3 border border-gray-200 flex items-center gap-2 hover:shadow-xl transition-all"
+                            className="bg-white rounded-2xl shadow-lg p-2.5 border border-gray-200 flex items-center gap-2 hover:shadow-xl transition-all"
                         >
                             <FaCog className="text-gray-600" size={13} />
                             <span className="text-xs font-bold text-gray-700">Vista</span>
+                            <FaChevronRight
+                                className={`text-gray-400 transition-transform ${showViewOptions ? "rotate-90" : "rotate-0"}`}
+                                size={9}
+                            />
                         </button>
 
                         {showViewOptions && (
-                            <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-20">
-                                <div className="p-2 border-b border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase px-2 py-1">Capas del mapa</p>
-                                </div>
-                                <button
-                                    onClick={() => setShowMunicipios(!showMunicipios)}
-                                    className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <FaCity className="text-gray-600" size={12} />
-                                        <span className="text-xs font-bold text-gray-700">Límites municipales</span>
+                            <>
+                                <div className="fixed inset-0 z-10" onClick={() => setShowViewOptions(false)} />
+                                <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-20">
+                                    <div className="p-2 border-b border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase px-2 py-1">Capas del mapa</p>
                                     </div>
-                                    {showMunicipios ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
-                                </button>
-                                <button
-                                    onClick={() => setShowAvailable(!showAvailable)}
-                                    className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors border-t border-gray-100"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <FaLayerGroup className="text-gray-600" size={12} />
-                                        <span className="text-xs font-bold text-gray-700">Clientes disponibles</span>
-                                    </div>
-                                    {showAvailable ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
-                                </button>
-                                <button
-                                    onClick={() => fitToMarkers(filteredData)}
-                                    className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors border-t border-gray-100"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <FaExpand className="text-gray-600" size={12} />
-                                        <span className="text-xs font-bold text-gray-700">Ver todos en mapa</span>
-                                    </div>
-                                </button>
-                                {selectedMarkers.length > 0 && (
                                     <button
-                                        onClick={() => fitToMarkers(selectedMarkers)}
+                                        onClick={() => setShowMunicipios(!showMunicipios)}
+                                        className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <FaCity className="text-gray-600" size={12} />
+                                            <span className="text-xs font-bold text-gray-700">Límites municipales</span>
+                                        </div>
+                                        {showMunicipios ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowAvailable(!showAvailable)}
                                         className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors border-t border-gray-100"
                                     >
                                         <div className="flex items-center gap-2">
-                                            <FaRoute className="text-[#D3423E]" size={12} />
-                                            <span className="text-xs font-bold text-gray-700">Ver ruta completa</span>
+                                            <FaLayerGroup className="text-gray-600" size={12} />
+                                            <span className="text-xs font-bold text-gray-700">Clientes disponibles</span>
                                         </div>
+                                        {showAvailable ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
                                     </button>
-                                )}
-                            </div>
+                                    <div className="border-t border-gray-100">
+                                        <button
+                                            onClick={() => { fitToMarkers(filteredData); setShowViewOptions(false); }}
+                                            className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <FaExpand className="text-gray-600" size={12} />
+                                            <span className="text-xs font-bold text-gray-700">Ver todos en mapa</span>
+                                        </button>
+                                        {selectedMarkers.length > 0 && (
+                                            <button
+                                                onClick={() => { fitToMarkers(selectedMarkers); setShowViewOptions(false); }}
+                                                className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                                            >
+                                                <FaRoute className="text-[#D3423E]" size={12} />
+                                                <span className="text-xs font-bold text-gray-700">Ver ruta completa</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -987,7 +1003,7 @@ export default function CreateRouteComponent() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="absolute top-20 left-1/2 -translate-x-1/2 z-10 bg-white rounded-2xl shadow-xl border border-gray-200 px-4 py-2.5 flex items-center gap-3"
+                            className="absolute top-20 left-4 z-10 bg-white rounded-2xl shadow-xl border border-gray-200 px-4 py-2.5 flex items-center gap-3"
                         >
                             <div className="flex items-center gap-2">
                                 <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center">
@@ -1109,9 +1125,8 @@ export default function CreateRouteComponent() {
                                         <div
                                             key={client._id}
                                             onClick={() => handleMarkerClick(client)}
-                                            className={`flex-shrink-0 flex flex-col items-center border-2 rounded-xl p-2 min-w-[100px] cursor-pointer transition-all hover:shadow-md ${
-                                                selected ? "border-[#D3423E] bg-red-50" : "border-gray-200 hover:border-gray-300 bg-white"
-                                            }`}
+                                            className={`flex-shrink-0 flex flex-col items-center border-2 rounded-xl p-2 min-w-[100px] cursor-pointer transition-all hover:shadow-md ${selected ? "border-[#D3423E] bg-red-50" : "border-gray-200 hover:border-gray-300 bg-white"
+                                                }`}
                                         >
                                             <div className="relative">
                                                 <img
@@ -1225,7 +1240,7 @@ export default function CreateRouteComponent() {
                                         <select
                                             value={zonePresetKey}
                                             onChange={(e) => setZonePresetKey(e.target.value)}
-                                            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl text-gray-900 cursor-pointer"
+                                            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl text-gray-900 cursor-pointer focus:outline-none focus:border-[#D3423E]"
                                         >
                                             {Object.entries(ZONE_PRESETS).map(([key, preset]) => (
                                                 <option key={key} value={key}>{preset.label}</option>

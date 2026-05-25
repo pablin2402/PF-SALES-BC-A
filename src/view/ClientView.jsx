@@ -9,8 +9,9 @@ import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { ModernPagination} from "../utils/ModernPagination";
 
-import Spinner from "../Components/LittleComponents/Spinner";
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading"
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -192,11 +193,14 @@ const ClientView = () => {
     }
   };
   return (
-    <div className="bg-white min-h-screen p-4 sm:p-6">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
-        {loading ? (
-          <Spinner />
-        ) : (
           <div>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -303,7 +307,18 @@ const ClientView = () => {
                   </button>
                 )}
               </div>
-
+             {
+               loading ? (
+                 <>
+                   <div className="lg:hidden">
+                     <SkeletonCards />
+                   </div>
+ 
+                   <div className="hidden lg:block">
+                     <SkeletonTable />
+                   </div>
+                 </>
+               ) : salesData.length >= 1 ? (
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-s text-gray-700 uppercase bg-gray-200 border-b border-gray-200">
@@ -385,7 +400,6 @@ const ClientView = () => {
                         onChange={(e) => {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
-                          fetchProducts(page);
                         }}
                         className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
                       >
@@ -397,64 +411,19 @@ const ClientView = () => {
                       </select>
                     </div>
                   </div>
-                  {totalPages > 1 && searchTerm === "" && (
-
-                    <nav className="flex items-center justify-center pt-4 space-x-2">
-                      <button
-                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={page === 1}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        ← Anterior
-                      </button>
-
-                      <button
-                        onClick={() => setPage(1)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        1
-                      </button>
-
-                      {page > 3 && <span className="px-1 text-gray-400">…</span>}
-
-                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                        .filter((p) => p > 1 && p < totalPages)
-                        .map((p) => (
-                          <button
-                            key={p}
-                            onClick={() => setPage(p)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-
-                      {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-
-                      {totalPages > 1 && (
-                        <button
-                          onClick={() => setPage(totalPages)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          {totalPages}
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={page === totalPages}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        Siguiente →
-                      </button>
-                    </nav>
-
-                  )}
+                   {totalPages > 1 && (
+                      <ModernPagination
+                        page={page}
+                        totalPages={totalPages}
+                        onChange={setPage}
+                      />
+                    )}
                 </div>
               </div>
+              ) : null} 
             </div>
           </div>
-        )}
+        
       </div>
       {openDialog && (
         <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">

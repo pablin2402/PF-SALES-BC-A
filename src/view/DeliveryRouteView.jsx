@@ -1,14 +1,18 @@
-import React, { useEffect, useCallback, useState, useMemo } from "react";
+import React, { useEffect, useCallback, useState, useMemo, useRef } from "react";
 import axios from "axios";
-import { useJsApiLoader, GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
+import {
+  useJsApiLoader, GoogleMap, Marker, DirectionsRenderer,
+  OverlayView, Polygon,
+} from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../config";
 import {
   FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaRoute, FaTrash, FaCheck,
-  FaPlus, FaBuilding, FaTimes, FaTruck, FaReceipt, FaDollarSign,
+  FaPlus, FaMinus, FaBuilding, FaTimes, FaTruck, FaReceipt, FaDollarSign,
   FaInfoCircle, FaBoxes, FaMagic, FaClock, FaChartLine, FaRoad, FaWineBottle,
+  FaSearch, FaCog, FaCity, FaLayerGroup, FaEye, FaEyeSlash, FaExpand,
+  FaFilter, FaCheckCircle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import tiendaIcon from "../icons/tienda.png";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import AlertModal from "../Components/modal/AlertModal";
 import DateInput from "../Components/LittleComponents/DateInput";
@@ -22,6 +26,13 @@ import {
   MIN_ORDERS_TO_OPTIMIZE,
 } from "../utils/RouteOptimizer";
 import StackingPlanCard from "../utils/StackingPlanCard";
+import {
+  CHANNEL_CONFIG, getChannelConfig, buildMarkerIcon, CHANNEL_LIST,
+  preloadChannelIcons,
+} from "../utils/ClientMarkerIcons";
+import {
+  MUNICIPIOS_COCHABAMBA, getMunicipioForPoint, groupClientsByMunicipio,
+} from "../utils/CochabambaMunicipios";
 
 export const GOOGLE_MAPS_LIBRARIES = ["maps"];
 
@@ -37,14 +48,68 @@ const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchu
 
 const DEFAULT_TRUCK_CAPACITY = 80;
 const DEPOT = { lat: -17.3835, lng: -66.1568 };
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 const TABS = {
   PEDIDOS: "pedidos",
   PLAN: "plan",
 };
 
+const buildOrderedChannelMarker = (orderIndex, channel, tripColor = "#D3423E", pulsing = false) => {
+  const config = getChannelConfig(channel);
+  const size = 52;
+  const ringOpacity = pulsing ? 0.4 : 0;
+  const imageSrc = config.imageBase64 || null;
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <defs>
+        <filter id="ds-${orderIndex}" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+          <feOffset dx="0" dy="2" result="offsetblur"/>
+          <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <clipPath id="ic-${orderIndex}">
+          <circle cx="${size / 2}" cy="${size / 2}" r="20"/>
+        </clipPath>
+      </defs>
+      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="${tripColor}" opacity="${ringOpacity}"/>
+      <circle cx="${size / 2}" cy="${size / 2}" r="22" fill="white" stroke="${tripColor}" stroke-width="3" filter="url(#ds-${orderIndex})"/>
+      ${imageSrc
+        ? `<image href="${imageSrc}" x="${size / 2 - 14}" y="${size / 2 - 14}" width="28" height="28" clip-path="url(#ic-${orderIndex})" preserveAspectRatio="xMidYMid meet"/>`
+        : `<text x="${size / 2}" y="${size / 2 + 6}" text-anchor="middle" font-size="16" font-weight="bold" fill="${config.colorDark}">${config.emoji}</text>`
+      }
+      <circle cx="${size - 11}" cy="11" r="10" fill="${tripColor}" stroke="white" stroke-width="2"/>
+      <text x="${size - 11}" y="15" text-anchor="middle" fill="white" font-size="11" font-weight="900" font-family="Arial, sans-serif">${orderIndex + 1}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
+const buildDepotIcon = () => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">
+    <defs>
+      <filter id="depot-shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+        <feOffset dx="0" dy="2" result="offsetblur"/>
+        <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+        <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="28" cy="28" r="24" fill="#111827" stroke="white" stroke-width="3" filter="url(#depot-shadow)"/>
+    <g transform="translate(15 14)" fill="white">
+      <path d="M13 0 L0 10 L0 22 L26 22 L26 10 Z M11 22 L11 14 L15 14 L15 22"
+            stroke="white" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </g>
+  </svg>
+`)}`;
+
 export default function DeliveryRouteView() {
   const navigate = useNavigate();
+  const mapRef = useRef(null);
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [routeName, setRouteName] = useState("");
@@ -55,21 +120,28 @@ export default function DeliveryRouteView() {
   const [mapZoom, setMapZoom] = useState(13);
   const [selectedSaler, setSelectedSaler] = useState("");
   const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [vendedores, setVendedores] = useState([]);
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [selectedMarkers, setSelectedMarkers] = useState([]);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [alertModal, setAlertModal] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [iconsReady, setIconsReady] = useState(false);
 
   const [optimizationResult, setOptimizationResult] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [customCapacity, setCustomCapacity] = useState(null);
   const [selectedTripView, setSelectedTripView] = useState(null);
   const [activeTab, setActiveTab] = useState(TABS.PEDIDOS);
+
+  const [selectedMunicipio, setSelectedMunicipio] = useState("");
+  const [showMunicipios, setShowMunicipios] = useState(true);
+  const [showViewOptions, setShowViewOptions] = useState(false);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -79,6 +151,10 @@ export default function DeliveryRouteView() {
     id: "google-map-script",
     libraries: GOOGLE_MAPS_LIBRARIES
   });
+
+  useEffect(() => {
+    preloadChannelIcons().then(() => setIconsReady(true));
+  }, []);
 
   const selectedVendor = useMemo(
     () => vendedores.find(v => v._id === selectedSaler),
@@ -98,6 +174,24 @@ export default function DeliveryRouteView() {
   const isOverCapacity = currentLoad > truckCapacity;
   const canOptimize = markers.length >= MIN_ORDERS_TO_OPTIMIZE && selectedSaler;
 
+  const filteredMarkers = useMemo(() => {
+    if (!selectedMunicipio) return markers;
+    return markers.filter(client => {
+      const loc = client.id_client?.client_location || client.client_location;
+      if (!loc?.latitud || !loc?.longitud) return false;
+      const m = getMunicipioForPoint(loc.latitud, loc.longitud);
+      return m?.id === selectedMunicipio;
+    });
+  }, [markers, selectedMunicipio]);
+
+  const municipioGroups = useMemo(() => {
+    const transformed = markers.map(m => ({
+      ...m,
+      client_location: m.id_client?.client_location || m.client_location,
+    }));
+    return groupClientsByMunicipio(transformed);
+  }, [markers]);
+
   const fetchProducts = useCallback(async () => {
     try {
       const response = await axios.post(API_URL + "/whatsapp/delivery/list", {
@@ -114,7 +208,7 @@ export default function DeliveryRouteView() {
     setLoading(true);
     try {
       const filters = {
-        id_owner: user, page, limit: 5, fullName: searchTerm,
+        id_owner: user, page, limit: pageSize, fullName: searchTerm,
         salesId: selectedSaler, status: "aproved", region: "TOTAL CBB"
       };
       const response = await axios.post(API_URL + "/whatsapp/order/status/id", filters, {
@@ -122,26 +216,30 @@ export default function DeliveryRouteView() {
       });
       setMarkers(response.data.orders || []);
       setTotalPages(response.data.totalPages || 1);
+      setTotalOrders(response.data.total || response.data.orders?.length || 0);
     } catch (error) {
       console.error("Error cargando órdenes", error);
       setMarkers([]);
     } finally {
       setLoading(false);
     }
-  }, [user, searchTerm, token, selectedSaler, page]);
+  }, [user, searchTerm, token, selectedSaler, page, pageSize]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
   useEffect(() => { loadMarkersFromAPI(); }, [loadMarkersFromAPI]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize, selectedMunicipio]);
+
   const validateForm = () => routeName && startDate && endDate;
 
-  const findLocation = (location) => {
+  const panToLocation = (location) => {
     if (location && location.client_location) {
       const lat = parseFloat(location.client_location.latitud);
       const lng = parseFloat(location.client_location.longitud);
-      if (!isNaN(lat) && !isNaN(lng)) {
-        setMapZoom(18);
-        setCenter({ lat, lng });
+      if (!isNaN(lat) && !isNaN(lng) && mapRef.current) {
+        mapRef.current.panTo({ lat, lng });
       }
     }
   };
@@ -155,6 +253,45 @@ export default function DeliveryRouteView() {
     setStartDate(""); setEndDate(""); setOptimizationResult(null);
     setSelectedTripView(null); setCustomCapacity(null);
     setActiveTab(TABS.PEDIDOS);
+  };
+
+  const handleZoomIn = () => {
+    const z = mapRef.current?.getZoom() || 13;
+    mapRef.current?.setZoom(Math.min(z + 1, 22));
+  };
+
+  const handleZoomOut = () => {
+    const z = mapRef.current?.getZoom() || 13;
+    mapRef.current?.setZoom(Math.max(z - 1, 3));
+  };
+
+  const fitToMarkers = (clientList) => {
+    if (!mapRef.current || !window.google || clientList.length === 0) return;
+    const bounds = new window.google.maps.LatLngBounds();
+    let has = false;
+    clientList.forEach(c => {
+      const loc = c.client_location || c.id_client?.client_location;
+      const lat = Number(loc?.latitud);
+      const lng = Number(loc?.longitud);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        bounds.extend({ lat, lng });
+        has = true;
+      }
+    });
+    if (has) {
+      bounds.extend(DEPOT);
+      mapRef.current.fitBounds(bounds, { top: 100, right: 240, bottom: 200, left: 100 });
+    }
+  };
+
+  const fitMunicipio = (municipioId) => {
+    if (!mapRef.current || !window.google) return;
+    const m = MUNICIPIOS_COCHABAMBA[municipioId];
+    if (!m) return;
+    const bounds = new window.google.maps.LatLngBounds();
+    bounds.extend({ lat: m.bounds.north, lng: m.bounds.east });
+    bounds.extend({ lat: m.bounds.south, lng: m.bounds.west });
+    mapRef.current.fitBounds(bounds, { top: 100, right: 240, bottom: 200, left: 100 });
   };
 
   const handleOptimize = async () => {
@@ -200,6 +337,7 @@ export default function DeliveryRouteView() {
       setSelectedMarkers(firstTrip.orders.map(buildMarkerFromOrder));
       setSelectedTripView(1);
       setActiveTab(TABS.PLAN);
+      setTimeout(() => fitToMarkers(firstTrip.orders), 400);
     }
   };
 
@@ -218,6 +356,7 @@ export default function DeliveryRouteView() {
     name: location.id_client?.name,
     lastName: location.id_client?.lastName,
     profilePicture: location.id_client?.identificationImage,
+    userCategory: location.id_client?.userCategory || location.userCategory,
     client_location: location.id_client?.client_location || location.client_location,
     visitStatus: false, visitStatus1: "Sin visitar", visitTime: null,
     orderTaken: false, visitStartTime: null, visitEndTime: null,
@@ -230,6 +369,7 @@ export default function DeliveryRouteView() {
     if (!trip) return;
     setSelectedMarkers(trip.orders.map(buildMarkerFromOrder));
     setSelectedTripView(tripNumber);
+    setTimeout(() => fitToMarkers(trip.orders), 200);
   };
 
   const handleCreateAllRoutes = async () => {
@@ -411,7 +551,6 @@ export default function DeliveryRouteView() {
       }
       return prev;
     });
-    findLocation({ client_location: location.id_client.client_location });
   };
 
   const isClientSelected = (clientId) => selectedMarkers.some(m => m._id === clientId);
@@ -419,7 +558,7 @@ export default function DeliveryRouteView() {
 
   return (
     <div className="h-screen w-full flex overflow-hidden bg-gray-50">
-      <div className={`${sidebarCollapsed ? 'w-0 lg:w-16' : 'w-full lg:w-[440px]'} h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
+      <div className={`${sidebarCollapsed ? 'w-0 lg:w-16' : 'w-full lg:w-[460px]'} h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
         {!sidebarCollapsed && (
           <>
             <div className="px-5 pt-4 pb-3 bg-gradient-to-br from-[#D3423E] to-red-700 text-white">
@@ -429,7 +568,7 @@ export default function DeliveryRouteView() {
                   <div>
                     <h1 className="text-base font-bold leading-tight">Rutas de entrega</h1>
                     <p className="text-[10px] text-red-100">
-                      {markers.length} pedido{markers.length !== 1 ? "s" : ""} disponible{markers.length !== 1 ? "s" : ""}
+                      {totalOrders} pedido{totalOrders !== 1 ? "s" : ""} disponible{totalOrders !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>
@@ -447,33 +586,28 @@ export default function DeliveryRouteView() {
                     <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
                       <FaTruck size={13} />
                     </div>
-                   <select
-  value={selectedSaler}
-  onChange={(e) => {
-    setSelectedSaler(e.target.value);
-    setPage(1);
-    setOptimizationResult(null);
-    setCustomCapacity(null);
-    setActiveTab(TABS.PEDIDOS);
-  }}
-  className="flex-1 min-w-0 bg-white text-gray-800 text-sm font-bold focus:outline-none focus:ring-0 focus:border-transparent border-0 cursor-pointer appearance-none truncate rounded-lg px-2 py-1"
-  style={{ colorScheme: "light" }}
->
-  <option value="" className="text-gray-700 bg-white">
-    Sin repartidor asignado
-  </option>
-
-  {vendedores.map((v) => (
-    <option
-      key={v._id}
-      value={v._id}
-      className="text-gray-900 bg-white"
-    >
-      {v.fullName} {v.lastName}
-      {v.truckCapacity && ` · ${v.truckCapacity} cajas`}
-    </option>
-  ))}
-</select>
+                    <select
+                      value={selectedSaler}
+                      onChange={(e) => {
+                        setSelectedSaler(e.target.value);
+                        setPage(1);
+                        setOptimizationResult(null);
+                        setCustomCapacity(null);
+                        setActiveTab(TABS.PEDIDOS);
+                      }}
+                      className="flex-1 min-w-0 bg-white text-gray-800 text-sm font-bold focus:outline-none focus:ring-0 focus:border-transparent border-0 cursor-pointer appearance-none truncate rounded-lg px-2 py-1.5"
+                      style={{ colorScheme: "light" }}
+                    >
+                      <option value="" className="text-gray-700 bg-white">
+                        Sin repartidor asignado
+                      </option>
+                      {vendedores.map((v) => (
+                        <option key={v._id} value={v._id} className="text-gray-900 bg-white">
+                          {v.fullName} {v.lastName}
+                          {v.truckCapacity && ` · ${v.truckCapacity} cajas`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -527,15 +661,40 @@ export default function DeliveryRouteView() {
                 />
               </div>
 
+              <div className="flex items-center gap-2 mb-2.5">
+                <select
+                  value={selectedMunicipio}
+                  onChange={(e) => {
+                    setSelectedMunicipio(e.target.value);
+                    if (e.target.value) fitMunicipio(e.target.value);
+                  }}
+                  className="flex-1 text-xs px-2.5 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E]"
+                >
+                  <option value="">Todas las zonas</option>
+                  {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({municipioGroups[m.id]?.count || 0})
+                    </option>
+                  ))}
+                </select>
+                {selectedMunicipio && (
+                  <button
+                    onClick={() => setSelectedMunicipio("")}
+                    className="px-2 py-2 text-xs text-gray-500 hover:text-[#D3423E]"
+                  >
+                    <FaTimes size={11} />
+                  </button>
+                )}
+              </div>
+
               <motion.button
                 whileHover={canOptimize ? { scale: 1.01 } : {}}
                 whileTap={canOptimize ? { scale: 0.99 } : {}}
                 onClick={handleOptimize}
                 disabled={!canOptimize || isOptimizing}
-                className={`w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 relative overflow-hidden ${
-                  !canOptimize
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-br from-[#D3423E] to-red-700 text-white shadow-md hover:shadow-lg'
+                className={`w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 relative overflow-hidden ${!canOptimize
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-br from-[#D3423E] to-red-700 text-white shadow-md hover:shadow-lg'
                 }`}
               >
                 {isOptimizing ? (
@@ -554,8 +713,8 @@ export default function DeliveryRouteView() {
                     {!selectedSaler
                       ? "Selecciona un repartidor"
                       : markers.length < MIN_ORDERS_TO_OPTIMIZE
-                      ? `Mínimo ${MIN_ORDERS_TO_OPTIMIZE} pedidos (${markers.length} actuales)`
-                      : `Optimizar ruta automáticamente`
+                        ? `Mínimo ${MIN_ORDERS_TO_OPTIMIZE} pedidos (${markers.length} actuales)`
+                        : `Optimizar ruta automáticamente`
                     }
                   </>
                 )}
@@ -576,10 +735,9 @@ export default function DeliveryRouteView() {
               <div className="flex border-b border-gray-200 bg-white">
                 <button
                   onClick={() => setActiveTab(TABS.PLAN)}
-                  className={`flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 ${
-                    activeTab === TABS.PLAN
-                      ? "text-[#D3423E] border-b-2 border-[#D3423E] bg-red-50/30"
-                      : "text-gray-500 hover:text-gray-700"
+                  className={`flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 ${activeTab === TABS.PLAN
+                    ? "text-[#D3423E] border-b-2 border-[#D3423E] bg-red-50/30"
+                    : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   <FaMagic size={11} />
@@ -587,14 +745,13 @@ export default function DeliveryRouteView() {
                 </button>
                 <button
                   onClick={() => setActiveTab(TABS.PEDIDOS)}
-                  className={`flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 ${
-                    activeTab === TABS.PEDIDOS
-                      ? "text-[#D3423E] border-b-2 border-[#D3423E] bg-red-50/30"
-                      : "text-gray-500 hover:text-gray-700"
+                  className={`flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 ${activeTab === TABS.PEDIDOS
+                    ? "text-[#D3423E] border-b-2 border-[#D3423E] bg-red-50/30"
+                    : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   <FaReceipt size={11} />
-                  Pedidos ({markers.length})
+                  Pedidos ({totalOrders})
                 </button>
               </div>
             )}
@@ -615,15 +772,19 @@ export default function DeliveryRouteView() {
               ) : (
                 <PedidosListPanel
                   loading={loading}
-                  markers={markers}
+                  markers={filteredMarkers}
+                  totalOrders={totalOrders}
                   isClientSelected={isClientSelected}
-                  findLocation={findLocation}
+                  panToLocation={panToLocation}
                   goToClientDetails={goToClientDetails}
                   handleDelete={handleDelete}
                   handleMarkerClick={handleMarkerClick}
                   page={page}
                   setPage={setPage}
                   totalPages={totalPages}
+                  pageSize={pageSize}
+                  setPageSize={setPageSize}
+                  selectedMunicipio={selectedMunicipio}
                 />
               )}
             </div>
@@ -651,50 +812,110 @@ export default function DeliveryRouteView() {
             mapContainerStyle={containerStyle}
             center={center}
             zoom={mapZoom}
+            onLoad={(map) => { mapRef.current = map; }}
             options={{
-              disableDefaultUI: false, zoomControl: true,
-              streetViewControl: false, mapTypeControl: false,
-              fullscreenControl: true,
+              disableDefaultUI: true,
+              zoomControl: false,
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: false,
+              styles: [
+                { featureType: "poi", stylers: [{ visibility: "off" }] },
+                { featureType: "transit", stylers: [{ visibility: "off" }] },
+              ],
             }}
           >
+            {showMunicipios && Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
+              <React.Fragment key={m.id}>
+                <Polygon
+                  paths={m.paths}
+                  options={{
+                    fillColor: m.fillColor,
+                    fillOpacity: selectedMunicipio === m.id ? 0.16 : m.fillOpacity,
+                    strokeColor: m.strokeColor,
+                    strokeOpacity: m.strokeOpacity,
+                    strokeWeight: selectedMunicipio === m.id ? 2.5 : m.strokeWeight,
+                    clickable: true,
+                  }}
+                  onClick={() => {
+                    setSelectedMunicipio(selectedMunicipio === m.id ? "" : m.id);
+                    if (selectedMunicipio !== m.id) fitMunicipio(m.id);
+                  }}
+                />
+                <OverlayView
+                  position={m.center}
+                  mapPaneName={OverlayView.OVERLAY_LAYER}
+                >
+                  <div
+                    className="pointer-events-none select-none"
+                    style={{
+                      transform: "translate(-50%, -50%)",
+                      color: "#475569",
+                      fontWeight: 700,
+                      fontSize: 11,
+                      letterSpacing: 0.3,
+                      textTransform: "uppercase",
+                      textShadow: "1px 1px 3px white, -1px -1px 3px white, 1px -1px 3px white, -1px 1px 3px white",
+                      opacity: 0.75,
+                    }}
+                  >
+                    {m.name}
+                  </div>
+                </OverlayView>
+              </React.Fragment>
+            ))}
+
             <Marker
               position={DEPOT}
-              icon={{
-                url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                  <svg width="50" height="50" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="25" cy="25" r="22" fill="#1F2937" stroke="white" strokeWidth="3"/>
-                    <text x="25" y="32" text-anchor="middle" fill="white" font-size="20">⌂</text>
-                  </svg>
-                `)}`,
-                scaledSize: new window.google.maps.Size(50, 50),
-              }}
+              icon={window.google ? {
+                url: buildDepotIcon(),
+                scaledSize: new window.google.maps.Size(56, 56),
+                anchor: new window.google.maps.Point(28, 28),
+              } : null}
               title="Depósito"
+              zIndex={2000}
             />
 
-            {markers.length > 0 && markers.map((location, index) => {
+            {filteredMarkers.length > 0 && filteredMarkers.map((location, index) => {
+              const loc = location.id_client?.client_location || location.client_location;
+              if (!loc?.latitud || !loc?.longitud) return null;
+
               const isSelected = selectedMarkers.some(m => m._id === location._id);
-              const orderIndex = selectedMarkers.findIndex(m => m._id === location._id);
-              const color = selectedTripView ? getTripColor(selectedTripView) : "#D3423E";
+              if (isSelected) return null;
+
+              const channel = location.id_client?.userCategory || location.userCategory;
+              const icon = window.google && iconsReady
+                ? buildMarkerIcon(channel, window.google.maps, false)
+                : null;
+
               return (
                 <Marker
-                  key={index}
-                  position={{
-                    lat: location.id_client.client_location.latitud,
-                    lng: location.id_client.client_location.longitud,
-                  }}
-                  icon={isSelected ? {
-                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                      <svg width="50" height="50" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="25" cy="25" r="22" fill="${color}" stroke="white" strokeWidth="3"/>
-                        <text x="25" y="31" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="Arial">${orderIndex + 1}</text>
-                      </svg>
-                    `)}`,
-                    scaledSize: new window.google.maps.Size(50, 50),
-                  } : {
-                    url: tiendaIcon,
-                    scaledSize: new window.google.maps.Size(40, 40),
-                  }}
+                  key={`avail-${location._id || index}`}
+                  position={{ lat: Number(loc.latitud), lng: Number(loc.longitud) }}
+                  icon={icon}
                   onClick={() => handleMarkerClick(location)}
+                  zIndex={1}
+                />
+              );
+            })}
+
+            {selectedMarkers.map((client, index) => {
+              if (!client.client_location?.latitud || !client.client_location?.longitud) return null;
+              const tripColor = selectedTripView ? getTripColor(selectedTripView) : "#D3423E";
+              return (
+                <Marker
+                  key={`sel-${client._id}`}
+                  position={{
+                    lat: Number(client.client_location.latitud),
+                    lng: Number(client.client_location.longitud),
+                  }}
+                  icon={window.google ? {
+                    url: buildOrderedChannelMarker(index, client.userCategory, tripColor),
+                    scaledSize: new window.google.maps.Size(52, 52),
+                    anchor: new window.google.maps.Point(26, 26),
+                  } : null}
+                  onClick={() => handleDelete(client._id)}
+                  zIndex={1000 + index}
                 />
               );
             })}
@@ -705,7 +926,7 @@ export default function DeliveryRouteView() {
                 options={{
                   polylineOptions: {
                     strokeColor: selectedTripView ? getTripColor(selectedTripView) : "#D3423E",
-                    strokeOpacity: 0.8,
+                    strokeOpacity: 0.85,
                     strokeWeight: 5,
                   },
                   suppressMarkers: true,
@@ -722,28 +943,138 @@ export default function DeliveryRouteView() {
           </div>
         )}
 
-        <div className="absolute top-4 right-4 z-10 bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[200px]">
-          <p className="text-xs font-bold text-gray-700 mb-2 uppercase">Leyenda</p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-5 h-5 rounded-full bg-gray-800 border-2 border-white flex items-center justify-center text-white text-[10px]">⌂</div>
-              <span className="text-gray-700">Depósito</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <img src={tiendaIcon} alt="" className="w-5 h-5" />
-              <span className="text-gray-700">Pedido</span>
-            </div>
-            {optimizationResult && optimizationResult.trips.map(trip => (
-              <div key={trip.tripNumber} className="flex items-center gap-2 text-xs">
-                <div
-                  className="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px] font-bold"
-                  style={{ backgroundColor: getTripColor(trip.tripNumber) }}
-                >
-                  {trip.tripNumber}
+        <div className="absolute top-4 left-4 z-10 flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+          <button
+            onClick={handleZoomIn}
+            className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors border-b border-gray-200"
+            title="Acercar"
+          >
+            <FaPlus size={13} />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+            title="Alejar"
+          >
+            <FaMinus size={13} />
+          </button>
+        </div>
+
+        <div className="absolute top-4 right-4 z-10">
+          <div className="relative">
+            <button
+              onClick={() => setShowViewOptions(!showViewOptions)}
+              className="bg-white rounded-xl shadow-xl p-3 border border-gray-200 flex items-center gap-2 hover:shadow-2xl transition-all"
+            >
+              <FaCog className="text-gray-600" size={13} />
+              <span className="text-xs font-bold text-gray-700">Vista</span>
+              <FaChevronRight
+                className={`text-gray-400 transition-transform ${showViewOptions ? "rotate-90" : "rotate-0"}`}
+                size={9}
+              />
+            </button>
+
+            {showViewOptions && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowViewOptions(false)} />
+                <div className="absolute top-full right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-20">
+                  <div className="p-2 border-b border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase px-2 py-1">Capas del mapa</p>
+                  </div>
+                  <button
+                    onClick={() => setShowMunicipios(!showMunicipios)}
+                    className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FaCity className="text-gray-600" size={12} />
+                      <span className="text-xs font-bold text-gray-700">Zonas municipales</span>
+                    </div>
+                    {showMunicipios ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
+                  </button>
+                  <div className="border-t border-gray-100">
+                    <button
+                      onClick={() => { fitToMarkers(filteredMarkers); setShowViewOptions(false); }}
+                      className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                    >
+                      <FaExpand className="text-gray-600" size={12} />
+                      <span className="text-xs font-bold text-gray-700">Ver todos los pedidos</span>
+                    </button>
+                    {selectedMarkers.length > 0 && (
+                      <button
+                        onClick={() => { fitToMarkers(selectedMarkers); setShowViewOptions(false); }}
+                        className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                      >
+                        <FaRoute className="text-[#D3423E]" size={12} />
+                        <span className="text-xs font-bold text-gray-700">Ver ruta completa</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <span className="text-gray-700">Viaje {trip.tripNumber}</span>
+              </>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[210px] mt-2">
+            <p className="text-xs font-bold text-gray-700 mb-2 uppercase flex items-center gap-1">
+              <FaLayerGroup size={10} /> Leyenda
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs">
+                <div className="w-5 h-5 rounded-full bg-gray-900 border-2 border-white shadow-sm flex items-center justify-center">
+                  <span className="text-white text-[8px]">⌂</span>
+                </div>
+                <span className="text-gray-700 font-medium">Depósito</span>
               </div>
-            ))}
+              {CHANNEL_LIST.map(channel => {
+                const conf = CHANNEL_CONFIG[channel];
+                return (
+                  <div key={channel} className="flex items-center gap-2 text-xs">
+                    <div
+                      className="w-5 h-5 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-[9px]"
+                      style={{ backgroundColor: conf.color }}
+                    >
+                      {conf.emoji}
+                    </div>
+                    <span className="text-gray-700 font-medium">{channel}</span>
+                  </div>
+                );
+              })}
+              {optimizationResult && (
+                <>
+                  <div className="pt-1.5 mt-1 border-t border-gray-100">
+                    <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">Viajes</p>
+                    {optimizationResult.trips.map(trip => (
+                      <div key={trip.tripNumber} className="flex items-center gap-2 text-xs mb-1">
+                        <div
+                          className="w-5 h-5 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white text-[10px] font-bold"
+                          style={{ backgroundColor: getTripColor(trip.tripNumber) }}
+                        >
+                          {trip.tripNumber}
+                        </div>
+                        <span className="text-gray-700">Viaje {trip.tripNumber}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {showMunicipios && (
+                <div className="pt-1.5 mt-1 border-t border-gray-100">
+                  <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">Zonas</p>
+                  {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
+                    <div key={m.id} className="flex items-center gap-2 text-xs mb-0.5">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: m.accent }}
+                      />
+                      <span className="text-gray-700 flex-1">{m.name}</span>
+                      <span className="text-[10px] font-bold text-gray-500">
+                        {municipioGroups[m.id]?.count || 0}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -754,7 +1085,7 @@ export default function DeliveryRouteView() {
             currentLoad={currentLoad}
             totalAmount={totalAmount}
             moveClient={moveClient}
-            findLocation={findLocation}
+            panToLocation={panToLocation}
             handleDelete={handleDelete}
           />
         )}
@@ -857,10 +1188,9 @@ const TripCard = ({ trip, isSelected, onClick }) => {
 
   return (
     <div
-      className={`rounded-xl border-2 transition-all overflow-hidden ${
-        isSelected
-          ? 'bg-white shadow-md'
-          : 'bg-white/70 hover:bg-white'
+      className={`rounded-xl border-2 transition-all overflow-hidden ${isSelected
+        ? 'bg-white shadow-md'
+        : 'bg-white/70 hover:bg-white'
       }`}
       style={{
         borderColor: isSelected ? getTripColor(trip.tripNumber) : 'transparent'
@@ -961,9 +1291,18 @@ const TripCard = ({ trip, isSelected, onClick }) => {
 };
 
 const PedidosListPanel = ({
-  loading, markers, isClientSelected, findLocation, goToClientDetails,
-  handleDelete, handleMarkerClick, page, setPage, totalPages
+  loading, markers, totalOrders, isClientSelected, panToLocation, goToClientDetails,
+  handleDelete, handleMarkerClick, page, setPage, totalPages,
+  pageSize, setPageSize, selectedMunicipio,
 }) => {
+  const visiblePages = useMemo(() => {
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (page <= 3) return [1, 2, 3, 4, totalPages];
+    if (page >= totalPages - 2) return [1, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, page - 1, page, page + 1, totalPages];
+  }, [page, totalPages]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
@@ -979,9 +1318,14 @@ const PedidosListPanel = ({
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
           <FaReceipt className="text-gray-300 text-3xl" />
         </div>
-        <p className="text-gray-700 font-semibold">Sin pedidos aprobados</p>
+        <p className="text-gray-700 font-semibold">
+          {selectedMunicipio ? "Sin pedidos en esta zona" : "Sin pedidos aprobados"}
+        </p>
         <p className="text-sm text-gray-500 mt-1">
-          No hay pedidos disponibles para asignar
+          {selectedMunicipio
+            ? "Prueba con otra zona o limpia el filtro"
+            : "No hay pedidos disponibles para asignar"
+          }
         </p>
       </div>
     );
@@ -989,25 +1333,44 @@ const PedidosListPanel = ({
 
   return (
     <div className="p-4 space-y-3">
+      <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wide px-1">
+        <span>
+          {selectedMunicipio
+            ? `${markers.length} en esta zona`
+            : `Mostrando ${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, totalOrders)} de ${totalOrders}`
+          }
+        </span>
+      </div>
+
       {markers.map((client) => {
         const isSelected = isClientSelected(client._id);
         const accountConfig = ACCOUNT_STATUS_CONFIG[client.accountStatus];
         const packing = calculateOrderPacking(client);
+        const channelConf = getChannelConfig(client.id_client?.userCategory);
+        const loc = client.id_client?.client_location;
+        const muni = loc?.latitud ? getMunicipioForPoint(loc.latitud, loc.longitud) : null;
         return (
           <div
             key={client._id}
-            onClick={() => findLocation({ client_location: client.id_client.client_location })}
-            className={`bg-white border-2 rounded-xl overflow-hidden transition-all cursor-pointer hover:shadow-md ${
-              isSelected ? 'border-[#D3423E] shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-gray-300'
+            onClick={() => panToLocation({ client_location: loc })}
+            className={`bg-white border-2 rounded-xl overflow-hidden transition-all cursor-pointer hover:shadow-md ${isSelected ? 'border-[#D3423E] shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex gap-3 p-3">
-              <img
-                className="w-14 h-14 object-cover rounded-xl bg-gray-100 flex-shrink-0"
-                src={client.id_client.identificationImage || FALLBACK_IMAGE}
-                alt={client.id_client.name}
-                onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
-              />
+              <div className="relative flex-shrink-0">
+                <img
+                  className="w-14 h-14 object-cover rounded-xl bg-gray-100"
+                  src={client.id_client.identificationImage || FALLBACK_IMAGE}
+                  alt={client.id_client.name}
+                  onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
+                />
+                <div
+                  className="absolute -top-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[11px] shadow-sm"
+                  style={{ backgroundColor: channelConf.color }}
+                >
+                  {channelConf.emoji}
+                </div>
+              </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
@@ -1032,6 +1395,15 @@ const PedidosListPanel = ({
                   {accountConfig && (
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${accountConfig.color}`}>
                       {accountConfig.label}
+                    </span>
+                  )}
+                  {muni && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 flex items-center gap-0.5">
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: muni.accent }}
+                      />
+                      {muni.name}
                     </span>
                   )}
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-[#D3423E] border border-red-200 flex items-center gap-0.5">
@@ -1090,10 +1462,9 @@ const PedidosListPanel = ({
                     if (isSelected) handleDelete(client._id);
                     else handleMarkerClick(client);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${
-                    isSelected
-                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                      : 'bg-[#D3423E] text-white hover:bg-red-700'
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${isSelected
+                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                    : 'bg-[#D3423E] text-white hover:bg-red-700'
                   }`}
                 >
                   {isSelected ? (
@@ -1108,40 +1479,69 @@ const PedidosListPanel = ({
         );
       })}
 
-      {totalPages > 1 && (
-        <nav className="flex items-center justify-center pt-4 gap-1">
-          <button
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-            className={`p-2 rounded-lg transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
-          >
-            <FaChevronLeft size={14} />
-          </button>
-          {(() => {
-            let start = Math.max(1, page - 1);
-            let end = Math.min(totalPages, page + 1);
-            if (page === 1) end = Math.min(3, totalPages);
-            else if (page === totalPages) start = Math.max(totalPages - 2, 1);
-            const pagesToShow = [];
-            for (let i = start; i <= end; i++) pagesToShow.push(i);
-            return pagesToShow.map((num) => (
-              <button
-                key={num}
-                onClick={() => setPage(num)}
-                className={`w-9 h-9 rounded-lg text-sm font-bold transition-colors ${page === num ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-100"}`}
-              >
-                {num}
-              </button>
-            ));
-          })()}
-          <button
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
-            className={`p-2 rounded-lg transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
-          >
-            <FaChevronRight size={14} />
-          </button>
-        </nav>
+      {!selectedMunicipio && totalPages > 1 && (
+        <div className="pt-4 space-y-3">
+          <nav className="flex items-center justify-center gap-1">
+            <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              className={`px-2 h-9 rounded-lg text-xs font-bold transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
+              title="Primera página"
+            >
+              ‹‹
+            </button>
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className={`p-2 rounded-lg transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
+            >
+              <FaChevronLeft size={12} />
+            </button>
+            {visiblePages.map((num, idx) => {
+              const isGap = idx > 0 && num - visiblePages[idx - 1] > 1;
+              return (
+                <React.Fragment key={num}>
+                  {isGap && <span className="text-gray-400 px-1">…</span>}
+                  <button
+                    onClick={() => setPage(num)}
+                    className={`w-9 h-9 rounded-lg text-sm font-bold transition-colors ${page === num ? "bg-gradient-to-br from-[#D3423E] to-red-700 text-white shadow-sm" : "text-gray-700 hover:bg-gray-100"}`}
+                  >
+                    {num}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className={`p-2 rounded-lg transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
+            >
+              <FaChevronRight size={12} />
+            </button>
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+              className={`px-2 h-9 rounded-lg text-xs font-bold transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
+              title="Última página"
+            >
+              ››
+            </button>
+          </nav>
+
+          <div className="flex items-center justify-center gap-2 text-xs">
+            <span className="text-gray-500 font-medium">Mostrar</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="bg-white border border-gray-300 rounded-lg px-2 py-1 text-xs font-bold text-gray-700 cursor-pointer focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+            >
+              {PAGE_SIZE_OPTIONS.map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <span className="text-gray-500 font-medium">por página</span>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1149,7 +1549,7 @@ const PedidosListPanel = ({
 
 const SelectedRouteBar = ({
   selectedMarkers, selectedTripView, currentLoad, totalAmount,
-  moveClient, findLocation, handleDelete
+  moveClient, panToLocation, handleDelete
 }) => (
   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-10">
     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-3">
@@ -1178,10 +1578,11 @@ const SelectedRouteBar = ({
       <div className="flex overflow-x-auto space-x-2 pb-1">
         {selectedMarkers.map((client, idx) => {
           const packing = calculateOrderPacking(client);
+          const channelConf = getChannelConfig(client.userCategory);
           return (
             <div
               key={client._id}
-              className="flex-shrink-0 flex items-center gap-2 p-2 border-2 bg-red-50/50 rounded-xl min-w-[230px]"
+              className="flex-shrink-0 flex items-center gap-2 p-2 border-2 bg-red-50/50 rounded-xl min-w-[240px]"
               style={{ borderColor: selectedTripView ? getTripColor(selectedTripView) : "#D3423E" }}
             >
               <div className="flex flex-col gap-0.5">
@@ -1202,10 +1603,13 @@ const SelectedRouteBar = ({
               >
                 {idx + 1}
               </div>
-              <div onClick={() => findLocation(client)} className="flex-1 min-w-0 cursor-pointer">
-                <p className="text-xs font-bold text-gray-900 truncate">
-                  {client.name} {client.lastName}
-                </p>
+              <div onClick={() => panToLocation(client)} className="flex-1 min-w-0 cursor-pointer">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px]">{channelConf.emoji}</span>
+                  <p className="text-xs font-bold text-gray-900 truncate">
+                    {client.name} {client.lastName}
+                  </p>
+                </div>
                 <p className="text-[10px] text-gray-500 truncate">
                   #{client.receiveNumber} · {packing.physicalBoxes}c · {packing.totalBottles}b
                 </p>
@@ -1394,10 +1798,9 @@ const CreateRouteModal = ({
             <button
               onClick={handleCreateRoute}
               disabled={!validateForm() || creating}
-              className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors flex items-center justify-center gap-2 ${
-                !validateForm() || creating
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-gradient-to-br from-[#D3423E] to-red-700 hover:shadow-lg'
+              className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors flex items-center justify-center gap-2 ${!validateForm() || creating
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-gradient-to-br from-[#D3423E] to-red-700 hover:shadow-lg'
               }`}
             >
               {creating ? (

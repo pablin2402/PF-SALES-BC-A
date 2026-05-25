@@ -10,6 +10,8 @@ import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading"
+import { ModernPagination } from "../utils/ModernPagination";
 
 const COLOR_CLASSES = [
   'bg-gradient-to-br from-orange-500 to-orange-700',
@@ -21,7 +23,6 @@ const COLOR_CLASSES = [
   'bg-gradient-to-br from-indigo-500 to-indigo-700',
   'bg-gradient-to-br from-teal-500 to-teal-700'
 ];
-
 const DeliveryView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -183,7 +184,13 @@ const DeliveryView = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen p-4 sm:p-6">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -207,40 +214,42 @@ const DeliveryView = () => {
             </PrincipalBUtton>
           </div>
         </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <StatCard
-            label="Total"
-            value={stats.total}
-            icon={<FaUsers />}
-            color="bg-gray-100 text-gray-700"
-            onClick={() => setStatusFilter("all")}
-            active={statusFilter === "all"}
-          />
-          <StatCard
-            label="Activos"
-            value={stats.active}
-            icon={<FaToggleOn />}
-            color="bg-green-100 text-green-700"
-            onClick={() => setStatusFilter("active")}
-            active={statusFilter === "active"}
-          />
-          <StatCard
-            label="Inactivos"
-            value={stats.inactive}
-            icon={<FaToggleOff />}
-            color="bg-red-100 text-red-700"
-            onClick={() => setStatusFilter("inactive")}
-            active={statusFilter === "inactive"}
-          />
-          <StatCard
-            label="Ciudades"
-            value={stats.regions}
-            icon={<FaCity />}
-            color="bg-blue-100 text-blue-700"
-          />
-        </div>
-
+        {loading && salesData.length === 0 ? (
+          <SkeletonStats />
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <StatCard
+              label="Total"
+              value={stats.total}
+              icon={<FaUsers />}
+              color="bg-gray-100 text-gray-700"
+              onClick={() => setStatusFilter("all")}
+              active={statusFilter === "all"}
+            />
+            <StatCard
+              label="Activos"
+              value={stats.active}
+              icon={<FaToggleOn />}
+              color="bg-green-100 text-green-700"
+              onClick={() => setStatusFilter("active")}
+              active={statusFilter === "active"}
+            />
+            <StatCard
+              label="Inactivos"
+              value={stats.inactive}
+              icon={<FaToggleOff />}
+              color="bg-red-100 text-red-700"
+              onClick={() => setStatusFilter("inactive")}
+              active={statusFilter === "inactive"}
+            />
+            <StatCard
+              label="Ciudades"
+              value={stats.regions}
+              icon={<FaCity />}
+              color="bg-blue-100 text-blue-700"
+            />
+          </div>
+        )}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             <div className="relative flex-1 max-w-md">
@@ -280,10 +289,7 @@ const DeliveryView = () => {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando repartidores...</p>
-            </div>
+            viewMode === "table" ? <SkeletonTable /> : <SkeletonCards />
           ) : filteredAndSorted.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -340,8 +346,8 @@ const DeliveryView = () => {
                       </td>
                       <td className="px-4 py-4 text-gray-700">
                         {item.email ? (
-                          
-                           <a href={`mailto:${item.email}`}
+
+                          <a href={`mailto:${item.email}`}
                             onClick={(e) => e.stopPropagation()}
                             className="hover:text-[#D3423E] transition-colors"
                           >
@@ -351,8 +357,8 @@ const DeliveryView = () => {
                       </td>
                       <td className="px-4 py-4 text-gray-700">
                         {item.phoneNumber ? (
-                          
-                            <a href={`tel:${item.phoneNumber}`}
+
+                          <a href={`tel:${item.phoneNumber}`}
                             onClick={(e) => e.stopPropagation()}
                             className="hover:text-[#D3423E] transition-colors flex items-center gap-1"
                           >
@@ -487,49 +493,11 @@ const DeliveryView = () => {
               </div>
 
               {totalPages > 1 && searchTerm === "" && (
-                <nav className="flex items-center gap-1">
-                  <button
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                  >
-                    ← Anterior
-                  </button>
-                  <button
-                    onClick={() => setPage(1)}
-                    className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                  >
-                    1
-                  </button>
-                  {page > 3 && <span className="px-1 text-gray-400">…</span>}
-                  {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                    .filter((p) => p > 1 && p < totalPages)
-                    .map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-                  {totalPages > 1 && (
-                    <button
-                      onClick={() => setPage(totalPages)}
-                      className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      {totalPages}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={page === totalPages}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                  >
-                    Siguiente →
-                  </button>
-                </nav>
+                <ModernPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onChange={setPage}
+                />
               )}
             </div>
           )}
@@ -607,5 +575,6 @@ const ActionsMenu = ({ onView, onToggle, isActive }) => {
     </div>
   );
 };
+
 
 export default DeliveryView;

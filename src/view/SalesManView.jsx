@@ -1,25 +1,39 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { IoPersonAdd } from "react-icons/io5";
-import { FaUsers, FaEllipsisV, FaEnvelope, FaPhone, FaMapMarkerAlt, FaKey, FaTimes, FaCheckCircle, FaTimesCircle, FaEye, FaEyeSlash, FaUserTie, FaToggleOn, FaToggleOff, FaFileExport, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import {
+  FaUsers, FaEnvelope, FaPhone, FaMapMarkerAlt, FaKey,
+  FaTimes, FaEye, FaEyeSlash, FaUserTie,
+  FaToggleOn, FaToggleOff, FaFileExport, FaSort, FaSortUp, FaSortDown, FaSearch, FaExclamationTriangle, FaRedo, FaCity,
+} from "react-icons/fa";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
-import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import {SkeletonCards,SkeletonTable,SkeletonStats} from "../utils/SkeletonLoading";
+import { ModernPagination } from "../utils/ModernPagination";
 
+import {ActionsMenu, PasswordStrength, ConfirmModal, ResultModal} from "../utils/Modal";
 const COLOR_CLASSES = [
-  'bg-gradient-to-br from-red-500 to-red-700',
-  'bg-gradient-to-br from-blue-500 to-blue-700',
-  'bg-gradient-to-br from-green-500 to-green-700',
-  'bg-gradient-to-br from-purple-500 to-purple-700',
-  'bg-gradient-to-br from-yellow-500 to-orange-600',
-  'bg-gradient-to-br from-pink-500 to-pink-700',
-  'bg-gradient-to-br from-indigo-500 to-indigo-700',
-  'bg-gradient-to-br from-teal-500 to-teal-700'
+  "bg-gradient-to-br from-red-500 to-red-700",
+  "bg-gradient-to-br from-blue-500 to-blue-700",
+  "bg-gradient-to-br from-green-500 to-green-700",
+  "bg-gradient-to-br from-purple-500 to-purple-700",
+  "bg-gradient-to-br from-yellow-500 to-orange-600",
+  "bg-gradient-to-br from-pink-500 to-pink-700",
+  "bg-gradient-to-br from-indigo-500 to-indigo-700",
+  "bg-gradient-to-br from-teal-500 to-teal-700",
 ];
+
+const REGION_LABELS = {
+  "TOTAL CBB": "Cochabamba",
+  "TOTAL SC": "Santa Cruz",
+  "TOTAL LP": "La Paz",
+  "TOTAL OR": "Oruro",
+};
+
 
 const SalesManView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -30,8 +44,10 @@ const SalesManView = () => {
   const [items, setItems] = useState(0);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({ email: "", newPassword: "" });
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [regionFilter, setRegionFilter] = useState("all");
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -41,20 +57,25 @@ const SalesManView = () => {
   const [viewMode, setViewMode] = useState("table");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [togglingId, setTogglingId] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [confirmToggle, setConfirmToggle] = useState(null);
 
   const navigate = useNavigate();
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const searchTimeoutRef = useRef(null);
 
   const fetchProducts = useCallback(async (pageNumber) => {
     setLoading(true);
     try {
-      const response = await axios.post(API_URL + "/whatsapp/sales/list/id",
+      const response = await axios.post(
+        API_URL + "/whatsapp/sales/list/id",
         {
           id_owner: user,
           page: pageNumber,
           limit: itemsPerPage,
-          searchTerm: searchTerm
+          searchTerm: searchTerm,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,29 +91,44 @@ const SalesManView = () => {
   }, [user, token, itemsPerPage, searchTerm]);
 
   useEffect(() => {
-    const delay = setTimeout(() => {
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      setSearchTerm(searchInput);
       setPage(1);
     }, 400);
-    return () => clearTimeout(delay);
-  }, [searchTerm]);
+    return () => clearTimeout(searchTimeoutRef.current);
+  }, [searchInput]);
 
   useEffect(() => {
     fetchProducts(page);
-  }, [page, itemsPerPage, fetchProducts]);
+  }, [page, fetchProducts]);
 
-  const handleToggle = async (newStatus, id) => {
+  const handleToggleConfirmed = async (newStatus, id) => {
+    setTogglingId(id);
     try {
-      await axios.put(API_URL + "/whatsapp/salesman/status", {
-        _id: id,
-        active: newStatus,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSalesData(prev => prev.map(s => s._id === id ? { ...s, active: newStatus } : s));
+      await axios.put(
+        API_URL + "/whatsapp/salesman/status",
+        { _id: id, active: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSalesData((prev) =>
+        prev.map((s) => (s._id === id ? { ...s, active: newStatus } : s))
+      );
     } catch (error) {
       console.error("Error al cambiar estado", error);
       setErrorMessage("No se pudo cambiar el estado del vendedor");
       setShowErrorModal(true);
+    } finally {
+      setTogglingId(null);
+      setConfirmToggle(null);
+    }
+  };
+
+  const requestToggle = (salesman) => {
+    if (salesman.active) {
+      setConfirmToggle(salesman);
+    } else {
+      handleToggleConfirmed(true, salesman._id);
     }
   };
 
@@ -101,18 +137,20 @@ const SalesManView = () => {
   };
 
   const getInitials = (name, lastName) => {
-    const firstInitial = name?.charAt(0).toUpperCase() || '';
-    const lastInitial = lastName?.charAt(0).toUpperCase() || '';
-    return firstInitial + lastInitial || '?';
+    const firstInitial = name?.charAt(0).toUpperCase() || "";
+    const lastInitial = lastName?.charAt(0).toUpperCase() || "";
+    return firstInitial + lastInitial || "?";
   };
 
   const getColor = (name, lastName) => {
-    const hash = ((name || '') + (lastName || '')).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = ((name || "") + (lastName || ""))
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return COLOR_CLASSES[hash % COLOR_CLASSES.length];
   };
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const validatePassword = (password) => {
@@ -138,7 +176,8 @@ const SalesManView = () => {
 
     setSubmittingPassword(true);
     try {
-      await axios.put(API_URL + "/whatsapp/password",
+      await axios.put(
+        API_URL + "/whatsapp/password",
         { email: formData.email, newPassword: formData.newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -160,21 +199,48 @@ const SalesManView = () => {
     setShowEditModal(true);
   };
 
-  const exportToExcel = () => {
-    if (!salesData.length) return;
-    const ws = XLSX.utils.json_to_sheet(
-      salesData.map(s => ({
-        "Nombre": `${s.fullName || ""} ${s.lastName || ""}`.trim(),
-        "Correo": s.email || "",
-        "Teléfono": s.phoneNumber || "",
-        "Ciudad": s.region || "",
-        "Estado": s.active ? "Activo" : "Inactivo"
-      }))
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Vendedores");
-    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    saveAs(new Blob([buf], { type: "application/octet-stream" }), `Vendedores_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      const response = await axios.post(
+        API_URL + "/whatsapp/sales/list/id",
+        {
+          id_owner: user,
+          page: 1,
+          limit: 10000,
+          searchTerm: "",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const allData = response.data.data || [];
+      if (!allData.length) {
+        setExporting(false);
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(
+        allData.map((s) => ({
+          Nombre: `${s.fullName || ""} ${s.lastName || ""}`.trim(),
+          Correo: s.email || "",
+          Teléfono: s.phoneNumber || "",
+          Ciudad: REGION_LABELS[s.region] || s.region || "",
+          Estado: s.active ? "Activo" : "Inactivo",
+        }))
+      );
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Vendedores");
+      const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      saveAs(
+        new Blob([buf], { type: "application/octet-stream" }),
+        `Vendedores_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+    } catch (error) {
+      console.error("Error exportando", error);
+      setErrorMessage("No se pudo exportar la lista");
+      setShowErrorModal(true);
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleSort = (field) => {
@@ -188,64 +254,102 @@ const SalesManView = () => {
 
   const getSortIcon = (field) => {
     if (sortBy !== field) return <FaSort className="text-gray-300" size={10} />;
-    return sortOrder === "asc" ? <FaSortUp className="text-[#D3423E]" size={10} /> : <FaSortDown className="text-[#D3423E]" size={10} />;
+    return sortOrder === "asc" ? (
+      <FaSortUp className="text-[#D3423E]" size={10} />
+    ) : (
+      <FaSortDown className="text-[#D3423E]" size={10} />
+    );
   };
 
-  const filteredAndSorted = salesData
-    .filter(s => {
-      if (statusFilter === "active") return s.active;
-      if (statusFilter === "inactive") return !s.active;
-      return true;
-    })
-    .sort((a, b) => {
-      let valA, valB;
-      switch (sortBy) {
-        case "name":
-          valA = `${a.fullName || ""} ${a.lastName || ""}`.toLowerCase();
-          valB = `${b.fullName || ""} ${b.lastName || ""}`.toLowerCase();
-          break;
-        case "email":
-          valA = (a.email || "").toLowerCase();
-          valB = (b.email || "").toLowerCase();
-          break;
-        case "region":
-          valA = (a.region || "").toLowerCase();
-          valB = (b.region || "").toLowerCase();
-          break;
-        default:
-          return 0;
-      }
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
+  const availableRegions = useMemo(() => {
+    const set = new Set();
+    salesData.forEach((s) => s.region && set.add(s.region));
+    return Array.from(set);
+  }, [salesData]);
 
-  const stats = {
+  const filteredAndSorted = useMemo(() => {
+    return salesData
+      .filter((s) => {
+        if (statusFilter === "active" && !s.active) return false;
+        if (statusFilter === "inactive" && s.active) return false;
+        if (regionFilter !== "all" && s.region !== regionFilter) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        let valA, valB;
+        switch (sortBy) {
+          case "name":
+            valA = `${a.fullName || ""} ${a.lastName || ""}`.toLowerCase();
+            valB = `${b.fullName || ""} ${b.lastName || ""}`.toLowerCase();
+            break;
+          case "email":
+            valA = (a.email || "").toLowerCase();
+            valB = (b.email || "").toLowerCase();
+            break;
+          case "region":
+            valA = (a.region || "").toLowerCase();
+            valB = (b.region || "").toLowerCase();
+            break;
+          default:
+            return 0;
+        }
+        if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+        if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      });
+  }, [salesData, statusFilter, regionFilter, sortBy, sortOrder]);
+
+  const stats = useMemo(() => ({
     total: salesData.length,
-    active: salesData.filter(s => s.active).length,
-    inactive: salesData.filter(s => !s.active).length,
-    regions: new Set(salesData.map(s => s.region).filter(Boolean)).size
+    active: salesData.filter((s) => s.active).length,
+    inactive: salesData.filter((s) => !s.active).length,
+    regions: new Set(salesData.map((s) => s.region).filter(Boolean)).size,
+  }), [salesData]);
+
+  const hasActiveFilters = statusFilter !== "all" || regionFilter !== "all" || searchInput !== "";
+
+  const clearAllFilters = () => {
+    setSearchInput("");
+    setStatusFilter("all");
+    setRegionFilter("all");
   };
 
   return (
-    <div className="bg-white min-h-screen p-4 sm:p-6">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
+
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <FaUserTie className="text-[#D3423E]" />
-              Personal de Ventas
-            </h1>
-            <p className="text-sm text-gray-500">Gestiona tu equipo de vendedores</p>
+          <div className="flex items-center gap-4">
+              <FaUserTie className="text-[#D3423E]" size={22} />
+            <div>
+              <h1 className="text-3xl font-black text-gray-900 leading-tight">
+                Personal de Ventas
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Gestiona tu equipo de vendedores
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={exportToExcel}
-              disabled={!salesData.length}
-              className={`px-4 py-2.5 border rounded-xl flex items-center gap-2 font-semibold text-sm transition-all ${salesData.length ? 'bg-white text-gray-700 border-gray-300 hover:border-[#D3423E] hover:text-[#D3423E]' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}
+              disabled={exporting || (!loading && salesData.length === 0)}
+              className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl flex items-center gap-2 font-semibold text-sm transition-all hover:border-[#D3423E] hover:text-[#D3423E] disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed"
             >
-              <FaFileExport size={14} />
-              <span className="hidden sm:inline">Exportar</span>
+              {exporting ? (
+                <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-gray-300 border-t-[#D3423E]"></div>
+              ) : (
+                <FaFileExport size={14} />
+              )}
+              <span className="hidden sm:inline">
+                {exporting ? "Exportando..." : "Exportar"}
+              </span>
             </button>
             <PrincipalBUtton onClick={() => navigate("/sales/create")} icon={IoPersonAdd}>
               Nuevo Vendedor
@@ -253,258 +357,358 @@ const SalesManView = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <StatCard
-            label="Total"
-            value={stats.total}
-            icon={<FaUsers />}
-            color="bg-gray-100 text-gray-700"
-            onClick={() => setStatusFilter("all")}
-            active={statusFilter === "all"}
-          />
-          <StatCard
-            label="Activos"
-            value={stats.active}
-            icon={<FaToggleOn />}
-            color="bg-green-100 text-green-700"
-            onClick={() => setStatusFilter("active")}
-            active={statusFilter === "active"}
-          />
-          <StatCard
-            label="Inactivos"
-            value={stats.inactive}
-            icon={<FaToggleOff />}
-            color="bg-red-100 text-red-700"
-            onClick={() => setStatusFilter("inactive")}
-            active={statusFilter === "inactive"}
-          />
-          <StatCard
-            label="Ciudades"
-            value={stats.regions}
-            icon={<FaMapMarkerAlt />}
-            color="bg-blue-100 text-blue-700"
-          />
-        </div>
+        {loading && salesData.length === 0 ? (
+          <SkeletonStats />
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <StatCard
+              label="Total"
+              value={stats.total}
+              icon={<FaUsers />}
+              color="bg-gray-100 text-gray-700"
+              onClick={() => setStatusFilter("all")}
+              active={statusFilter === "all"}
+            />
+            <StatCard
+              label="Activos"
+              value={stats.active}
+              icon={<FaToggleOn />}
+              color="bg-green-100 text-green-700"
+              onClick={() => setStatusFilter("active")}
+              active={statusFilter === "active"}
+            />
+            <StatCard
+              label="Inactivos"
+              value={stats.inactive}
+              icon={<FaToggleOff />}
+              color="bg-red-100 text-red-700"
+              onClick={() => setStatusFilter("inactive")}
+              active={statusFilter === "inactive"}
+            />
+            <StatCard
+              label="Ciudades"
+              value={stats.regions}
+              icon={<FaMapMarkerAlt />}
+              color="bg-blue-100 text-blue-700"
+            />
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-            <div className="relative flex-1 max-w-md">
-              <TextInputFilter
-                value={searchTerm}
-                onChange={setSearchTerm}
-                onEnter={() => fetchProducts(1)}
-                placeholder="Buscar vendedor por nombre..."
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              {statusFilter !== "all" && (
-                <span className="bg-[#D3423E] text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2">
-                  {statusFilter === "active" ? "Solo activos" : "Solo inactivos"}
-                  <button onClick={() => setStatusFilter("all")} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5">
-                    <FaTimes size={10} />
+          <div className="p-5 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+              <div className="relative flex-1 max-w-md">
+                <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Buscar vendedor por nombre..."
+                  className="w-full pl-10 pr-9 py-2.5 text-sm bg-gray-50 border border-gray-200 text-gray-900 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] focus:bg-white transition-all"
+                />
+                {searchInput && (
+                  <button
+                    onClick={() => setSearchInput("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                  >
+                    <FaTimes size={12} />
                   </button>
-                </span>
-              )}
+                )}
+              </div>
 
-              <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
-                <button
-                  onClick={() => setViewMode("table")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${viewMode === "table" ? 'bg-white text-[#D3423E] shadow-sm' : 'text-gray-600'}`}
-                >
-                  Tabla
-                </button>
-                <button
-                  onClick={() => setViewMode("cards")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${viewMode === "cards" ? 'bg-white text-[#D3423E] shadow-sm' : 'text-gray-600'}`}
-                >
-                  Tarjetas
-                </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative">
+                  <FaCity className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={11} />
+                  <select
+                    value={regionFilter}
+                    onChange={(e) => setRegionFilter(e.target.value)}
+                    className="pl-8 pr-8 py-2 text-sm border border-gray-200 bg-white text-gray-700 font-semibold rounded-xl focus:outline-none focus:border-[#D3423E] cursor-pointer appearance-none"
+                  >
+                    <option value="all">Todas las ciudades</option>
+                    {availableRegions.map((r) => (
+                      <option key={r} value={r}>{REGION_LABELS[r] || r}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+                  <button
+                    onClick={() => setViewMode("table")}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${viewMode === "table" ? "bg-white text-[#D3423E] shadow-sm" : "text-gray-600"}`}
+                  >
+                    Tabla
+                  </button>
+                  <button
+                    onClick={() => setViewMode("cards")}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${viewMode === "cards" ? "bg-white text-[#D3423E] shadow-sm" : "text-gray-600"}`}
+                  >
+                    Tarjetas
+                  </button>
+                </div>
               </div>
             </div>
+
+            <AnimatePresence>
+              {hasActiveFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 mt-3 flex-wrap pt-3 border-t border-gray-100">
+                    <span className="text-xs font-bold text-gray-500 uppercase">
+                      Filtros activos:
+                    </span>
+                    {searchInput && (
+                      <FilterChip
+                        label={`"${searchInput}"`}
+                        onRemove={() => setSearchInput("")}
+                      />
+                    )}
+                    {statusFilter !== "all" && (
+                      <FilterChip
+                        label={statusFilter === "active" ? "Solo activos" : "Solo inactivos"}
+                        onRemove={() => setStatusFilter("all")}
+                      />
+                    )}
+                    {regionFilter !== "all" && (
+                      <FilterChip
+                        label={REGION_LABELS[regionFilter] || regionFilter}
+                        onRemove={() => setRegionFilter("all")}
+                      />
+                    )}
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs font-bold text-[#D3423E] hover:underline flex items-center gap-1 ml-auto"
+                    >
+                      <FaRedo size={9} /> Limpiar todo
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando vendedores...</p>
-            </div>
+            viewMode === "table" ? <SkeletonTable /> : <SkeletonCards />
           ) : filteredAndSorted.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FaUserTie className="text-gray-300 text-3xl" />
-              </div>
-              <p className="text-gray-700 font-semibold">Sin vendedores</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {searchTerm ? "Intenta ajustar tu búsqueda" : "Comienza agregando tu primer vendedor"}
-              </p>
-              {!searchTerm && (
-                <button
-                  onClick={() => navigate("/sales/create")}
-                  className="mt-4 px-4 py-2 bg-[#D3423E] text-white font-bold text-sm rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
-                >
-                  <IoPersonAdd /> Agregar vendedor
-                </button>
-              )}
-            </div>
-          ) : viewMode === "table" ? (
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3"></th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("name")}>
-                      <div className="flex items-center gap-1">Nombre {getSortIcon("name")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("email")}>
-                      <div className="flex items-center gap-1">Correo {getSortIcon("email")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold">Teléfono</th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("region")}>
-                      <div className="flex items-center gap-1">Ciudad {getSortIcon("region")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-center">Estado</th>
-                    <th className="px-4 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAndSorted.map((item) => (
-                    <tr
-                      key={item._id}
-                      onClick={() => goToClientDetails(item)}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <td className="px-6 py-4">
-                        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${getColor(item.fullName, item.lastName)}`}>
-                          {getInitials(item.fullName, item.lastName)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="font-bold text-gray-900">{item.fullName} {item.lastName}</p>
-                      </td>
-                      <td className="px-4 py-4 text-gray-700">
-                        
-                          <a href={`mailto:${item.email}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="hover:text-[#D3423E] transition-colors"
-                        >
-                          {item.email || "-"}
-                        </a>
-                      </td>
-                      <td className="px-4 py-4 text-gray-700">
-                        {item.phoneNumber ? (
-                          
-                            <a href={`tel:${item.phoneNumber}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="hover:text-[#D3423E] transition-colors flex items-center gap-1"
+            <EmptyState
+              hasFilters={hasActiveFilters}
+              onClear={clearAllFilters}
+              onCreate={() => navigate("/sales/create")}
+            />
+          ) : (
+            <>
+              <div className="hidden lg:block">
+                {viewMode === "table" && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3"></th>
+                          <th
+                            className="px-4 py-3 font-bold cursor-pointer hover:text-[#D3423E] select-none"
+                            onClick={() => handleSort("name")}
                           >
-                            <FaPhone size={10} className="text-gray-400" />
-                            {item.phoneNumber}
-                          </a>
-                        ) : "-"}
-                      </td>
-                      <td className="px-4 py-4">
-                        {item.region ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
-                            <FaMapMarkerAlt size={9} />
-                            {item.region}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-xs">Sin ciudad</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <label
-                          onClick={(e) => e.stopPropagation()}
-                          className="relative inline-flex items-center cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={item.active}
-                            onChange={() => handleToggle(!item.active, item._id)}
-                          />
-                          <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors duration-300 relative">
-                            <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-sm"></div>
-                          </div>
-                        </label>
-                      </td>
-                      <td className="px-4 py-4">
-                        <ActionsMenu
-                          onPassword={(e) => { e.stopPropagation(); openPasswordModal(item); }}
-                          onView={(e) => { e.stopPropagation(); goToClientDetails(item); }}
-                          onToggle={(e) => { e.stopPropagation(); handleToggle(!item.active, item._id); }}
-                          isActive={item.active}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
+                            <div className="flex items-center gap-1">Nombre {getSortIcon("name")}</div>
+                          </th>
+                          <th
+                            className="px-4 py-3 font-bold cursor-pointer hover:text-[#D3423E] select-none"
+                            onClick={() => handleSort("email")}
+                          >
+                            <div className="flex items-center gap-1">Correo {getSortIcon("email")}</div>
+                          </th>
+                          <th className="px-4 py-3 font-bold">Teléfono</th>
+                          <th
+                            className="px-4 py-3 font-bold cursor-pointer hover:text-[#D3423E] select-none"
+                            onClick={() => handleSort("region")}
+                          >
+                            <div className="flex items-center gap-1">Ciudad {getSortIcon("region")}</div>
+                          </th>
+                          <th className="px-4 py-3 font-bold text-center">Estado</th>
+                          <th className="px-4 py-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <AnimatePresence>
+                          {filteredAndSorted.map((item, idx) => (
+                            <motion.tr
+                              key={item._id}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.18, delay: idx * 0.02 }}
+                              onClick={() => goToClientDetails(item)}
+                              className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                            >
+                              <td className="px-6 py-4">
+                                <div
+                                  className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold shadow-sm relative ${getColor(item.fullName, item.lastName)}`}
+                                >
+                                  {getInitials(item.fullName, item.lastName)}
+                                  <span
+                                    className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${item.active ? "bg-green-500" : "bg-gray-400"}`}
+                                  ></span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <p className="font-bold text-gray-900">
+                                  {item.fullName} {item.lastName}
+                                </p>
+                              </td>
+                              <td className="px-4 py-4 text-gray-700">
+                                <a
+                                  href={`mailto:${item.email}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:text-[#D3423E] transition-colors"
+                                >
+                                  {item.email || "-"}
+                                </a>
+                              </td>
+                              <td className="px-4 py-4 text-gray-700">
+                                {item.phoneNumber ? (
+                                  <a
+                                    href={`tel:${item.phoneNumber}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="hover:text-[#D3423E] transition-colors flex items-center gap-1"
+                                  >
+                                    <FaPhone size={10} className="text-gray-400" />
+                                    {item.phoneNumber}
+                                  </a>
+                                ) : (
+                                  "-"
+                                )}
+                              </td>
+                              <td className="px-4 py-4">
+                                {item.region ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
+                                    <FaMapMarkerAlt size={9} />
+                                    {REGION_LABELS[item.region] || item.region}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">Sin ciudad</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-4 text-center">
+                                <label
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`relative inline-flex items-center ${togglingId === item._id ? "cursor-wait opacity-50" : "cursor-pointer"}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={item.active}
+                                    disabled={togglingId === item._id}
+                                    onChange={() => requestToggle(item)}
+                                  />
+                                  <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors duration-300 relative">
+                                    <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-sm"></div>
+                                  </div>
+                                </label>
+                              </td>
+                              <td className="px-4 py-4">
+                                <ActionsMenu
+                                  onPassword={(e) => { e.stopPropagation(); openPasswordModal(item); }}
+                                  onView={(e) => { e.stopPropagation(); goToClientDetails(item); }}
+                                  onToggle={(e) => { e.stopPropagation(); requestToggle(item); }}
+                                  isActive={item.active}
+                                />
+                              </td>
+                            </motion.tr>
+                          ))}
+                        </AnimatePresence>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
 
-          {(viewMode === "cards" || (viewMode === "table" && filteredAndSorted.length > 0)) && (
-            <div className={viewMode === "cards" ? "p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" : "lg:hidden p-4 space-y-3"}>
-              {filteredAndSorted.map((item) => (
+              {(viewMode === "cards" || viewMode === "table") && (
                 <div
-                  key={item._id}
-                  onClick={() => goToClientDetails(item)}
-                  className={`bg-white border-2 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer ${item.active ? 'border-gray-200 hover:border-gray-300' : 'border-gray-200 opacity-75'}`}
+                  className={
+                    viewMode === "cards"
+                      ? "p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                      : "lg:hidden p-4 space-y-3"
+                  }
                 >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0 ${getColor(item.fullName, item.lastName)}`}>
-                      {getInitials(item.fullName, item.lastName)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 truncate">{item.fullName} {item.lastName}</p>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${item.active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.active ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                        {item.active ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </div>
-                    <ActionsMenu
-                      onPassword={(e) => { e.stopPropagation(); openPasswordModal(item); }}
-                      onView={(e) => { e.stopPropagation(); goToClientDetails(item); }}
-                      onToggle={(e) => { e.stopPropagation(); handleToggle(!item.active, item._id); }}
-                      isActive={item.active}
-                    />
-                  </div>
+                  <AnimatePresence>
+                    {filteredAndSorted.map((item, idx) => (
+                      <motion.div
+                        key={item._id}
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2, delay: idx * 0.02 }}
+                        onClick={() => goToClientDetails(item)}
+                        className={`bg-white border-2 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer ${item.active ? "border-gray-200 hover:border-gray-300" : "border-gray-200 opacity-75"}`}
+                      >
+                        <div className="flex items-start gap-3 mb-3">
+                          <div
+                            className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0 relative ${getColor(item.fullName, item.lastName)}`}
+                          >
+                            {getInitials(item.fullName, item.lastName)}
+                            <span
+                              className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${item.active ? "bg-green-500" : "bg-gray-400"}`}
+                            ></span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-gray-900 truncate">
+                              {item.fullName} {item.lastName}
+                            </p>
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${item.active ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${item.active ? "bg-green-500" : "bg-gray-400"}`}></span>
+                              {item.active ? "Activo" : "Inactivo"}
+                            </span>
+                          </div>
+                          <ActionsMenu
+                            onPassword={(e) => { e.stopPropagation(); openPasswordModal(item); }}
+                            onView={(e) => { e.stopPropagation(); goToClientDetails(item); }}
+                            onToggle={(e) => { e.stopPropagation(); requestToggle(item); }}
+                            isActive={item.active}
+                          />
+                        </div>
 
-                  <div className="space-y-1.5 text-xs text-gray-600">
-                    {item.email && (
-                      <p className="flex items-center gap-2 truncate">
-                        <FaEnvelope className="text-gray-400 flex-shrink-0" size={11} />
-                        <span className="truncate">{item.email}</span>
-                      </p>
-                    )}
-                    {item.phoneNumber && (
-                      <p className="flex items-center gap-2">
-                        <FaPhone className="text-gray-400 flex-shrink-0" size={11} />
-                        {item.phoneNumber}
-                      </p>
-                    )}
-                    {item.region && (
-                      <p className="flex items-center gap-2">
-                        <FaMapMarkerAlt className="text-gray-400 flex-shrink-0" size={11} />
-                        {item.region}
-                      </p>
-                    )}
-                  </div>
+                        <div className="space-y-1.5 text-xs text-gray-600">
+                          {item.email && (
+                            <p className="flex items-center gap-2 truncate">
+                              <FaEnvelope className="text-gray-400 flex-shrink-0" size={11} />
+                              <span className="truncate">{item.email}</span>
+                            </p>
+                          )}
+                          {item.phoneNumber && (
+                            <p className="flex items-center gap-2">
+                              <FaPhone className="text-gray-400 flex-shrink-0" size={11} />
+                              {item.phoneNumber}
+                            </p>
+                          )}
+                          {item.region && (
+                            <p className="flex items-center gap-2">
+                              <FaMapMarkerAlt className="text-gray-400 flex-shrink-0" size={11} />
+                              {REGION_LABELS[item.region] || item.region}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
 
           {!loading && filteredAndSorted.length > 0 && (
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span>
-                  Mostrando <strong className="text-gray-900">{filteredAndSorted.length}</strong> de <strong className="text-gray-900">{items}</strong> vendedores
+                  Mostrando <strong className="text-gray-900">{filteredAndSorted.length}</strong> de{" "}
+                  <strong className="text-gray-900">{items}</strong> vendedores
                 </span>
                 <div className="h-4 w-px bg-gray-300"></div>
                 <div className="flex items-center gap-2">
-                  <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                  <label htmlFor="itemsPerPage" className="font-semibold">
+                    Mostrar:
+                  </label>
                   <select
                     id="itemsPerPage"
                     value={itemsPerPage}
@@ -512,7 +716,7 @@ const SalesManView = () => {
                       setItemsPerPage(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:outline-none focus:border-[#D3423E]"
                   >
                     {[5, 10, 20, 50, 100].map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -521,55 +725,31 @@ const SalesManView = () => {
                 </div>
               </div>
 
-              {totalPages > 1 && searchTerm === "" && (
-                <nav className="flex items-center gap-1">
-                  <button
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                  >
-                    ← Anterior
-                  </button>
-                  <button
-                    onClick={() => setPage(1)}
-                    className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                  >
-                    1
-                  </button>
-                  {page > 3 && <span className="px-1 text-gray-400">…</span>}
-                  {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                    .filter((p) => p > 1 && p < totalPages)
-                    .map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-                  {totalPages > 1 && (
-                    <button
-                      onClick={() => setPage(totalPages)}
-                      className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      {totalPages}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={page === totalPages}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                  >
-                    Siguiente →
-                  </button>
-                </nav>
+              {totalPages > 1 && (
+                <ModernPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onChange={setPage}
+                />
               )}
             </div>
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {confirmToggle && (
+          <ConfirmModal
+            title="¿Desactivar vendedor?"
+            message={`¿Estás seguro de que quieres desactivar a ${confirmToggle.fullName} ${confirmToggle.lastName}? No podrá acceder al sistema hasta que vuelvas a activarlo.`}
+            confirmText="Desactivar"
+            confirmColor="red"
+            loading={togglingId === confirmToggle._id}
+            onCancel={() => setConfirmToggle(null)}
+            onConfirm={() => handleToggleConfirmed(false, confirmToggle._id)}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showEditModal && (
@@ -611,7 +791,7 @@ const SalesManView = () => {
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div>
-                  <label htmlFor="email" className="text-xs font-semibold text-gray-600 uppercase block mb-1.5">
+                  <label htmlFor="email" className="text-xs font-bold text-gray-600 uppercase block mb-1.5">
                     Correo del vendedor <span className="text-[#D3423E]">*</span>
                   </label>
                   <div className="relative">
@@ -630,7 +810,7 @@ const SalesManView = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="newPassword" className="text-xs font-semibold text-gray-600 uppercase block mb-1.5">
+                  <label htmlFor="newPassword" className="text-xs font-bold text-gray-600 uppercase block mb-1.5">
                     Nueva contraseña <span className="text-[#D3423E]">*</span>
                   </label>
                   <div className="relative">
@@ -661,8 +841,11 @@ const SalesManView = () => {
                   )}
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-800">
-                  <strong>⚠️ Importante:</strong> El vendedor deberá iniciar sesión con esta nueva contraseña.
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-800 flex items-start gap-2">
+                  <FaExclamationTriangle className="text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <span>
+                    <strong>Importante:</strong> El vendedor deberá iniciar sesión con esta nueva contraseña.
+                  </span>
                 </div>
 
                 <div className="flex gap-3 pt-2">
@@ -676,9 +859,16 @@ const SalesManView = () => {
                   <button
                     type="submit"
                     disabled={submittingPassword}
-                    className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors ${submittingPassword ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#D3423E] hover:bg-red-700'}`}
+                    className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors flex items-center justify-center gap-2 ${submittingPassword ? "bg-gray-300 cursor-not-allowed" : "bg-[#D3423E] hover:bg-red-700"}`}
                   >
-                    {submittingPassword ? 'Cambiando...' : 'Cambiar'}
+                    {submittingPassword ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/30 border-t-white"></div>
+                        Cambiando...
+                      </>
+                    ) : (
+                      "Cambiar"
+                    )}
                   </button>
                 </div>
               </form>
@@ -712,151 +902,71 @@ const SalesManView = () => {
   );
 };
 
+
+
+const EmptyState = ({ hasFilters, onClear, onCreate }) => (
+  <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+      <FaUserTie className="text-gray-300 text-3xl" />
+    </div>
+    <p className="text-gray-700 font-bold text-base">
+      {hasFilters ? "Sin resultados" : "Sin vendedores"}
+    </p>
+    <p className="text-sm text-gray-500 mt-1 max-w-md">
+      {hasFilters
+        ? "No encontramos vendedores con los filtros actuales. Intenta ajustarlos o limpiarlos."
+        : "Comienza agregando tu primer vendedor para gestionar tu equipo de ventas."}
+    </p>
+    <div className="flex gap-2 mt-5">
+      {hasFilters ? (
+        <button
+          onClick={onClear}
+          className="px-4 py-2.5 bg-white border-2 border-gray-300 text-gray-700 font-bold text-sm rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2"
+        >
+          <FaRedo size={11} /> Limpiar filtros
+        </button>
+      ) : (
+        <button
+          onClick={onCreate}
+          className="px-4 py-2.5 bg-[#D3423E] text-white font-bold text-sm rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2 shadow-md"
+        >
+          <IoPersonAdd /> Agregar vendedor
+        </button>
+      )}
+    </div>
+  </div>
+);
+
+const FilterChip = ({ label, onRemove }) => (
+  <span className="bg-red-50 border border-red-200 text-[#D3423E] px-3 py-1 rounded-full font-bold text-xs flex items-center gap-1.5">
+    {label}
+    <button
+      onClick={onRemove}
+      className="hover:bg-red-100 rounded-full p-0.5 transition-colors"
+    >
+      <FaTimes size={9} />
+    </button>
+  </span>
+);
+
 const StatCard = ({ label, value, icon, color, onClick, active }) => (
   <button
     onClick={onClick}
     disabled={!onClick}
-    className={`bg-white p-4 rounded-2xl shadow-sm border transition-all flex items-center gap-3 text-left ${onClick ? 'cursor-pointer hover:shadow-md' : 'cursor-default'} ${active ? 'border-[#D3423E] ring-2 ring-red-100' : 'border-gray-200'}`}
+    className={`bg-white p-4 rounded-2xl shadow-sm border transition-all flex items-center gap-3 text-left ${onClick ? "cursor-pointer hover:shadow-md" : "cursor-default"} ${active ? "border-[#D3423E] ring-2 ring-red-100" : "border-gray-200"}`}
   >
     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
       {icon}
     </div>
     <div className="min-w-0">
-      <p className="text-xs text-gray-500 font-semibold uppercase truncate">{label}</p>
-      <p className="text-xl font-bold text-gray-900">{value}</p>
+      <p className="text-xs text-gray-500 font-bold uppercase truncate">{label}</p>
+      <p className="text-xl font-black text-gray-900">{value}</p>
     </div>
   </button>
 );
 
-const ActionsMenu = ({ onPassword, onView, onToggle, isActive }) => {
-  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const close = () => setOpen(false);
-    if (open) {
-      document.addEventListener("click", close);
-      return () => document.removeEventListener("click", close);
-    }
-  }, [open]);
 
-  return (
-    <div className="relative">
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        <FaEllipsisV className="text-gray-600" size={14} />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -5 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -5 }}
-            transition={{ duration: 0.1 }}
-            className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={(e) => { onView(e); setOpen(false); }}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-            >
-              <FaEye className="text-blue-500" size={12} /> Ver detalles
-            </button>
-            <button
-              onClick={(e) => { onPassword(e); setOpen(false); }}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-            >
-              <FaKey className="text-yellow-500" size={12} /> Cambiar contraseña
-            </button>
-            <div className="border-t border-gray-100 my-1"></div>
-            <button
-              onClick={(e) => { onToggle(e); setOpen(false); }}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-            >
-              {isActive ? (
-                <><FaToggleOff className="text-red-500" size={14} /> Desactivar</>
-              ) : (
-                <><FaToggleOn className="text-green-500" size={14} /> Activar</>
-              )}
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
-const PasswordStrength = ({ password }) => {
-  const getStrength = () => {
-    let score = 0;
-    if (password.length >= 6) score++;
-    if (password.length >= 10) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    return score;
-  };
-
-  const strength = getStrength();
-  const labels = ["Muy débil", "Débil", "Aceptable", "Buena", "Fuerte", "Excelente"];
-  const colors = ["bg-red-500", "bg-red-400", "bg-yellow-400", "bg-yellow-500", "bg-green-400", "bg-green-500"];
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 flex gap-1">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className={`h-1 flex-1 rounded-full transition-colors ${i < strength ? colors[strength] : 'bg-gray-200'}`}
-          />
-        ))}
-      </div>
-      <span className="text-[10px] text-gray-500 font-semibold w-16 text-right">
-        {labels[strength]}
-      </span>
-    </div>
-  );
-};
-
-const ResultModal = ({ type, title, message, onClose }) => {
-  const isSuccess = type === "success";
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-60 p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.8 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${isSuccess ? 'bg-green-100' : 'bg-red-100'}`}>
-          {isSuccess ? (
-            <FaCheckCircle className="text-green-500 text-5xl" />
-          ) : (
-            <FaTimesCircle className="text-red-500 text-5xl" />
-          )}
-        </div>
-        <h2 className={`text-xl font-bold mb-2 ${isSuccess ? 'text-green-700' : 'text-red-700'}`}>
-          {title}
-        </h2>
-        <p className="text-sm text-gray-600 mb-5">{message}</p>
-        <button
-          onClick={onClose}
-          className={`w-full px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors ${isSuccess ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
-        >
-          Aceptar
-        </button>
-      </motion.div>
-    </motion.div>
-  );
-};
 
 export default SalesManView;

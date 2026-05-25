@@ -275,15 +275,6 @@ export default function SalesManInformationComponent() {
   return (
     <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
-        <div className="mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-sm text-gray-500 hover:text-[#D3423E] flex items-center gap-1 transition-colors"
-          >
-            <FaArrowLeft size={11} /> Volver al listado
-          </button>
-        </div>
-
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
           <div className="h-32 bg-gradient-to-br from-[#D3423E] to-red-700 relative">
             <div className="absolute inset-0 opacity-10" style={{

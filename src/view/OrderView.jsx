@@ -13,6 +13,9 @@ import { MdCancel, MdLocalShipping, MdDoneAll } from 'react-icons/md';
 import Spinner from "../Components/LittleComponents/Spinner";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { ModernPagination } from "../utils/ModernPagination";
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading"
+import { StatCard } from "../utils/StatCard";
 
 const ORDER_STATUS_CONFIG = {
   created: { label: "Creado", icon: FaExclamationCircle, color: "bg-yellow-100 text-yellow-700 border-yellow-300", iconColor: "text-yellow-500" },
@@ -342,514 +345,465 @@ const OrderView = () => {
   const hasActiveFilters = selectedSaler || selectedStatus || selectedPaymentType || selectedPayment || selectedRegion || dateFilterActive || inputValue;
 
   return (
-    <div className="bg-white min-h-screen p-4 sm:p-6">
+    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <Spinner />
-          </div>
-        ) : (
-          <div>
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">Órdenes de venta</h1>
-              <p className="text-sm text-gray-500">Gestiona todos los pedidos desde un solo lugar</p>
-            </div>
 
+        <div>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Órdenes de venta</h1>
+            <p className="text-sm text-gray-500">Gestiona todos los pedidos desde un solo lugar</p>
+          </div>
+          {loading && salesData.length === 0 ? (
+            <SkeletonStats />
+          ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
               <StatCard
                 icon={<HiOutlineDocumentAdd size={24} />}
                 label="Sin asignar"
                 value={counts?.created || 0}
-                bgColor="bg-blue-100"
+                color="bg-blue-100"
                 textColor="text-blue-600"
-                isActive={selectedStatus === "created"}
                 onClick={() => filterByStatus("created")}
+                active={selectedStatus === "created"}
               />
               <StatCard
                 icon={<HiOutlineCheckCircle size={24} />}
                 label="Aprobados"
                 value={counts?.aproved || 0}
-                bgColor="bg-green-100"
+                color="bg-green-100"
                 textColor="text-green-600"
-                isActive={selectedStatus === "aproved"}
                 onClick={() => filterByStatus("aproved")}
+                active={selectedStatus === "aproved"}
               />
               <StatCard
                 icon={<MdLocalShipping size={24} />}
                 label="En Ruta"
                 value={counts?.["En Ruta"] || 0}
-                bgColor="bg-yellow-100"
+                color="bg-yellow-100"
                 textColor="text-yellow-600"
-                isActive={selectedStatus === "En Ruta"}
                 onClick={() => filterByStatus("En Ruta")}
+                active={selectedStatus === "En Ruta"}
               />
               <StatCard
                 icon={<MdDoneAll size={24} />}
                 label="Entregados"
                 value={counts?.deliver || 0}
-                bgColor="bg-purple-100"
+                color="bg-purple-100"
                 textColor="text-purple-600"
-                isActive={selectedStatus === "deliver"}
                 onClick={() => filterByStatus("deliver")}
+                active={selectedStatus === "deliver"}
               />
               <StatCard
                 icon={<MdCancel size={24} />}
                 label="Cancelados"
                 value={counts?.cancelled || 0}
-                bgColor="bg-red-100"
+                color="bg-red-100"
                 textColor="text-red-600"
-                isActive={selectedStatus === "cancelled"}
                 onClick={() => filterByStatus("cancelled")}
+                active={selectedStatus === "cancelled"}
               />
             </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="relative flex-1 max-w-md">
-                      <TextInputFilter
-                        value={inputValue}
-                        onChange={setInputValue}
-                        onEnter={applyFilters}
-                        placeholder="Buscar por nombre..."
-                      />
-                    </div>
-                    <select
-                      value={selectedFilter}
-                      onChange={(e) => setSelectedFilter(e.target.value)}
-                      className="px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
-                    >
-                      <option value="">Más filtros</option>
-                      <option value="payment">Estado de pago</option>
-                      <option value="date">Fecha</option>
-                      <option value="seller">Vendedores</option>
-                      <option value="paymentType">Tipo de pago</option>
-                      <option value="region">Región</option>
-                    </select>
+          )}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="relative flex-1 max-w-md">
+                    <TextInputFilter
+                      value={inputValue}
+                      onChange={setInputValue}
+                      onEnter={applyFilters}
+                      placeholder="Buscar por nombre..."
+                    />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={exportToExcel}
-                      className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
-                    >
-                      <FaFileExport />
-                      Exportar
-                    </button>
-                    <PrincipalBUtton onClick={() => handleNewOrderClick()}>Nuevo Pedido</PrincipalBUtton>
-                  </div>
+                  <select
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
+                    className="px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
+                  >
+                    <option value="">Más filtros</option>
+                    <option value="payment">Estado de pago</option>
+                    <option value="date">Fecha</option>
+                    <option value="seller">Vendedores</option>
+                    <option value="paymentType">Tipo de pago</option>
+                    <option value="region">Región</option>
+                  </select>
                 </div>
-                {selectedFilter && (
-                  <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl">
-                    {selectedFilter === "seller" && (
-                      <select
-                        className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
-                        value={selectedSaler}
-                        onChange={(e) => setSelectedSaler(e.target.value)}
-                      >
-                        <option value="">Todos los vendedores</option>
-                        {vendedores.map((v) => (
-                          <option key={v._id} value={v._id}>{v.fullName} {v.lastName}</option>
-                        ))}
-                      </select>
-                    )}
-                    {selectedFilter === "paymentType" && (
-                      <select
-                        value={selectedPaymentType}
-                        onChange={(e) => setSelectedPaymentType(e.target.value)}
-                        className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
-                      >
-                        <option value="">Todos los tipos</option>
-                        <option value="Crédito">Crédito</option>
-                        <option value="Contado">Contado</option>
-                        <option value="Cheque">Cheque</option>
-                      </select>
-                    )}
-                    {selectedFilter === "payment" && (
-                      <select
-                        value={selectedPayment}
-                        onChange={(e) => setSelectedPayment(e.target.value)}
-                        className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
-                      >
-                        <option value="">Todos los estados</option>
-                        <option value="Pagado">Pagado</option>
-                        <option value="Pendiente">Pendiente</option>
-                      </select>
-                    )}
-                    {selectedFilter === "date" && (
-                      <div className="flex gap-2 flex-wrap">
-                        <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                        <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
-                      </div>
-                    )}
-                    {selectedFilter === "region" && (
-                      <select
-                        value={selectedRegion}
-                        onChange={(e) => setSelectedRegion(e.target.value)}
-                        className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
-                      >
-                        <option value="">Todas las ciudades</option>
-                        <option value="TOTAL CBB">Cochabamba</option>
-                        <option value="TOTAL SC">Santa Cruz</option>
-                        <option value="TOTAL LP">La Paz</option>
-                        <option value="TOTAL OR">Oruro</option>
-                      </select>
-                    )}
-                    <button
-                      onClick={applyFilters}
-                      className="px-4 py-2 bg-[#D3423E] text-white rounded-xl hover:bg-red-700 transition-colors text-sm font-semibold flex items-center gap-2"
-                    >
-                      <HiFilter /> Aplicar
-                    </button>
-                  </div>
-                )}
-
-                {hasActiveFilters && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {selectedStatus && ORDER_STATUS_CONFIG[selectedStatus] && (
-                      <FilterChip
-                        label={ORDER_STATUS_CONFIG[selectedStatus].label}
-                        onRemove={() => clearFilter("status")}
-                        color="bg-gray-700"
-                      />
-                    )}
-                    {selectedSaler && (
-                      <FilterChip
-                        label={`Vendedor: ${vendedores.find(v => v._id === selectedSaler)?.fullName || "?"}`}
-                        onRemove={() => clearFilter("seller")}
-                        color="bg-blue-600"
-                      />
-                    )}
-                    {selectedPaymentType && (
-                      <FilterChip label={`Pago: ${selectedPaymentType}`} onRemove={() => clearFilter("paymentType")} color="bg-orange-500" />
-                    )}
-                    {selectedPayment && (
-                      <FilterChip label={`Estado: ${selectedPayment}`} onRemove={() => clearFilter("payment")} color="bg-green-600" />
-                    )}
-                    {dateFilterActive && (
-                      <FilterChip label={`${startDate} → ${endDate}`} onRemove={() => clearFilter("date")} color="bg-purple-600" />
-                    )}
-                    {selectedRegion && (
-                      <FilterChip label={`Región: ${selectedRegion}`} onRemove={() => clearFilter("region")} color="bg-indigo-600" />
-                    )}
-                    <button
-                      onClick={clearAllFilters}
-                      className="ml-2 text-sm font-semibold text-gray-600 hover:text-[#D3423E] transition-colors underline"
-                    >
-                      Limpiar todo
-                    </button>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={exportToExcel}
+                    className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
+                  >
+                    <FaFileExport />
+                    Exportar
+                  </button>
+                  <PrincipalBUtton onClick={() => handleNewOrderClick()}>Nuevo Pedido</PrincipalBUtton>
+                </div>
               </div>
+              {selectedFilter && (
+                <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl">
+                  {selectedFilter === "seller" && (
+                    <select
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      value={selectedSaler}
+                      onChange={(e) => setSelectedSaler(e.target.value)}
+                    >
+                      <option value="">Todos los vendedores</option>
+                      {vendedores.map((v) => (
+                        <option key={v._id} value={v._id}>{v.fullName} {v.lastName}</option>
+                      ))}
+                    </select>
+                  )}
+                  {selectedFilter === "paymentType" && (
+                    <select
+                      value={selectedPaymentType}
+                      onChange={(e) => setSelectedPaymentType(e.target.value)}
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                    >
+                      <option value="">Todos los tipos</option>
+                      <option value="Crédito">Crédito</option>
+                      <option value="Contado">Contado</option>
+                      <option value="Cheque">Cheque</option>
+                    </select>
+                  )}
+                  {selectedFilter === "payment" && (
+                    <select
+                      value={selectedPayment}
+                      onChange={(e) => setSelectedPayment(e.target.value)}
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                    >
+                      <option value="">Todos los estados</option>
+                      <option value="Pagado">Pagado</option>
+                      <option value="Pendiente">Pendiente</option>
+                    </select>
+                  )}
+                  {selectedFilter === "date" && (
+                    <div className="flex gap-2 flex-wrap">
+                      <DateInput value={startDate} onChange={setStartDate} label="Desde" />
+                      <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+                    </div>
+                  )}
+                  {selectedFilter === "region" && (
+                    <select
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                    >
+                      <option value="">Todas las ciudades</option>
+                      <option value="TOTAL CBB">Cochabamba</option>
+                      <option value="TOTAL SC">Santa Cruz</option>
+                      <option value="TOTAL LP">La Paz</option>
+                      <option value="TOTAL OR">Oruro</option>
+                    </select>
+                  )}
+                  <button
+                    onClick={applyFilters}
+                    className="px-4 py-2 bg-[#D3423E] text-white rounded-xl hover:bg-red-700 transition-colors text-sm font-semibold flex items-center gap-2"
+                  >
+                    <HiFilter /> Aplicar
+                  </button>
+                </div>
+              )}
 
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                      <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Fecha</th>
-                      <th className="px-4 py-3 font-semibold">Ciudad</th>
-                      <th className="px-4 py-3 font-semibold">Cliente</th>
-                      <th className="px-4 py-3 font-semibold">Tipo</th>
-                      <th className="px-4 py-3 font-semibold">Vendedor</th>
-                      <th className="px-4 py-3 font-semibold">Pago</th>
-                      <th className="px-4 py-3 font-semibold text-right">Total</th>
-                      <th className="px-4 py-3 font-semibold text-right">Saldo</th>
-                      <th className="px-4 py-3 font-semibold text-center">Mora</th>
-                      <th className="px-4 py-3 font-semibold text-center">Estado</th>
-                      <th className="px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading1 ? (
+              {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedStatus && ORDER_STATUS_CONFIG[selectedStatus] && (
+                    <FilterChip
+                      label={ORDER_STATUS_CONFIG[selectedStatus].label}
+                      onRemove={() => clearFilter("status")}
+                      color="bg-gray-700"
+                    />
+                  )}
+                  {selectedSaler && (
+                    <FilterChip
+                      label={`Vendedor: ${vendedores.find(v => v._id === selectedSaler)?.fullName || "?"}`}
+                      onRemove={() => clearFilter("seller")}
+                      color="bg-blue-600"
+                    />
+                  )}
+                  {selectedPaymentType && (
+                    <FilterChip label={`Pago: ${selectedPaymentType}`} onRemove={() => clearFilter("paymentType")} color="bg-orange-500" />
+                  )}
+                  {selectedPayment && (
+                    <FilterChip label={`Estado: ${selectedPayment}`} onRemove={() => clearFilter("payment")} color="bg-green-600" />
+                  )}
+                  {dateFilterActive && (
+                    <FilterChip label={`${startDate} → ${endDate}`} onRemove={() => clearFilter("date")} color="bg-purple-600" />
+                  )}
+                  {selectedRegion && (
+                    <FilterChip label={`Región: ${selectedRegion}`} onRemove={() => clearFilter("region")} color="bg-indigo-600" />
+                  )}
+                  <button
+                    onClick={clearAllFilters}
+                    className="ml-2 text-sm font-semibold text-gray-600 hover:text-[#D3423E] transition-colors underline"
+                  >
+                    Limpiar todo
+                  </button>
+                </div>
+              )}
+            </div>
+            {
+              loading ? (
+                <>
+                  <div className="lg:hidden">
+                    <SkeletonCards />
+                  </div>
+
+                  <div className="hidden lg:block">
+                    <SkeletonTable />
+                  </div>
+                </>
+              ) : salesData.length >= 1 ? (
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
                       <tr>
-                        <td colSpan="11" className="px-6 py-16 text-center">
-                          <Spinner size="lg" />
-                        </td>
+                        <th className="px-4 py-3 font-semibold">Fecha</th>
+                        <th className="px-4 py-3 font-semibold">Ciudad</th>
+                        <th className="px-4 py-3 font-semibold">Cliente</th>
+                        <th className="px-4 py-3 font-semibold">Tipo</th>
+                        <th className="px-4 py-3 font-semibold">Vendedor</th>
+                        <th className="px-4 py-3 font-semibold">Pago</th>
+                        <th className="px-4 py-3 font-semibold text-right">Total</th>
+                        <th className="px-4 py-3 font-semibold text-right">Saldo</th>
+                        <th className="px-4 py-3 font-semibold text-center">Mora</th>
+                        <th className="px-4 py-3 font-semibold text-center">Estado</th>
+                        <th className="px-4 py-3"></th>
                       </tr>
-                    ) : error ? (
-                      <tr>
-                        <td colSpan="11" className="px-6 py-16 text-center">
-                          <div className="flex flex-col items-center justify-center text-red-500">
-                            <FaExclamationCircle className="text-5xl mb-3" />
-                            <p className="text-lg font-bold">Ocurrió un error al cargar los datos</p>
-                            <p className="text-sm text-gray-400 mt-1">Revisa tu conexión o intenta nuevamente.</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : salesData.length === 0 ? (
-                      <tr>
-                        <td colSpan="11" className="px-6 py-16 text-center">
-                          <div className="flex flex-col items-center justify-center text-gray-500">
-                            <FaSearch className="text-5xl mb-3 text-gray-300" />
-                            <p className="text-lg font-semibold">No se encontraron coincidencias</p>
-                            <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      salesData.map((item) => {
-                        const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                        const StatusIcon = statusConfig?.icon;
-                        return (
-                          <tr
-                            key={item._id}
-                            onClick={() => goToClientDetails(item)}
-                            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <td className="px-4 py-3 text-gray-700">
-                              {item.creationDate ? (
-                                <div>
-                                  <p className="font-medium text-gray-900">
-                                    {new Date(item.creationDate).toLocaleDateString("es-ES", {
-                                      day: 'numeric',
-                                      month: 'short',
-                                      year: 'numeric'
-                                    })}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {new Date(item.creationDate).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit"
-                                    })}
-                                  </p>
-                                </div>
-                              ) : "-"}
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">{item.region}</td>
-                            <td className="px-4 py-3 font-medium text-gray-900">
-                              {item.id_client.name} {item.id_client.lastName}
-                            </td>
-                            <td className="px-4 py-3">
-                              {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                                  {item.accountStatus.toUpperCase()}
+                    </thead>
+                    <tbody>
+                      {
+                        salesData.map((item) => {
+                          const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                          const StatusIcon = statusConfig?.icon;
+                          return (
+                            <tr
+                              key={item._id}
+                              onClick={() => goToClientDetails(item)}
+                              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
+                              <td className="px-4 py-3 text-gray-700">
+                                {item.creationDate ? (
+                                  <div>
+                                    <p className="font-medium text-gray-900">
+                                      {new Date(item.creationDate).toLocaleDateString("es-ES", {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {new Date(item.creationDate).toLocaleTimeString("es-ES", {
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                      })}
+                                    </p>
+                                  </div>
+                                ) : "-"}
+                              </td>
+                              <td className="px-4 py-3 text-gray-700">{item.region}</td>
+                              <td className="px-4 py-3 font-medium text-gray-900">
+                                {item.id_client.name} {item.id_client.lastName}
+                              </td>
+                              <td className="px-4 py-3">
+                                {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                                    {item.accountStatus.toUpperCase()}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-gray-700">
+                                {item.salesId?.fullName} {item.salesId?.lastName}
+                              </td>
+                              <td className="px-4 py-3">
+                                {PAY_STATUS_CONFIG[item.payStatus] && (
+                                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                                    {item.payStatus.toUpperCase()}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-right font-bold text-gray-900">
+                                Bs. {Number(item.totalAmount).toFixed(2)}
+                              </td>
+                              <td className="px-4 py-3 text-right text-gray-700">
+                                <span className={item.restante > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
+                                  Bs. {Number(item.restante).toFixed(2)}
                                 </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">
-                              {item.salesId?.fullName} {item.salesId?.lastName}
-                            </td>
-                            <td className="px-4 py-3">
-                              {PAY_STATUS_CONFIG[item.payStatus] && (
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                                  {item.payStatus.toUpperCase()}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-right font-bold text-gray-900">
-                              Bs. {Number(item.totalAmount).toFixed(2)}
-                            </td>
-                            <td className="px-4 py-3 text-right text-gray-700">
-                              <span className={item.restante > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
-                                Bs. {Number(item.restante).toFixed(2)}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              {item.diasMora > 0 ? (
-                                <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
-                                  {item.diasMora} días
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              {statusConfig && (
-                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                                  <StatusIcon className={statusConfig.iconColor} />
-                                  <span>{statusConfig.label}</span>
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 relative">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(openMenuId === item._id ? null : item._id);
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                aria-label="Opciones"
-                              >
-                                <FaEllipsisV className="text-gray-600" />
-                              </button>
-                              {openMenuId === item._id && !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
-                                <div
-                                  ref={menuRef}
-                                  className="absolute right-4 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
-                                  onClick={(e) => e.stopPropagation()}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {item.diasMora > 0 ? (
+                                  <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
+                                    {item.diasMora} días
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                {statusConfig && (
+                                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                                    <StatusIcon className={statusConfig.iconColor} />
+                                    <span>{statusConfig.label}</span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 relative">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(openMenuId === item._id ? null : item._id);
+                                  }}
+                                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                  aria-label="Opciones"
                                 >
-                                  <button
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setShowEditModal(true);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                  <FaEllipsisV className="text-gray-600" />
+                                </button>
+                                {openMenuId === item._id && !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
+                                  <div
+                                    ref={menuRef}
+                                    className="absolute right-4 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    <FaCheck className="text-green-500" />
-                                    Confirmar pedido
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (item.totalAmount === item.restante) {
-                                        setItemToDelete(item);
-                                        setShowConfirmDeleteModal(true);
-                                      } else {
-                                        setShowPaymentWarningModal(true);
-                                      }
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
-                                  >
-                                    <FaTrash />
-                                    Eliminar pedido
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="lg:hidden p-4 space-y-3">
-                {loading1 ? (
-                  <div className="py-16 flex justify-center"><Spinner size="lg" /></div>
-                ) : salesData.length === 0 ? (
-                  <div className="py-16 text-center text-gray-500">
-                    <FaSearch className="text-5xl mb-3 mx-auto text-gray-300" />
-                    <p className="font-semibold">No hay resultados</p>
-                  </div>
-                ) : (
-                  salesData.map((item) => {
-                    const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                    const StatusIcon = statusConfig?.icon;
-                    return (
-                      <div
-                        key={item._id}
-                        onClick={() => goToClientDetails(item)}
-                        className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
-                            </p>
+                                    <button
+                                      onClick={() => {
+                                        setSelectedItem(item);
+                                        setShowEditModal(true);
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                      <FaCheck className="text-green-500" />
+                                      Confirmar pedido
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (item.totalAmount === item.restante) {
+                                          setItemToDelete(item);
+                                          setShowConfirmDeleteModal(true);
+                                        } else {
+                                          setShowPaymentWarningModal(true);
+                                        }
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                                    >
+                                      <FaTrash />
+                                      Eliminar pedido
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            <div className="lg:hidden p-4 space-y-3">
+              {loading1 ? (
+                <div className="py-16 flex justify-center"><Spinner size="lg" /></div>
+              ) : salesData.length === 0 ? (
+                <div className="py-16 text-center text-gray-500">
+                  <FaSearch className="text-5xl mb-3 mx-auto text-gray-300" />
+                  <p className="font-semibold">No hay resultados</p>
+                </div>
+              ) : (
+                salesData.map((item) => {
+                  const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                  const StatusIcon = statusConfig?.icon;
+                  return (
+                    <div
+                      key={item._id}
+                      onClick={() => goToClientDetails(item)}
+                      className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
+                          </p>
+                        </div>
+                        {statusConfig && (
+                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                            <StatusIcon className={statusConfig.iconColor} />
+                            {statusConfig.label}
                           </div>
-                          {statusConfig && (
-                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                              <StatusIcon className={statusConfig.iconColor} />
-                              {statusConfig.label}
-                            </div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex gap-2 flex-wrap">
+                          {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                              {item.accountStatus.toUpperCase()}
+                            </span>
+                          )}
+                          {PAY_STATUS_CONFIG[item.payStatus] && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                              {item.payStatus.toUpperCase()}
+                            </span>
                           )}
                         </div>
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex gap-2 flex-wrap">
-                            {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                                {item.accountStatus.toUpperCase()}
-                              </span>
-                            )}
-                            {PAY_STATUS_CONFIG[item.payStatus] && (
-                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                                {item.payStatus.toUpperCase()}
-                              </span>
-                            )}
-                          </div>
+                      </div>
+                      <div className="flex justify-between items-end border-t border-gray-100 pt-2">
+                        <div>
+                          <p className="text-xs text-gray-500">Vendedor</p>
+                          <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
                         </div>
-                        <div className="flex justify-between items-end border-t border-gray-100 pt-2">
-                          <div>
-                            <p className="text-xs text-gray-500">Vendedor</p>
-                            <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-gray-500">Total</p>
-                            <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
-                            {item.restante > 0 && (
-                              <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
-                            )}
-                          </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">Total</p>
+                          <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
+                          {item.restante > 0 && (
+                            <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
+                          )}
                         </div>
                       </div>
-                    );
-                  })
-                )}
-              </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
 
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
-                  <div className="h-4 w-px bg-gray-300"></div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
-                    <select
-                      id="itemsPerPage"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setPage(1);
-                      }}
-                      className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
-                    >
-                      {[5, 10, 20, 50].map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-sm text-gray-600">
+                <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                <div className="h-4 w-px bg-gray-300"></div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                  <select
+                    id="itemsPerPage"
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                  >
+                    {[5, 10, 20, 50].map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
                 </div>
-
-                {totalPages > 1 && (
-                  <nav className="flex items-center gap-1">
-                    <button
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={page === 1}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      ← Anterior
-                    </button>
-                    <button
-                      onClick={() => setPage(1)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      1
-                    </button>
-                    {page > 3 && <span className="px-1 text-gray-400">…</span>}
-                    {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                      .filter((p) => p > 1 && p < totalPages)
-                      .map((p) => (
-                        <button
-                          key={p}
-                          onClick={() => setPage(p)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                    {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-                    {totalPages > 1 && (
-                      <button
-                        onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        {totalPages}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={page === totalPages}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      Siguiente →
-                    </button>
-                  </nav>
-                )}
               </div>
+
+              {totalPages > 1 && (
+                <ModernPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onChange={setPage}
+                />
+              )}
             </div>
           </div>
-        )}
+        </div>
+
       </div>
 
       <AnimatePresence>
@@ -1061,20 +1015,7 @@ const OrderView = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, bgColor, textColor, onClick, isActive }) => (
-  <button
-    onClick={onClick}
-    className={`bg-white p-4 rounded-2xl shadow-sm border-2 flex items-center gap-3 cursor-pointer hover:shadow-md transition-all text-left ${isActive ? 'border-[#D3423E] ring-2 ring-red-100' : 'border-gray-200 hover:border-gray-300'}`}
-  >
-    <div className={`p-2.5 ${bgColor} ${textColor} rounded-xl flex-shrink-0`}>
-      {icon}
-    </div>
-    <div className="min-w-0">
-      <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
-      <p className="text-xl font-bold text-gray-900">{value}</p>
-    </div>
-  </button>
-);
+
 
 const FilterChip = ({ label, onRemove, color = "bg-gray-600" }) => (
   <span className={`${color} text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2`}>
