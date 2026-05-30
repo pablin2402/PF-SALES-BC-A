@@ -43,68 +43,33 @@ const ACCOUNT_STATUS_CONFIG = {
 };
 
 const containerStyle = { width: "100%", height: "100%" };
-
 const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg";
 
 const DEFAULT_TRUCK_CAPACITY = 80;
 const DEPOT = { lat: -17.3835, lng: -66.1568 };
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const OPTIMIZATION_METHOD = "Nearest Neighbor + 2-opt + CVRP Capacity Split";
 
-const TABS = {
-  PEDIDOS: "pedidos",
-  PLAN: "plan",
+const SHIMMER_STYLE = {
+  background: "linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%)",
+  backgroundSize: "200% 100%",
+  animation: "shimmer 1.6s linear infinite",
 };
+
+const TABS = { PEDIDOS: "pedidos", PLAN: "plan" };
 
 const buildOrderedChannelMarker = (orderIndex, channel, tripColor = "#D3423E", pulsing = false) => {
   const config = getChannelConfig(channel);
   const size = 52;
   const ringOpacity = pulsing ? 0.4 : 0;
   const imageSrc = config.imageBase64 || null;
-
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <defs>
-        <filter id="ds-${orderIndex}" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-          <feOffset dx="0" dy="2" result="offsetblur"/>
-          <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
-          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <clipPath id="ic-${orderIndex}">
-          <circle cx="${size / 2}" cy="${size / 2}" r="20"/>
-        </clipPath>
-      </defs>
-      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="${tripColor}" opacity="${ringOpacity}"/>
-      <circle cx="${size / 2}" cy="${size / 2}" r="22" fill="white" stroke="${tripColor}" stroke-width="3" filter="url(#ds-${orderIndex})"/>
-      ${imageSrc
-        ? `<image href="${imageSrc}" x="${size / 2 - 14}" y="${size / 2 - 14}" width="28" height="28" clip-path="url(#ic-${orderIndex})" preserveAspectRatio="xMidYMid meet"/>`
-        : `<text x="${size / 2}" y="${size / 2 + 6}" text-anchor="middle" font-size="16" font-weight="bold" fill="${config.colorDark}">${config.emoji}</text>`
-      }
-      <circle cx="${size - 11}" cy="11" r="10" fill="${tripColor}" stroke="white" stroke-width="2"/>
-      <text x="${size - 11}" y="15" text-anchor="middle" fill="white" font-size="11" font-weight="900" font-family="Arial, sans-serif">${orderIndex + 1}</text>
-    </svg>
-  `;
-
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><filter id="ds-${orderIndex}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter><clipPath id="ic-${orderIndex}"><circle cx="${size / 2}" cy="${size / 2}" r="20"/></clipPath></defs><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="${tripColor}" opacity="${ringOpacity}"/><circle cx="${size / 2}" cy="${size / 2}" r="22" fill="white" stroke="${tripColor}" stroke-width="3" filter="url(#ds-${orderIndex})"/>${imageSrc ? `<image href="${imageSrc}" x="${size / 2 - 14}" y="${size / 2 - 14}" width="28" height="28" clip-path="url(#ic-${orderIndex})" preserveAspectRatio="xMidYMid meet"/>` : `<text x="${size / 2}" y="${size / 2 + 6}" text-anchor="middle" font-size="16" font-weight="bold" fill="${config.colorDark}">${config.emoji}</text>`}<circle cx="${size - 11}" cy="11" r="10" fill="${tripColor}" stroke="white" stroke-width="2"/><text x="${size - 11}" y="15" text-anchor="middle" fill="white" font-size="11" font-weight="900" font-family="Arial, sans-serif">${orderIndex + 1}</text></svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
-const buildDepotIcon = () => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">
-    <defs>
-      <filter id="depot-shadow" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-        <feOffset dx="0" dy="2" result="offsetblur"/>
-        <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
-        <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <circle cx="28" cy="28" r="24" fill="#111827" stroke="white" stroke-width="3" filter="url(#depot-shadow)"/>
-    <g transform="translate(15 14)" fill="white">
-      <path d="M13 0 L0 10 L0 22 L26 22 L26 10 Z M11 22 L11 14 L15 14 L15 22"
-            stroke="white" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-    </g>
-  </svg>
-`)}`;
+const buildDepotIcon = () => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><defs><filter id="depot-shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="28" cy="28" r="24" fill="#111827" stroke="white" stroke-width="3" filter="url(#depot-shadow)"/><g transform="translate(15 14)" fill="white"><path d="M13 0 L0 10 L0 22 L26 22 L26 10 Z M11 22 L11 14 L15 14 L15 22" stroke="white" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></g></svg>`)}`;
+
+const generateGroupId = () => `OPT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
 export default function DeliveryRouteView() {
   const navigate = useNavigate();
@@ -142,6 +107,7 @@ export default function DeliveryRouteView() {
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const [showMunicipios, setShowMunicipios] = useState(true);
   const [showViewOptions, setShowViewOptions] = useState(false);
+  const [showLegend, setShowLegend] = useState(true);
 
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
@@ -227,10 +193,7 @@ export default function DeliveryRouteView() {
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
   useEffect(() => { loadMarkersFromAPI(); }, [loadMarkersFromAPI]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [pageSize, selectedMunicipio]);
+  useEffect(() => { setPage(1); }, [pageSize, selectedMunicipio]);
 
   const validateForm = () => routeName && startDate && endDate;
 
@@ -300,38 +263,30 @@ export default function DeliveryRouteView() {
       setAlertModal(true);
       return;
     }
-
     if (markers.length < MIN_ORDERS_TO_OPTIMIZE) {
       setAlertMessage(`Necesitas al menos ${MIN_ORDERS_TO_OPTIMIZE} pedidos para optimizar la ruta automáticamente.`);
       setAlertModal(true);
       return;
     }
-
     setIsOptimizing(true);
     setOptimizationResult(null);
-
     await new Promise(resolve => setTimeout(resolve, 600));
-
     const sourceOrders = selectedMarkers.length > 0
       ? selectedMarkers.map(sm => markers.find(m => m._id === sm._id) || sm)
       : markers;
-
     if (sourceOrders.length === 0) {
       setAlertMessage("No hay pedidos disponibles para optimizar.");
       setAlertModal(true);
       setIsOptimizing(false);
       return;
     }
-
     const enrichedOrders = sourceOrders.map(o => ({
       ...o,
       client_location: o.client_location || o.id_client?.client_location,
     }));
-
     const result = optimizeRoutes(enrichedOrders, truckCapacity, DEPOT);
     setOptimizationResult(result);
     setIsOptimizing(false);
-
     if (result.trips.length > 0) {
       const firstTrip = result.trips[0];
       setSelectedMarkers(firstTrip.orders.map(buildMarkerFromOrder));
@@ -372,26 +327,91 @@ export default function DeliveryRouteView() {
     setTimeout(() => fitToMarkers(trip.orders), 200);
   };
 
+  // Agrupa clientes de un viaje por municipio (para guardar en BD)
+  const buildClientsZonesBreakdown = (orders) => {
+    const breakdown = {};
+    orders.forEach(o => {
+      const loc = o.client_location || o.id_client?.client_location;
+      if (!loc?.latitud || !loc?.longitud) return;
+      const m = getMunicipioForPoint(loc.latitud, loc.longitud);
+      const zoneName = m?.name || "Sin zona";
+      breakdown[zoneName] = (breakdown[zoneName] || 0) + 1;
+    });
+    return Object.entries(breakdown).map(([zone, count]) => ({ zone, count }));
+  };
+
+  const buildOperationalNotes = (trip, totalTrips, isOversized) => {
+    const notes = [];
+    if (totalTrips > 1) {
+      notes.push(`Viaje ${trip.tripNumber} de ${totalTrips} generado por división automática (CVRP)`);
+    }
+    if (isOversized) {
+      notes.push(`Este viaje excede capacidad nominal del camión (${trip.boxes}/${trip.capacity} cajas)`);
+    }
+    if (trip.orders.length === 1) {
+      notes.push("Viaje con un solo cliente — considerar agrupar con otros pedidos");
+    }
+    if (trip.utilization >= 95) {
+      notes.push("Utilización óptima del camión (>=95%)");
+    } else if (trip.utilization < 50) {
+      notes.push("Baja utilización del camión (<50%) — capacidad disponible para más pedidos");
+    }
+    return notes;
+  };
+
   const handleCreateAllRoutes = async () => {
     if (!optimizationResult || !validateForm()) return;
     setCreating(true);
+    const groupId = generateGroupId();
+    const createdAt = new Date().toISOString();
 
     try {
       let successCount = 0;
       for (const trip of optimizationResult.trips) {
         const tripMarkers = trip.orders.map(buildMarkerFromOrder);
+        const clientsZones = buildClientsZonesBreakdown(trip.orders);
+        const operationalNotes = buildOperationalNotes(
+          trip,
+          optimizationResult.trips.length,
+          trip.oversized
+        );
+
         const routeData = {
           details: `${routeName} · Viaje ${trip.tripNumber}/${optimizationResult.trips.length}`,
-          delivery: selectedSaler, route: tripMarkers,
-          id_owner: user, status: "Por iniciar",
-          startDate, endDate, progress: 0,
+          delivery: selectedSaler,
+          route: tripMarkers,
+          id_owner: user,
+          status: "Por iniciar",
+          startDate,
+          endDate,
+          progress: 0,
           tripNumber: trip.tripNumber,
           totalTrips: optimizationResult.trips.length,
           estimatedDistance: trip.distance,
           estimatedTime: trip.estimatedTime,
-          capacity: trip.capacity, totalBoxes: trip.boxes,
-          fullBoxes: trip.fullBoxes, halfBoxes: trip.halfBoxes,
-          looseBottles: trip.looseBottles, totalBottles: trip.totalBottles,
+          capacity: truckCapacity,
+          totalBoxes: trip.boxes,
+          fullBoxes: trip.fullBoxes,
+          halfBoxes: trip.halfBoxes,
+          looseBottles: trip.looseBottles,
+          totalBottles: trip.totalBottles,
+          utilization: trip.utilization,
+          oversized: !!trip.oversized,
+          optimizationMethod: OPTIMIZATION_METHOD,
+          groupId,
+          createdAt,
+          depotCoords: DEPOT,
+          truckCapacityUsed: truckCapacity,
+          totalAmount: trip.orders.reduce((s, o) => s + (Number(o.totalAmount) || 0), 0),
+          stackingPlan: trip.stackingPlan || null,
+          clientsZones,
+          operationalNotes,
+          routeMetrics: {
+            avgUtilization: optimizationResult.stats.avgUtilization,
+            totalGroupDistance: optimizationResult.stats.totalDistance,
+            totalGroupBoxes: optimizationResult.stats.totalBoxes,
+            totalGroupOrders: optimizationResult.stats.totalOrders,
+          },
         };
 
         const response = await axios.post(API_URL + "/whatsapp/delivert/route", routeData, {
@@ -409,7 +429,7 @@ export default function DeliveryRouteView() {
             if (res.status === 200) {
               await axios.post(API_URL + "/whatsapp/order/track", {
                 orderId: marker._id,
-                eventType: `Asignado a viaje ${trip.tripNumber}/${optimizationResult.trips.length}`,
+                eventType: `Asignado a viaje ${trip.tripNumber}/${optimizationResult.trips.length} (CVRP)`,
                 triggeredBySalesman: "", triggeredByDelivery: selectedSaler,
                 triggeredByUser: "", location: { lat: 0, lng: 0 }
               }, { headers: { Authorization: `Bearer ${token}` } });
@@ -434,11 +454,32 @@ export default function DeliveryRouteView() {
   const handleCreateSingleRoute = async () => {
     if (!validateForm()) return;
     setCreating(true);
+    const groupId = generateGroupId();
+    const createdAt = new Date().toISOString();
+    const clientsZones = buildClientsZonesBreakdown(selectedMarkers);
+
     const routeData = {
-      details: routeName, delivery: selectedSaler, route: selectedMarkers,
-      id_owner: user, status: "Por iniciar", startDate, endDate, progress: 0,
-      capacity: truckCapacity, totalBoxes: currentLoad,
+      details: routeName,
+      delivery: selectedSaler,
+      route: selectedMarkers,
+      id_owner: user,
+      status: "Por iniciar",
+      startDate,
+      endDate,
+      progress: 0,
+      capacity: truckCapacity,
+      totalBoxes: currentLoad,
+      utilization: Math.round((currentLoad / truckCapacity) * 100),
+      optimizationMethod: "Manual",
+      groupId,
+      createdAt,
+      depotCoords: DEPOT,
+      truckCapacityUsed: truckCapacity,
+      totalAmount: selectedMarkers.reduce((s, m) => s + (Number(m.totalAmount) || 0), 0),
+      clientsZones,
+      operationalNotes: ["Ruta creada manualmente por el administrador sin aplicar optimización automática"],
     };
+
     try {
       const response = await axios.post(API_URL + "/whatsapp/delivert/route", routeData, {
         headers: { Authorization: `Bearer ${token}` }
@@ -453,7 +494,7 @@ export default function DeliveryRouteView() {
           if (res.status === 200) {
             await axios.post(API_URL + "/whatsapp/order/track", {
               orderId: marker._id,
-              eventType: "Ha sido asignado como repartidor",
+              eventType: "Ha sido asignado como repartidor (ruta manual)",
               triggeredBySalesman: "", triggeredByDelivery: selectedSaler,
               triggeredByUser: "", location: { lat: 0, lng: 0 }
             }, { headers: { Authorization: `Bearer ${token}` } });
@@ -490,14 +531,9 @@ export default function DeliveryRouteView() {
 
   useEffect(() => {
     if (!isLoaded || !window.google) return;
-
     if (selectedMarkers.length > 1) {
       const routePoints = selectedMarkers.filter(c => c.client_location);
-      if (routePoints.length < 2) {
-        setDirectionsResponse(null);
-        return;
-      }
-
+      if (routePoints.length < 2) { setDirectionsResponse(null); return; }
       const origin = {
         lat: Number(routePoints[0].client_location.latitud),
         lng: Number(routePoints[0].client_location.longitud),
@@ -513,7 +549,6 @@ export default function DeliveryRouteView() {
         },
         stopover: true,
       }));
-
       const directionsService = new window.google.maps.DirectionsService();
       directionsService.route({
         origin, destination, waypoints,
@@ -533,10 +568,8 @@ export default function DeliveryRouteView() {
       setAlertModal(true);
       return;
     }
-
     const orderBoxes = calculateOrderBoxes(location);
     const newLoad = currentLoad + orderBoxes;
-
     if (newLoad > truckCapacity && !selectedMarkers.find(m => m._id === location._id)) {
       setAlertMessage(
         `Este pedido excede la capacidad del camión.\n\nCarga actual: ${currentLoad} cajas\nCarga del pedido: ${orderBoxes} cajas\nCapacidad máxima: ${truckCapacity} cajas\n\nUsa "Optimizar ruta" para dividir automáticamente en viajes.`
@@ -544,7 +577,6 @@ export default function DeliveryRouteView() {
       setAlertModal(true);
       return;
     }
-
     setSelectedMarkers((prev) => {
       if (!prev.find((item) => item._id === location._id)) {
         return [...prev, buildMarkerFromOrder(location)];
@@ -558,6 +590,11 @@ export default function DeliveryRouteView() {
 
   return (
     <div className="h-screen w-full flex overflow-hidden bg-gray-50">
+      <style>{`
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+      `}</style>
+
       <div className={`${sidebarCollapsed ? 'w-0 lg:w-16' : 'w-full lg:w-[460px]'} h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
         {!sidebarCollapsed && (
           <>
@@ -598,9 +635,7 @@ export default function DeliveryRouteView() {
                       className="flex-1 min-w-0 bg-white text-gray-800 text-sm font-bold focus:outline-none focus:ring-0 focus:border-transparent border-0 cursor-pointer appearance-none truncate rounded-lg px-2 py-1.5"
                       style={{ colorScheme: "light" }}
                     >
-                      <option value="" className="text-gray-700 bg-white">
-                        Sin repartidor asignado
-                      </option>
+                      <option value="" className="text-gray-700 bg-white">Sin repartidor asignado</option>
                       {vendedores.map((v) => (
                         <option key={v._id} value={v._id} className="text-gray-900 bg-white">
                           {v.fullName} {v.lastName}
@@ -616,21 +651,15 @@ export default function DeliveryRouteView() {
                     <div className="flex items-baseline justify-between mb-1">
                       <div className="flex items-center gap-1.5">
                         <FaBoxes size={10} className="text-red-100" />
-                        <span className="text-[10px] font-bold text-red-100 uppercase">
-                          Capacidad
-                        </span>
+                        <span className="text-[10px] font-bold text-red-100 uppercase">Capacidad</span>
                       </div>
-                      <span className="text-[10px] font-bold text-red-100">
-                        {Math.round(utilizationPct)}%
-                      </span>
+                      <span className="text-[10px] font-bold text-red-100">{Math.round(utilizationPct)}%</span>
                     </div>
                     <div className="flex items-baseline gap-1 mb-1">
                       <span className={`text-xl font-black ${isOverCapacity ? 'text-yellow-200' : 'text-white'}`}>
                         {currentLoad}
                       </span>
-                      <span className="text-xs text-red-100 font-bold">
-                        /{truckCapacity} cajas
-                      </span>
+                      <span className="text-xs text-red-100 font-bold">/{truckCapacity} cajas</span>
                     </div>
                     <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
                       <motion.div
@@ -699,10 +728,7 @@ export default function DeliveryRouteView() {
               >
                 {isOptimizing ? (
                   <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    >
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
                       <FaMagic size={13} />
                     </motion.div>
                     Optimizando rutas...
@@ -710,12 +736,9 @@ export default function DeliveryRouteView() {
                 ) : (
                   <>
                     <FaMagic size={13} />
-                    {!selectedSaler
-                      ? "Selecciona un repartidor"
-                      : markers.length < MIN_ORDERS_TO_OPTIMIZE
-                        ? `Mínimo ${MIN_ORDERS_TO_OPTIMIZE} pedidos (${markers.length} actuales)`
-                        : `Optimizar ruta automáticamente`
-                    }
+                    {!selectedSaler ? "Selecciona un repartidor"
+                      : markers.length < MIN_ORDERS_TO_OPTIMIZE ? `Mínimo ${MIN_ORDERS_TO_OPTIMIZE} pedidos (${markers.length} actuales)`
+                      : `Optimizar ruta automáticamente`}
                   </>
                 )}
               </motion.button>
@@ -737,8 +760,7 @@ export default function DeliveryRouteView() {
                   onClick={() => setActiveTab(TABS.PLAN)}
                   className={`flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 ${activeTab === TABS.PLAN
                     ? "text-[#D3423E] border-b-2 border-[#D3423E] bg-red-50/30"
-                    : "text-gray-500 hover:text-gray-700"
-                  }`}
+                    : "text-gray-500 hover:text-gray-700"}`}
                 >
                   <FaMagic size={11} />
                   Plan ({optimizationResult.trips.length})
@@ -747,8 +769,7 @@ export default function DeliveryRouteView() {
                   onClick={() => setActiveTab(TABS.PEDIDOS)}
                   className={`flex-1 px-4 py-2.5 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-1.5 ${activeTab === TABS.PEDIDOS
                     ? "text-[#D3423E] border-b-2 border-[#D3423E] bg-red-50/30"
-                    : "text-gray-500 hover:text-gray-700"
-                  }`}
+                    : "text-gray-500 hover:text-gray-700"}`}
                 >
                   <FaReceipt size={11} />
                   Pedidos ({totalOrders})
@@ -757,7 +778,9 @@ export default function DeliveryRouteView() {
             )}
 
             <div className="flex-1 overflow-y-auto">
-              {optimizationResult && activeTab === TABS.PLAN ? (
+              {isOptimizing ? (
+                <PlanSkeletonLoader />
+              ) : optimizationResult && activeTab === TABS.PLAN ? (
                 <PlanOptimizadoPanel
                   optimizationResult={optimizationResult}
                   selectedTripView={selectedTripView}
@@ -842,10 +865,7 @@ export default function DeliveryRouteView() {
                     if (selectedMunicipio !== m.id) fitMunicipio(m.id);
                   }}
                 />
-                <OverlayView
-                  position={m.center}
-                  mapPaneName={OverlayView.OVERLAY_LAYER}
-                >
+                <OverlayView position={m.center} mapPaneName={OverlayView.OVERLAY_LAYER}>
                   <div
                     className="pointer-events-none select-none"
                     style={{
@@ -879,15 +899,12 @@ export default function DeliveryRouteView() {
             {filteredMarkers.length > 0 && filteredMarkers.map((location, index) => {
               const loc = location.id_client?.client_location || location.client_location;
               if (!loc?.latitud || !loc?.longitud) return null;
-
               const isSelected = selectedMarkers.some(m => m._id === location._id);
               if (isSelected) return null;
-
               const channel = location.id_client?.userCategory || location.userCategory;
               const icon = window.google && iconsReady
                 ? buildMarkerIcon(channel, window.google.maps, false)
                 : null;
-
               return (
                 <Marker
                   key={`avail-${location._id || index}`}
@@ -935,32 +952,19 @@ export default function DeliveryRouteView() {
             )}
           </GoogleMap>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
-              <p className="text-gray-600 font-medium">Cargando mapa...</p>
-            </div>
-          </div>
+          <MapSkeleton />
         )}
 
         <div className="absolute top-4 left-4 z-10 flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-          <button
-            onClick={handleZoomIn}
-            className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors border-b border-gray-200"
-            title="Acercar"
-          >
+          <button onClick={handleZoomIn} className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors border-b border-gray-200" title="Acercar">
             <FaPlus size={13} />
           </button>
-          <button
-            onClick={handleZoomOut}
-            className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors"
-            title="Alejar"
-          >
+          <button onClick={handleZoomOut} className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-colors" title="Alejar">
             <FaMinus size={13} />
           </button>
         </div>
 
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-4 z-20">
           <div className="relative">
             <button
               onClick={() => setShowViewOptions(!showViewOptions)}
@@ -991,6 +995,16 @@ export default function DeliveryRouteView() {
                     </div>
                     {showMunicipios ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
                   </button>
+                  <button
+                    onClick={() => setShowLegend(!showLegend)}
+                    className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors border-t border-gray-100"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FaLayerGroup className="text-gray-600" size={12} />
+                      <span className="text-xs font-bold text-gray-700">Leyenda</span>
+                    </div>
+                    {showLegend ? <FaEye className="text-[#D3423E]" size={11} /> : <FaEyeSlash className="text-gray-400" size={11} />}
+                  </button>
                   <div className="border-t border-gray-100">
                     <button
                       onClick={() => { fitToMarkers(filteredMarkers); setShowViewOptions(false); }}
@@ -1013,11 +1027,28 @@ export default function DeliveryRouteView() {
               </>
             )}
           </div>
+        </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[210px] mt-2">
-            <p className="text-xs font-bold text-gray-700 mb-2 uppercase flex items-center gap-1">
-              <FaLayerGroup size={10} /> Leyenda
-            </p>
+        {showLegend && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className={`absolute right-4 z-10 bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[210px] max-h-[55vh] overflow-y-auto ${
+              selectedMarkers.length > 0 ? 'bottom-[150px]' : 'bottom-4'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1">
+                <FaLayerGroup size={10} /> Leyenda
+              </p>
+              <button
+                onClick={() => setShowLegend(false)}
+                className="text-gray-400 hover:text-gray-700 p-0.5 hover:bg-gray-100 rounded"
+              >
+                <FaTimes size={10} />
+              </button>
+            </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs">
                 <div className="w-5 h-5 rounded-full bg-gray-900 border-2 border-white shadow-sm flex items-center justify-center">
@@ -1040,32 +1071,27 @@ export default function DeliveryRouteView() {
                 );
               })}
               {optimizationResult && (
-                <>
-                  <div className="pt-1.5 mt-1 border-t border-gray-100">
-                    <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">Viajes</p>
-                    {optimizationResult.trips.map(trip => (
-                      <div key={trip.tripNumber} className="flex items-center gap-2 text-xs mb-1">
-                        <div
-                          className="w-5 h-5 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white text-[10px] font-bold"
-                          style={{ backgroundColor: getTripColor(trip.tripNumber) }}
-                        >
-                          {trip.tripNumber}
-                        </div>
-                        <span className="text-gray-700">Viaje {trip.tripNumber}</span>
+                <div className="pt-1.5 mt-1 border-t border-gray-100">
+                  <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">Viajes</p>
+                  {optimizationResult.trips.map(trip => (
+                    <div key={trip.tripNumber} className="flex items-center gap-2 text-xs mb-1">
+                      <div
+                        className="w-5 h-5 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white text-[10px] font-bold"
+                        style={{ backgroundColor: getTripColor(trip.tripNumber) }}
+                      >
+                        {trip.tripNumber}
                       </div>
-                    ))}
-                  </div>
-                </>
+                      <span className="text-gray-700">Viaje {trip.tripNumber}</span>
+                    </div>
+                  ))}
+                </div>
               )}
               {showMunicipios && (
                 <div className="pt-1.5 mt-1 border-t border-gray-100">
                   <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">Zonas</p>
                   {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
                     <div key={m.id} className="flex items-center gap-2 text-xs mb-0.5">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: m.accent }}
-                      />
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: m.accent }} />
                       <span className="text-gray-700 flex-1">{m.name}</span>
                       <span className="text-[10px] font-bold text-gray-500">
                         {municipioGroups[m.id]?.count || 0}
@@ -1075,8 +1101,20 @@ export default function DeliveryRouteView() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
+
+        {!showLegend && (
+          <button
+            onClick={() => setShowLegend(true)}
+            className={`absolute right-4 z-10 bg-white rounded-full shadow-lg p-2.5 border border-gray-200 hover:shadow-xl transition-all ${
+              selectedMarkers.length > 0 ? 'bottom-[150px]' : 'bottom-4'
+            }`}
+            title="Mostrar leyenda"
+          >
+            <FaLayerGroup className="text-gray-600" size={13} />
+          </button>
+        )}
 
         {selectedMarkers.length > 0 && (
           <SelectedRouteBar
@@ -1112,94 +1150,190 @@ export default function DeliveryRouteView() {
         handleCreateRoute={handleCreateRoute}
       />
 
-      <AlertModal
-        show={alertModal}
-        onClose={() => setAlertModal(false)}
-        message={alertMessage}
-      />
+      <AlertModal show={alertModal} onClose={() => setAlertModal(false)} message={alertMessage} />
     </div>
   );
 }
 
-const PlanOptimizadoPanel = ({
-  optimizationResult, selectedTripView, onViewTrip,
-  onClearOptimization, onCreate
-}) => {
-  return (
-    <div className="p-4">
-      <div className="bg-gradient-to-br from-red-50 to-red-100/50 rounded-xl border border-red-200 p-3 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D3423E] to-red-700 flex items-center justify-center shadow-sm">
-              <FaMagic className="text-white" size={11} />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-gray-900 uppercase">Plan optimizado</p>
-              <p className="text-[10px] text-gray-500">
-                {optimizationResult.trips.length} viaje{optimizationResult.trips.length !== 1 ? "s" : ""} · {optimizationResult.stats.totalOrders} pedidos
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClearOptimization}
-            className="text-gray-400 hover:text-[#D3423E] hover:bg-white p-1.5 rounded-lg transition-colors"
-            title="Limpiar optimización"
-          >
-            <FaTimes size={11} />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-4 gap-1.5">
-          <MetricCard icon={FaTruck} label="Viajes" value={optimizationResult.stats.totalTrips} />
-          <MetricCard icon={FaBoxes} label="Cajas" value={optimizationResult.stats.totalBoxes} />
-          <MetricCard icon={FaWineBottle} label="Botellas" value={optimizationResult.stats.totalBottles} />
-          <MetricCard icon={FaChartLine} label="Uso" value={`${optimizationResult.stats.avgUtilization}%`} />
+const PedidoSkeleton = () => (
+  <div className="bg-white border-2 border-gray-100 rounded-xl overflow-hidden">
+    <div className="flex gap-3 p-3">
+      <div className="w-14 h-14 rounded-xl flex-shrink-0" style={SHIMMER_STYLE} />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 w-3/4 rounded" style={SHIMMER_STYLE} />
+        <div className="h-3 w-1/2 rounded" style={SHIMMER_STYLE} />
+        <div className="flex gap-1.5">
+          <div className="h-4 w-12 rounded" style={SHIMMER_STYLE} />
+          <div className="h-4 w-16 rounded" style={SHIMMER_STYLE} />
+          <div className="h-4 w-10 rounded" style={SHIMMER_STYLE} />
         </div>
       </div>
+    </div>
+    <div className="px-3 pb-3 space-y-2">
+      <div className="h-12 rounded-lg" style={SHIMMER_STYLE} />
+      <div className="h-3 w-full rounded" style={SHIMMER_STYLE} />
+      <div className="flex justify-between items-center">
+        <div className="h-4 w-20 rounded" style={SHIMMER_STYLE} />
+        <div className="h-7 w-20 rounded-lg" style={SHIMMER_STYLE} />
+      </div>
+    </div>
+  </div>
+);
 
-      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 px-1">
-        Viajes propuestos · click para visualizar
-      </p>
+const PedidosSkeletonLoader = () => (
+  <div className="p-4 space-y-3">
+    <div className="flex justify-between items-center px-1 mb-1">
+      <div className="h-3 w-32 rounded" style={SHIMMER_STYLE} />
+    </div>
+    {[0, 1, 2, 3].map(i => <PedidoSkeleton key={i} />)}
+  </div>
+);
 
-      <div className="space-y-2 mb-4">
-        {optimizationResult.trips.map((trip) => (
-          <TripCard
-            key={trip.tripNumber}
-            trip={trip}
-            isSelected={selectedTripView === trip.tripNumber}
-            onClick={() => onViewTrip(trip.tripNumber)}
-          />
+const PlanSkeletonLoader = () => (
+  <div className="p-4">
+    <div className="bg-gradient-to-br from-red-50 to-red-100/40 rounded-xl border border-red-200 p-3 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg" style={SHIMMER_STYLE} />
+          <div className="space-y-1.5">
+            <div className="h-3 w-32 rounded" style={SHIMMER_STYLE} />
+            <div className="h-2.5 w-24 rounded" style={SHIMMER_STYLE} />
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-1.5">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="bg-white rounded-lg p-2 border border-red-100 text-center space-y-1">
+            <div className="h-3 w-3 rounded mx-auto" style={SHIMMER_STYLE} />
+            <div className="h-3 w-8 rounded mx-auto" style={SHIMMER_STYLE} />
+            <div className="h-2 w-10 rounded mx-auto" style={SHIMMER_STYLE} />
+          </div>
         ))}
       </div>
-
-      <button
-        onClick={onCreate}
-        className="w-full px-4 py-3 bg-gradient-to-br from-[#D3423E] to-red-700 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm shadow-md"
-      >
-        <FaCheck size={12} />
-        Crear {optimizationResult.trips.length} ruta{optimizationResult.trips.length !== 1 ? 's' : ''}
-      </button>
     </div>
-  );
-};
+
+    <div className="flex items-center gap-2 mb-3 px-1">
+      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}>
+        <FaMagic className="text-[#D3423E]" size={11} />
+      </motion.div>
+      <p className="text-[10px] font-bold text-gray-700 uppercase tracking-wide" style={{ animation: "pulse-soft 1.5s ease-in-out infinite" }}>
+        Calculando viajes óptimos...
+      </p>
+    </div>
+
+    <div className="space-y-2 mb-4">
+      {[0, 1, 2].map(i => (
+        <div key={i} className="bg-white rounded-xl border-2 border-gray-100 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg" style={SHIMMER_STYLE} />
+            <div className="flex-1 space-y-1">
+              <div className="h-3 w-20 rounded" style={SHIMMER_STYLE} />
+              <div className="h-2.5 w-28 rounded" style={SHIMMER_STYLE} />
+            </div>
+            <div className="text-right space-y-1">
+              <div className="h-3 w-12 rounded ml-auto" style={SHIMMER_STYLE} />
+              <div className="h-2 w-8 rounded ml-auto" style={SHIMMER_STYLE} />
+            </div>
+          </div>
+          <div className="h-1.5 w-full rounded-full" style={SHIMMER_STYLE} />
+          <div className="flex gap-1.5">
+            <div className="h-4 w-12 rounded" style={SHIMMER_STYLE} />
+            <div className="h-4 w-12 rounded" style={SHIMMER_STYLE} />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const MapSkeleton = () => (
+  <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200">
+    <div className="text-center">
+      <div className="relative w-20 h-20 mx-auto mb-4">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 rounded-full border-4 border-gray-300 border-t-[#D3423E]"
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <FaMapMarkerAlt className="text-[#D3423E]" size={24} />
+        </div>
+      </div>
+      <p className="text-gray-700 font-bold text-sm">Cargando mapa...</p>
+      <p className="text-gray-500 text-xs mt-1">Esto puede tardar unos segundos</p>
+    </div>
+  </div>
+);
+
+
+
+const PlanOptimizadoPanel = ({
+  optimizationResult, selectedTripView, onViewTrip, onClearOptimization, onCreate
+}) => (
+  <div className="p-4">
+    <div className="bg-gradient-to-br from-red-50 to-red-100/50 rounded-xl border border-red-200 p-3 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D3423E] to-red-700 flex items-center justify-center shadow-sm">
+            <FaMagic className="text-white" size={11} />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-900 uppercase">Plan optimizado</p>
+            <p className="text-[10px] text-gray-500">
+              {optimizationResult.trips.length} viaje{optimizationResult.trips.length !== 1 ? "s" : ""} · {optimizationResult.stats.totalOrders} pedidos
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClearOptimization}
+          className="text-gray-400 hover:text-[#D3423E] hover:bg-white p-1.5 rounded-lg transition-colors"
+          title="Limpiar optimización"
+        >
+          <FaTimes size={11} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-4 gap-1.5">
+        <MetricCard icon={FaTruck} label="Viajes" value={optimizationResult.stats.totalTrips} />
+        <MetricCard icon={FaBoxes} label="Cajas" value={optimizationResult.stats.totalBoxes} />
+        <MetricCard icon={FaWineBottle} label="Botellas" value={optimizationResult.stats.totalBottles} />
+        <MetricCard icon={FaChartLine} label="Uso" value={`${optimizationResult.stats.avgUtilization}%`} />
+      </div>
+    </div>
+
+    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 px-1">
+      Viajes propuestos · click para visualizar
+    </p>
+
+    <div className="space-y-2 mb-4">
+      {optimizationResult.trips.map((trip) => (
+        <TripCard
+          key={trip.tripNumber}
+          trip={trip}
+          isSelected={selectedTripView === trip.tripNumber}
+          onClick={() => onViewTrip(trip.tripNumber)}
+        />
+      ))}
+    </div>
+
+    <button
+      onClick={onCreate}
+      className="w-full px-4 py-3 bg-gradient-to-br from-[#D3423E] to-red-700 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm shadow-md"
+    >
+      <FaCheck size={12} />
+      Crear {optimizationResult.trips.length} ruta{optimizationResult.trips.length !== 1 ? 's' : ''}
+    </button>
+  </div>
+);
 
 const TripCard = ({ trip, isSelected, onClick }) => {
   const [showStacking, setShowStacking] = useState(false);
-
   return (
     <div
-      className={`rounded-xl border-2 transition-all overflow-hidden ${isSelected
-        ? 'bg-white shadow-md'
-        : 'bg-white/70 hover:bg-white'
-      }`}
-      style={{
-        borderColor: isSelected ? getTripColor(trip.tripNumber) : 'transparent'
-      }}
+      className={`rounded-xl border-2 transition-all overflow-hidden ${isSelected ? 'bg-white shadow-md' : 'bg-white/70 hover:bg-white'}`}
+      style={{ borderColor: isSelected ? getTripColor(trip.tripNumber) : 'transparent' }}
     >
-      <div
-        onClick={onClick}
-        className="cursor-pointer p-3"
-      >
+      <div onClick={onClick} className="cursor-pointer p-3">
         <div className="flex items-center gap-2 mb-2">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black shadow-sm shrink-0"
@@ -1223,43 +1357,25 @@ const TripCard = ({ trip, isSelected, onClick }) => {
             <p className="text-[10px] text-gray-500">cajas</p>
           </div>
         </div>
-
         <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-2">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${trip.utilization}%`,
-              backgroundColor: getTripColor(trip.tripNumber)
-            }}
-          />
+          <div className="h-full rounded-full transition-all" style={{ width: `${trip.utilization}%`, backgroundColor: getTripColor(trip.tripNumber) }} />
         </div>
-
         <div className="flex items-center gap-1.5 flex-wrap mb-2">
           {trip.fullBoxes > 0 && (
-            <span className="bg-gray-700 text-white px-2 py-0.5 rounded text-[10px] font-bold">
-              {trip.fullBoxes} × 12
-            </span>
+            <span className="bg-gray-700 text-white px-2 py-0.5 rounded text-[10px] font-bold">{trip.fullBoxes} × 12</span>
           )}
           {trip.halfBoxes > 0 && (
-            <span className="bg-yellow-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">
-              {trip.halfBoxes} × 6
-            </span>
+            <span className="bg-yellow-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">{trip.halfBoxes} × 6</span>
           )}
           {trip.looseBottles > 0 && (
-            <span className="bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">
-              {trip.looseBottles} sueltas
-            </span>
+            <span className="bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">{trip.looseBottles} sueltas</span>
           )}
         </div>
-
         <div className="flex justify-between text-[10px] text-gray-600">
           <span className="flex items-center gap-1"><FaRoad size={9} /> {trip.distance} km</span>
           <span className="flex items-center gap-1"><FaClock size={9} /> {formatDuration(trip.estimatedTime)}</span>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowStacking(!showStacking);
-            }}
+            onClick={(e) => { e.stopPropagation(); setShowStacking(!showStacking); }}
             className="font-bold flex items-center gap-1 hover:underline transition-colors"
             style={{ color: getTripColor(trip.tripNumber) }}
           >
@@ -1268,7 +1384,6 @@ const TripCard = ({ trip, isSelected, onClick }) => {
           </button>
         </div>
       </div>
-
       <AnimatePresence>
         {showStacking && trip.stackingPlan && (
           <motion.div
@@ -1278,10 +1393,7 @@ const TripCard = ({ trip, isSelected, onClick }) => {
             className="overflow-hidden border-t border-gray-200"
           >
             <div className="p-3 bg-gray-50">
-              <StackingPlanCard
-                stackingPlan={trip.stackingPlan}
-                tripColor={getTripColor(trip.tripNumber)}
-              />
+              <StackingPlanCard stackingPlan={trip.stackingPlan} tripColor={getTripColor(trip.tripNumber)} />
             </div>
           </motion.div>
         )}
@@ -1303,14 +1415,7 @@ const PedidosListPanel = ({
     return [1, page - 1, page, page + 1, totalPages];
   }, [page, totalPages]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-        <p className="text-sm">Cargando pedidos...</p>
-      </div>
-    );
-  }
+  if (loading) return <PedidosSkeletonLoader />;
 
   if (markers.length === 0) {
     return (
@@ -1322,10 +1427,7 @@ const PedidosListPanel = ({
           {selectedMunicipio ? "Sin pedidos en esta zona" : "Sin pedidos aprobados"}
         </p>
         <p className="text-sm text-gray-500 mt-1">
-          {selectedMunicipio
-            ? "Prueba con otra zona o limpia el filtro"
-            : "No hay pedidos disponibles para asignar"
-          }
+          {selectedMunicipio ? "Prueba con otra zona o limpia el filtro" : "No hay pedidos disponibles para asignar"}
         </p>
       </div>
     );
@@ -1337,8 +1439,7 @@ const PedidosListPanel = ({
         <span>
           {selectedMunicipio
             ? `${markers.length} en esta zona`
-            : `Mostrando ${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, totalOrders)} de ${totalOrders}`
-          }
+            : `Mostrando ${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, totalOrders)} de ${totalOrders}`}
         </span>
       </div>
 
@@ -1353,8 +1454,7 @@ const PedidosListPanel = ({
           <div
             key={client._id}
             onClick={() => panToLocation({ client_location: loc })}
-            className={`bg-white border-2 rounded-xl overflow-hidden transition-all cursor-pointer hover:shadow-md ${isSelected ? 'border-[#D3423E] shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={`bg-white border-2 rounded-xl overflow-hidden transition-all cursor-pointer hover:shadow-md ${isSelected ? 'border-[#D3423E] shadow-md ring-2 ring-red-100' : 'border-gray-200 hover:border-gray-300'}`}
           >
             <div className="flex gap-3 p-3">
               <div className="relative flex-shrink-0">
@@ -1371,7 +1471,6 @@ const PedidosListPanel = ({
                   {channelConf.emoji}
                 </div>
               </div>
-
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <h3
@@ -1386,11 +1485,9 @@ const PedidosListPanel = ({
                     </span>
                   )}
                 </div>
-
                 <p className="text-xs text-gray-500 flex items-center gap-1 truncate">
                   <FaReceipt size={9} /> #{client.receiveNumber}
                 </p>
-
                 <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                   {accountConfig && (
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${accountConfig.color}`}>
@@ -1399,10 +1496,7 @@ const PedidosListPanel = ({
                   )}
                   {muni && (
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 flex items-center gap-0.5">
-                      <span
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: muni.accent }}
-                      />
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: muni.accent }} />
                       {muni.name}
                     </span>
                   )}
@@ -1464,14 +1558,9 @@ const PedidosListPanel = ({
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${isSelected
                     ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                    : 'bg-[#D3423E] text-white hover:bg-red-700'
-                  }`}
+                    : 'bg-[#D3423E] text-white hover:bg-red-700'}`}
                 >
-                  {isSelected ? (
-                    <><FaTimes size={9} /> Quitar</>
-                  ) : (
-                    <><FaPlus size={9} /> Agregar</>
-                  )}
+                  {isSelected ? (<><FaTimes size={9} /> Quitar</>) : (<><FaPlus size={9} /> Agregar</>)}
                 </button>
               </div>
             </div>
@@ -1487,9 +1576,7 @@ const PedidosListPanel = ({
               disabled={page === 1}
               className={`px-2 h-9 rounded-lg text-xs font-bold transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
               title="Primera página"
-            >
-              ‹‹
-            </button>
+            >‹‹</button>
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
@@ -1505,9 +1592,7 @@ const PedidosListPanel = ({
                   <button
                     onClick={() => setPage(num)}
                     className={`w-9 h-9 rounded-lg text-sm font-bold transition-colors ${page === num ? "bg-gradient-to-br from-[#D3423E] to-red-700 text-white shadow-sm" : "text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    {num}
-                  </button>
+                  >{num}</button>
                 </React.Fragment>
               );
             })}
@@ -1523,9 +1608,7 @@ const PedidosListPanel = ({
               disabled={page === totalPages}
               className={`px-2 h-9 rounded-lg text-xs font-bold transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
               title="Última página"
-            >
-              ››
-            </button>
+            >››</button>
           </nav>
 
           <div className="flex items-center justify-center gap-2 text-xs">
@@ -1535,9 +1618,7 @@ const PedidosListPanel = ({
               onChange={(e) => setPageSize(Number(e.target.value))}
               className="bg-white border border-gray-300 rounded-lg px-2 py-1 text-xs font-bold text-gray-700 cursor-pointer focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
             >
-              {PAGE_SIZE_OPTIONS.map(n => (
-                <option key={n} value={n}>{n}</option>
-              ))}
+              {PAGE_SIZE_OPTIONS.map(n => (<option key={n} value={n}>{n}</option>))}
             </select>
             <span className="text-gray-500 font-medium">por página</span>
           </div>
@@ -1657,8 +1738,7 @@ const CreateRouteModal = ({
               <p className="text-xs text-red-100 mt-0.5">
                 {optimizationResult
                   ? `${optimizationResult.trips.length} viajes · ${optimizationResult.stats.totalOrders} pedidos`
-                  : `${selectedMarkers.length} pedido${selectedMarkers.length !== 1 ? 's' : ''}`
-                }
+                  : `${selectedMarkers.length} pedido${selectedMarkers.length !== 1 ? 's' : ''}`}
               </p>
             </div>
             <button
@@ -1753,10 +1833,7 @@ const CreateRouteModal = ({
                       </div>
                     </div>
                     <div className="p-3">
-                      <StackingPlanCard
-                        stackingPlan={trip.stackingPlan}
-                        tripColor={getTripColor(trip.tripNumber)}
-                      />
+                      <StackingPlanCard stackingPlan={trip.stackingPlan} tripColor={getTripColor(trip.tripNumber)} />
                     </div>
                   </div>
                 ))}
@@ -1800,8 +1877,7 @@ const CreateRouteModal = ({
               disabled={!validateForm() || creating}
               className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-colors flex items-center justify-center gap-2 ${!validateForm() || creating
                 ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-gradient-to-br from-[#D3423E] to-red-700 hover:shadow-lg'
-              }`}
+                : 'bg-gradient-to-br from-[#D3423E] to-red-700 hover:shadow-lg'}`}
             >
               {creating ? (
                 <>
@@ -1813,8 +1889,7 @@ const CreateRouteModal = ({
                   <FaCheck size={12} />
                   {optimizationResult
                     ? `Crear ${optimizationResult.trips.length} ruta${optimizationResult.trips.length !== 1 ? 's' : ''}`
-                    : 'Crear ruta'
-                  }
+                    : 'Crear ruta'}
                 </>
               )}
             </button>

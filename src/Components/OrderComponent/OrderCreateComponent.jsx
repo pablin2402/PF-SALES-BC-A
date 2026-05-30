@@ -324,16 +324,11 @@ const OrderCreateComponent = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <button
-              onClick={() => navigate(-1)}
-              className="text-sm text-gray-500 hover:text-[#D3423E] flex items-center gap-1 mb-2 transition-colors"
-            >
-              <FaArrowLeft size={11} /> Volver
-            </button>
+           
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
               <FaShoppingCart className="text-[#D3423E]" />
               Nuevo pedido
@@ -600,12 +595,33 @@ const OrderCreateComponent = () => {
                                 <FaMinus size={9} />
                               </button>
                               <input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => updateCartItem(index, 'quantity', e.target.value)}
-                                className="w-10 text-center text-xs font-bold text-gray-900 focus:outline-none bg-white"
-                                min="1"
-                              />
+  type="number"
+  value={item.quantity}
+  onChange={(e) =>
+    updateCartItem(
+      index,
+      'quantity',
+      Math.max(1, Math.min(9999, Number(e.target.value) || 1))
+    )
+  }
+  min="1"
+  max="99999"
+  className="
+    w-16
+    px-1
+    text-center
+    text-sm
+    font-bold
+    text-gray-900
+    bg-white
+    outline-none
+    focus:outline-none
+    focus:ring-0
+    focus:border-transparent
+    appearance-none
+    [-moz-appearance:textfield]
+  "
+/>
                               <button
                                 onClick={() => updateCartItem(index, 'quantity', item.quantity + 1)}
                                 className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded-r-lg"
@@ -722,7 +738,6 @@ const OrderCreateComponent = () => {
                         onClick={() => setFormData({ ...formData, tipoPago: pt.value })}
                         className={`p-3 rounded-xl border-2 transition-all text-center ${formData.tipoPago === pt.value ? `${pt.color} border-current` : 'bg-white border-gray-200 hover:border-gray-300 text-gray-700'}`}
                       >
-                        <div className="text-2xl mb-1">{pt.icon}</div>
                         <p className="text-xs font-bold">{pt.label}</p>
                       </button>
                     ))}

@@ -342,12 +342,7 @@ export default function ClientInformationOrdenComponent() {
                                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                                     Nota #{state.files.receiveNumber}
                                 </h1>
-                                {orderStatusConfig && (
-                                    <div className={`inline-flex items-center px-3 py-1 rounded-full border ${orderStatusConfig.color} text-sm font-semibold`}>
-                                        <orderStatusConfig.icon className={`${orderStatusConfig.iconColor} mr-2`} />
-                                        {orderStatusConfig.label}
-                                    </div>
-                                )}
+                                
                             </div>
                             <p className="text-gray-600 flex items-center gap-2">
                                 <FaUser className="text-gray-400" />

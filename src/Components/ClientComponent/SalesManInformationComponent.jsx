@@ -9,14 +9,16 @@ import { jsPDF } from "jspdf";
 import DateInput from "../LittleComponents/DateInput";
 import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 import { HiFilter } from "react-icons/hi";
-import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { ProfileFullSkeleton, ProfileTableSkeleton } from "../../utils/ProfileCardLoaders";
 
 const ACCOUNT_STATUS_CONFIG = {
   "Crédito": { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300", label: "CRÉDITO" },
   "Contado": { bg: "bg-green-100", text: "text-green-700", border: "border-green-300", label: "CONTADO" },
   "Cheque": { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-300", label: "CHEQUE" }
 };
+
 
 export default function SalesManInformationComponent() {
   const { id } = useParams();
@@ -244,17 +246,7 @@ export default function SalesManInformationComponent() {
   const totalSaldoSum = salesData.reduce((sum, item) => sum + (item.restante || 0), 0);
   const ordersWithOverdue = salesData.filter(item => calculateDaysRemaining(item.dueDate) > 0 && item.restante > 0).length;
 
-  if (loading) {
-    return (
-      <div className="bg-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
-          <p className="text-gray-600 font-medium">Cargando datos del vendedor...</p>
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <ProfileFullSkeleton />;
   if (!client) {
     return (
       <div className="bg-white min-h-screen flex items-center justify-center">
@@ -274,6 +266,12 @@ export default function SalesManInformationComponent() {
 
   return (
     <div className="min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
           <div className="h-32 bg-gradient-to-br from-[#D3423E] to-red-700 relative">
@@ -449,21 +447,17 @@ export default function SalesManInformationComponent() {
           </div>
 
           {loadingTable ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando pedidos...</p>
-            </div>
-          ) : salesData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FaShoppingCart className="text-gray-300 text-3xl" />
+            <ProfileTableSkeleton />) : salesData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <FaShoppingCart className="text-gray-300 text-3xl" />
+                </div>
+                <p className="text-gray-700 font-semibold">Sin pedidos</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {dateFilterActive ? "No hay pedidos en este rango de fechas" : "Este vendedor todavía no tiene pedidos"}
+                </p>
               </div>
-              <p className="text-gray-700 font-semibold">Sin pedidos</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {dateFilterActive ? "No hay pedidos en este rango de fechas" : "Este vendedor todavía no tiene pedidos"}
-              </p>
-            </div>
-          ) : (
+            ) : (
             <>
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-sm text-left">

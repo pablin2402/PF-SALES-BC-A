@@ -15,7 +15,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ModernPagination } from "../utils/ModernPagination";
 import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading"
-import { StatCard } from "../utils/StatCard";
+import { StatCard, EmptyState } from "../utils/StatCard";
 
 const ORDER_STATUS_CONFIG = {
   created: { label: "Creado", icon: FaExclamationCircle, color: "bg-yellow-100 text-yellow-700 border-yellow-300", iconColor: "text-yellow-500" },
@@ -38,9 +38,9 @@ const PAY_STATUS_CONFIG = {
 
 const OrderView = () => {
   const [salesData, setSalesData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loading1, setLoading1] = useState(true);
-  const [page, setPage] = useState(1);
+const [initialLoading, setInitialLoading] = useState(true); 
+const [tableLoading, setTableLoading] = useState(false); 
+const [statsLoading, setStatsLoading] = useState(false);    
   const [totalPages, setTotalPages] = useState(1);
   const [inputValue, setInputValue] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
@@ -65,6 +65,7 @@ const OrderView = () => {
   const [error, setError] = useState(null);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [page, setPage] = useState(1);
 
   const menuRef = useRef(null);
   const navigate = useNavigate();
@@ -101,49 +102,51 @@ const OrderView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token]);
 
-  const fetchOrders = async (pageNumber, customFilters) => {
-    setLoading1(true);
-    setError(null);
-    try {
-      const filters = {
-        id_owner: user,
-        page: pageNumber,
-        limit: itemsPerPage,
-        fullName: inputValue,
-        ...customFilters,
-      };
-      const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSalesData(response.data.orders);
-      setTotalPages(response.data.totalPages);
-      setItems(response.data.totalRecords);
-    } catch (error) {
-      console.error(error);
-      setError(error);
-    } finally {
-      setLoading1(false);
-    }
-  };
+const fetchOrders = async (pageNumber, customFilters) => {
+  setTableLoading(true);
+  setError(null);
+  try {
+    const filters = {
+      id_owner: user,
+      page: pageNumber,
+      limit: itemsPerPage,
+      fullName: inputValue,
+      ...customFilters,
+    };
+    const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setSalesData(response.data.orders || []);
+    setTotalPages(response.data.totalPages || 1);
+    setItems(response.data.totalRecords || 0);
+  } catch (error) {
+    console.error(error);
+    setError(error);
+    setSalesData([]);
+  } finally {
+    setTableLoading(false);
+    setInitialLoading(false);
+  }
+};
 
   const fetchOrdersFilters = async (customFilters) => {
-    setLoading(true);
-    try {
-      const filters = {
-        id_owner: user,
-        fullName: inputValue,
-        ...customFilters,
-      };
-      const response = await axios.post(API_URL + "/whatsapp/order/filter/id", filters, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCounts(response.data.counts);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setStatsLoading(true);
+  try {
+    const filters = {
+      id_owner: user,
+      fullName: inputValue,
+      ...customFilters,
+    };
+    const response = await axios.post(API_URL + "/whatsapp/order/filter/id", filters, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setCounts(response.data.counts);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setStatsLoading(false);
+  }
+};
 
   const buildCustomFilters = (statusOverride) => {
     const customFilters = {};
@@ -162,29 +165,40 @@ const OrderView = () => {
     return customFilters;
   };
 
-  const filterByStatus = (status) => {
-    const newStatus = selectedStatus === status ? "" : status;
-    setSelectedStatus(newStatus);
-    const customFilters = buildCustomFilters(newStatus);
-    if (startDate && endDate) setDateFilterActive(true);
+const filterByStatus = (status) => {
+  const newStatus = selectedStatus === status ? "" : status;
+  setSelectedStatus(newStatus);
+  const customFilters = buildCustomFilters(newStatus);
+  if (startDate && endDate) setDateFilterActive(true);
+  if (page === 1) {
     fetchOrdersFilters(customFilters);
     fetchOrders(1, customFilters);
+  } else {
     setPage(1);
-  };
+  }
+};
 
   const applyFilters = () => {
-    const customFilters = buildCustomFilters();
-    if (startDate && endDate) setDateFilterActive(true);
+  const customFilters = buildCustomFilters();
+  if (startDate && endDate) setDateFilterActive(true);
+  if (page === 1) {
     fetchOrdersFilters(customFilters);
     fetchOrders(1, customFilters);
+  } else {
     setPage(1);
-  };
+  }
+};
 
   useEffect(() => {
-    fetchOrders(page);
-    fetchOrdersFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, itemsPerPage]);
+  const loadData = async () => {
+    await Promise.all([
+      fetchOrders(page),
+      fetchOrdersFilters()
+    ]);
+  };
+  loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [page, itemsPerPage]);
 
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, {
@@ -276,21 +290,24 @@ const OrderView = () => {
     }, 0);
   };
 
-  const clearAllFilters = () => {
-    setSelectedFilter("");
-    setStartDate("");
-    setEndDate("");
-    setSelectedSaler("");
-    setSelectedPaymentType("");
-    setSelectedPayment("");
-    setSelectedRegion("");
-    setSelectedStatus("");
-    setDateFilterActive(false);
-    setInputValue("");
+const clearAllFilters = () => {
+  setSelectedFilter("");
+  setStartDate("");
+  setEndDate("");
+  setSelectedSaler("");
+  setSelectedPaymentType("");
+  setSelectedPayment("");
+  setSelectedRegion("");
+  setSelectedStatus("");
+  setDateFilterActive(false);
+  setInputValue("");
+  if (page === 1) {
     fetchOrdersFilters({});
     fetchOrders(1, {});
-    setPage(1);
-  };
+  } else {
+    setPage(1); 
+  }
+};
 
   const handleDelete = async (id) => {
     try {
@@ -345,7 +362,7 @@ const OrderView = () => {
   const hasActiveFilters = selectedSaler || selectedStatus || selectedPaymentType || selectedPayment || selectedRegion || dateFilterActive || inputValue;
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <style>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
@@ -359,9 +376,9 @@ const OrderView = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Órdenes de venta</h1>
             <p className="text-sm text-gray-500">Gestiona todos los pedidos desde un solo lugar</p>
           </div>
-          {loading && salesData.length === 0 ? (
-            <SkeletonStats />
-          ) : (
+          {initialLoading || statsLoading ? (
+  <SkeletonStats />
+) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
               <StatCard
                 icon={<HiOutlineDocumentAdd size={24} />}
@@ -548,19 +565,24 @@ const OrderView = () => {
                 </div>
               )}
             </div>
-            {
-              loading ? (
-                <>
-                  <div className="lg:hidden">
-                    <SkeletonCards />
-                  </div>
-
-                  <div className="hidden lg:block">
-                    <SkeletonTable />
-                  </div>
-                </>
-              ) : salesData.length >= 1 ? (
-                <div className="hidden lg:block overflow-x-auto">
+            {initialLoading || tableLoading ? (
+    <>
+      <div className="lg:hidden">
+        <SkeletonCards />
+      </div>
+      <div className="hidden lg:block">
+        <SkeletonTable />
+      </div>
+    </>
+  ) : salesData.length === 0 ? (
+                <EmptyState
+              hasFilters={hasActiveFilters}
+              onClear={clearAllFilters}
+              onCreate={() => navigate("/client/creation")}
+            />
+              
+              ) : (
+                  <div className="hidden lg:block overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
                       <tr>
@@ -705,102 +727,99 @@ const OrderView = () => {
                     </tbody>
                   </table>
                 </div>
-              ) : null}
-            <div className="lg:hidden p-4 space-y-3">
-              {loading1 ? (
-                <div className="py-16 flex justify-center"><Spinner size="lg" /></div>
-              ) : salesData.length === 0 ? (
-                <div className="py-16 text-center text-gray-500">
-                  <FaSearch className="text-5xl mb-3 mx-auto text-gray-300" />
-                  <p className="font-semibold">No hay resultados</p>
-                </div>
-              ) : (
-                salesData.map((item) => {
-                  const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                  const StatusIcon = statusConfig?.icon;
-                  return (
-                    <div
-                      key={item._id}
-                      onClick={() => goToClientDetails(item)}
-                      className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
-                          </p>
-                        </div>
-                        {statusConfig && (
-                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                            <StatusIcon className={statusConfig.iconColor} />
-                            {statusConfig.label}
+              )}
+{!initialLoading && !tableLoading && salesData.length > 0 && (              
+  <>
+              <div className="lg:hidden p-4 space-y-3">
+                {
+                  salesData.map((item) => {
+                    const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                    const StatusIcon = statusConfig?.icon;
+                    return (
+                      <div
+                        key={item._id}
+                        onClick={() => goToClientDetails(item)}
+                        className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
+                            </p>
                           </div>
-                        )}
-                      </div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex gap-2 flex-wrap">
-                          {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                              {item.accountStatus.toUpperCase()}
-                            </span>
-                          )}
-                          {PAY_STATUS_CONFIG[item.payStatus] && (
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                              {item.payStatus.toUpperCase()}
-                            </span>
+                          {statusConfig && (
+                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                              <StatusIcon className={statusConfig.iconColor} />
+                              {statusConfig.label}
+                            </div>
                           )}
                         </div>
-                      </div>
-                      <div className="flex justify-between items-end border-t border-gray-100 pt-2">
-                        <div>
-                          <p className="text-xs text-gray-500">Vendedor</p>
-                          <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="flex gap-2 flex-wrap">
+                            {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                                {item.accountStatus.toUpperCase()}
+                              </span>
+                            )}
+                            {PAY_STATUS_CONFIG[item.payStatus] && (
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                                {item.payStatus.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500">Total</p>
-                          <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
-                          {item.restante > 0 && (
-                            <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
-                          )}
+                        <div className="flex justify-between items-end border-t border-gray-100 pt-2">
+                          <div>
+                            <p className="text-xs text-gray-500">Vendedor</p>
+                            <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">Total</p>
+                            <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
+                            {item.restante > 0 && (
+                              <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3 text-sm text-gray-600">
-                <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
-                <div className="h-4 w-px bg-gray-300"></div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
-                  <select
-                    id="itemsPerPage"
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setPage(1);
-                    }}
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
-                  >
-                    {[5, 10, 20, 50].map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
+                    );
+                  })
+                }
               </div>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                  <div className="h-4 w-px bg-gray-300"></div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                    <select
+                      id="itemsPerPage"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                    >
+                      {[5, 10, 20, 50].map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-              {totalPages > 1 && (
-                <ModernPagination
-                  page={page}
-                  totalPages={totalPages}
-                  onChange={setPage}
-                />
-              )}
-            </div>
+                {totalPages > 1 && (
+                  <ModernPagination
+                    page={page}
+                    totalPages={totalPages}
+                    onChange={setPage}
+                  />
+                )}
+              </div>
+                            </>
+
+                        )}
           </div>
         </div>
 
@@ -1014,7 +1033,6 @@ const OrderView = () => {
     </div>
   );
 };
-
 
 
 const FilterChip = ({ label, onRemove, color = "bg-gray-600" }) => (

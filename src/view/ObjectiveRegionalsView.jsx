@@ -18,6 +18,7 @@ import {
 import ObjectiveDepartmentComponent from "../Components/ObjectiveComponent/ObjectiveDepartmentComponent";
 import ObjectiveSalesDetailComponent from "../Components/ObjectiveComponent/ObjectiveSalesDetailComponent";
 import DateInput from "../Components/LittleComponents/DateInput";
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading";
 
 const StatCard = ({ icon: Icon, label, value, iconBg, iconColor }) => (
   <motion.div
@@ -55,7 +56,53 @@ const Pill = ({ children, color = "gray" }) => {
     </span>
   );
 };
+// ─────────────────────────────────────────────
+// SKELETON COMPONENTS — ObjectiveRegionalsView
+// ─────────────────────────────────────────────
+const SHIMMER = {
+  background: "linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)",
+  backgroundSize: "200% 100%",
+  animation: "shimmer 1.5s infinite",
+};
 
+const SBox = ({ className = "", style = {} }) => (
+  <div className={`rounded-lg ${className}`} style={{ ...SHIMMER, ...style }} />
+);
+
+const ObjectiveTableSkeleton = ({ cols = 14 }) => {
+  const widths = [
+    "w-20", "w-20", "w-24", "w-16", "w-12",
+    "w-12", "w-16", "w-14", "w-16", "w-16",
+    "w-16", "w-14", "w-12", "w-10",
+  ];
+
+  return (
+    <>
+      {[...Array(6)].map((_, rowIdx) => (
+        <tr
+          key={rowIdx}
+          className="border-b border-gray-50"
+          style={{ opacity: 1 - rowIdx * 0.12 }}
+        >
+          {[...Array(cols)].map((_, colIdx) => (
+            <td key={colIdx} className="px-4 py-3">
+              {colIdx === cols - 1 ? (
+                <div className="flex gap-1">
+                  <SBox className="w-7 h-7 rounded-lg" />
+                  <SBox className="w-7 h-7 rounded-lg" />
+                </div>
+              ) : colIdx === 8 ? (
+                <SBox className="h-6 w-14 rounded-full" />
+              ) : (
+                <SBox className={`h-4 ${widths[colIdx] || "w-16"}`} />
+              )}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
+};
 const advanceColor = (pct) => {
   if (pct >= 100) return "green";
   if (pct >= 70) return "amber";
@@ -298,28 +345,14 @@ const ObjectiveRegionalsView = () => {
   const avanceProm = totalObjetivo > 0 ? (totalVendido / totalObjetivo) * 100 : 0;
   const porVender = totalObjetivo - totalVendido;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        <div role="status">
-          <svg
-            aria-hidden="true"
-            className="inline w-10 h-10 text-gray-200 animate-spin fill-[#D3423E]"
-            viewBox="0 0 100 101"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-          </svg>
-          <span className="sr-only">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1400px] mx-auto px-6 py-8">
 
         <motion.div
@@ -347,11 +380,10 @@ const ObjectiveRegionalsView = () => {
             <li>
               <button
                 onClick={() => setViewMode("card")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
-                  viewMode === "card"
-                    ? "bg-red-50 text-[#D3423E] font-bold"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${viewMode === "card"
+                  ? "bg-red-50 text-[#D3423E] font-bold"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 <FaHome size={11} />
                 Nacional
@@ -362,13 +394,12 @@ const ObjectiveRegionalsView = () => {
               <button
                 onClick={() => selectedItem && setViewMode("form")}
                 disabled={!selectedItem}
-                className={`px-3 py-1.5 rounded-lg transition ${
-                  viewMode === "form"
-                    ? "bg-red-50 text-[#D3423E] font-bold"
-                    : selectedItem
+                className={`px-3 py-1.5 rounded-lg transition ${viewMode === "form"
+                  ? "bg-red-50 text-[#D3423E] font-bold"
+                  : selectedItem
                     ? "text-gray-600 hover:bg-gray-100"
                     : "text-gray-400 cursor-not-allowed"
-                }`}
+                  }`}
               >
                 Regional
               </button>
@@ -376,11 +407,10 @@ const ObjectiveRegionalsView = () => {
             <FiChevronRight className="text-gray-400" size={14} />
             <li>
               <span
-                className={`px-3 py-1.5 rounded-lg ${
-                  viewMode === "sales"
-                    ? "bg-red-50 text-[#D3423E] font-bold"
-                    : "text-gray-400"
-                }`}
+                className={`px-3 py-1.5 rounded-lg ${viewMode === "sales"
+                  ? "bg-red-50 text-[#D3423E] font-bold"
+                  : "text-gray-400"
+                  }`}
               >
                 Productos por categoría
               </span>
@@ -389,45 +419,7 @@ const ObjectiveRegionalsView = () => {
         </motion.nav>
 
         {viewMode === "card" ? (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-              <StatCard
-                icon={FaBullseye}
-                label="Objetivo total"
-                value={totalObjetivo.toLocaleString()}
-                iconBg="#eff6ff"
-                iconColor="#2563eb"
-              />
-              <StatCard
-                icon={FaChartLine}
-                label="Vta. año anterior"
-                value={totalVtaAA.toLocaleString()}
-                iconBg="#fef3c7"
-                iconColor="#d97706"
-              />
-              <StatCard
-                icon={FaBoxOpen}
-                label="Vta. acumulada"
-                value={totalVendido.toFixed(0)}
-                iconBg="#dcfce7"
-                iconColor="#16a34a"
-              />
-              <StatCard
-                icon={FaPercent}
-                label="Avance promedio"
-                value={avanceProm.toFixed(1) + "%"}
-                iconBg="#f3e8ff"
-                iconColor="#9333ea"
-              />
-              <StatCard
-                icon={FaArrowDown}
-                label="Por vender"
-                value={porVender.toFixed(0)}
-                iconBg="#fee2e2"
-                iconColor="#D3423E"
-              />
-            </div>
-
+          <div>
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -492,7 +484,6 @@ const ObjectiveRegionalsView = () => {
                 </div>
               )}
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -525,7 +516,9 @@ const ObjectiveRegionalsView = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {salesData.length > 0 ? (
+                    {loading ? (
+                      <ObjectiveTableSkeleton cols={14} />
+                    ) : salesData.length > 0 ? (
                       salesData.map((item) => {
                         const vsObj = (item.cajasVendidas / item.objetivo) * 100 || 0;
                         return (
@@ -540,21 +533,21 @@ const ObjectiveRegionalsView = () => {
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.startDate
                                 ? new Date(item.startDate)
-                                    .toISOString()
-                                    .slice(0, 10)
-                                    .split("-")
-                                    .reverse()
-                                    .join("/")
+                                  .toISOString()
+                                  .slice(0, 10)
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")
                                 : "-"}
                             </td>
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.endDate
                                 ? new Date(item.endDate)
-                                    .toISOString()
-                                    .slice(0, 10)
-                                    .split("-")
-                                    .reverse()
-                                    .join("/")
+                                  .toISOString()
+                                  .slice(0, 10)
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")
                                 : "-"}
                             </td>
                             <td className="px-4 py-3 font-semibold text-gray-900">
@@ -654,7 +647,6 @@ const ObjectiveRegionalsView = () => {
                 </table>
               </div>
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -685,8 +677,10 @@ const ObjectiveRegionalsView = () => {
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
-                    {salesNationalData.length > 0 ? (
+                 <tbody>
+                    {loading ? (
+                      <ObjectiveTableSkeleton cols={11} />
+                    ) : salesNationalData.length > 0 ? (
                       salesNationalData.map((item) => {
                         const vsObj = (item.cajasVendidas / item.objetivo) * 100 || 0;
                         return (
@@ -697,21 +691,21 @@ const ObjectiveRegionalsView = () => {
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.startDate
                                 ? new Date(item.startDate)
-                                    .toISOString()
-                                    .slice(0, 10)
-                                    .split("-")
-                                    .reverse()
-                                    .join("/")
+                                  .toISOString()
+                                  .slice(0, 10)
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")
                                 : "-"}
                             </td>
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.endDate
                                 ? new Date(item.endDate)
-                                    .toISOString()
-                                    .slice(0, 10)
-                                    .split("-")
-                                    .reverse()
-                                    .join("/")
+                                  .toISOString()
+                                  .slice(0, 10)
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")
                                 : "-"}
                             </td>
                             <td className="px-4 py-3 font-semibold text-gray-900">
@@ -790,7 +784,7 @@ const ObjectiveRegionalsView = () => {
                 </table>
               </div>
             </motion.div>
-          </>
+          </div>
         ) : viewMode === "form" ? (
           <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
             <ObjectiveDepartmentComponent
@@ -933,15 +927,14 @@ const ObjectiveRegionalsView = () => {
                     !formData.startDate ||
                     !formData.endDate
                   }
-                  className={`flex-1 px-4 py-2.5 text-sm font-bold uppercase rounded-xl transition active:scale-[0.98] ${
-                    !formData.ciudad ||
+                  className={`flex-1 px-4 py-2.5 text-sm font-bold uppercase rounded-xl transition active:scale-[0.98] ${!formData.ciudad ||
                     !formData.numberOfBoxes ||
                     !formData.saleLastYear1 ||
                     !formData.startDate ||
                     !formData.endDate
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-[#D3423E] text-white hover:bg-[#bb3330] shadow-sm hover:shadow-md"
-                  }`}
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-[#D3423E] text-white hover:bg-[#bb3330] shadow-sm hover:shadow-md"
+                    }`}
                 >
                   Insertar objetivo
                 </button>

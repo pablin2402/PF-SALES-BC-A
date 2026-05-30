@@ -191,7 +191,7 @@ const StatisticsView = () => {
   const mesLabel = selectedMonth ? MONTHS[selectedMonth - 1] : "Todos";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1400px] mx-auto px-6 py-8">
 
         <motion.div

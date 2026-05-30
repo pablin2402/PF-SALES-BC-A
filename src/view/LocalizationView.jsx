@@ -19,6 +19,9 @@ import {
 import {
     MUNICIPIOS_COCHABAMBA, getMunicipioForPoint, groupClientsByMunicipio,
 } from "../utils/CochabambaMunicipios";
+import {MAP_STYLE_MODERN, DEFAULT_CENTER, DEFAULT_ZOOM, VIEW_ALL_LIMIT} from "../utils/MapDetails";
+import {SidebarSkeleton, MapSkeleton } from "../utils/MapSkeleton"
+
 
 const SORT_OPTIONS = [
     { value: "name", label: "Nombre (A-Z)" },
@@ -32,9 +35,6 @@ const containerStyle = { width: "100%", height: "100%" };
 
 const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg";
 
-const DEFAULT_CENTER = { lat: -17.3835, lng: -66.1568 };
-const DEFAULT_ZOOM = 12;
-const VIEW_ALL_LIMIT = 500;
 
 export default function LocalizationView() {
     const navigate = useNavigate();
@@ -57,8 +57,8 @@ export default function LocalizationView() {
     const [locations, setLocations] = useState([]);
 
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
-    const [totalPages, setTotalPages] = useState(1);
+const [limit, setLimit] = useState(10);   
+ const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [sortBy, setSortBy] = useState("name");
     const [hasLocationOnly, setHasLocationOnly] = useState(false);
@@ -334,7 +334,13 @@ export default function LocalizationView() {
     const sortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label || "Ordenar";
 
     return (
-        <div className="h-screen w-full flex overflow-hidden bg-gray-50">
+    <div className="h-screen w-full flex overflow-hidden bg-gray-50">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
             <div className={`${sidebarCollapsed ? 'w-0 lg:w-16' : 'w-full lg:w-[440px]'} h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
                 {!sidebarCollapsed && (
                     <>
@@ -386,8 +392,7 @@ export default function LocalizationView() {
                                     value={searchInput}
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     placeholder="Nombre, empresa, NIT, teléfono..."
-                                    className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
-                                />
+className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 rounded-xl bg-white outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"                                />
                                 {searchInput && (
                                     <button
                                         onClick={() => { setSearchInput(""); setSearchTerm(""); }}
@@ -552,10 +557,7 @@ export default function LocalizationView() {
 
                         <div className="flex-1 overflow-y-auto p-4">
                             {loading ? (
-                                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-                                    <p className="text-sm">Cargando clientes...</p>
-                                </div>
+                                <SidebarSkeleton />
                             ) : sidebarClients.length > 0 ? (
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between mb-1">
@@ -669,37 +671,64 @@ export default function LocalizationView() {
                                         </div>
                                     )}
 
-                                    {!viewAllMode && !selectedMunicipio && totalPages > 1 && (
-                                        <nav className="flex items-center justify-center pt-4 gap-1">
-                                            <button
-                                                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                                                disabled={page === 1}
-                                                className={`p-2 rounded-lg transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
-                                            >
-                                                <FaChevronLeft size={12} />
-                                            </button>
-                                            {visiblePages.map((num, idx) => {
-                                                const isGap = idx > 0 && num - visiblePages[idx - 1] > 1;
-                                                return (
-                                                    <React.Fragment key={num}>
-                                                        {isGap && <span className="text-gray-400 px-1">…</span>}
-                                                        <button
-                                                            onClick={() => setPage(num)}
-                                                            className={`w-9 h-9 rounded-lg text-sm font-bold transition-colors ${page === num ? "bg-[#D3423E] text-white shadow-sm" : "text-gray-700 hover:bg-gray-100"}`}
-                                                        >
-                                                            {num}
-                                                        </button>
-                                                    </React.Fragment>
-                                                );
-                                            })}
-                                            <button
-                                                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-                                                disabled={page === totalPages}
-                                                className={`p-2 rounded-lg transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
-                                            >
-                                                <FaChevronRight size={12} />
-                                            </button>
-                                        </nav>
+                                {!viewAllMode && !selectedMunicipio && (
+                                        <div className="pt-4 space-y-3 border-t border-gray-100 mt-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[11px] text-gray-500 font-semibold">
+                                                    {total > 0
+                                                        ? `${((page - 1) * limit) + 1}–${Math.min(page * limit, total)} de ${total}`
+                                                        : "0 clientes"}
+                                                </span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[11px] text-gray-500 font-semibold">Ver:</span>
+                                                    <select
+                                                        value={limit}
+                                                        onChange={(e) => {
+                                                            setLimit(Number(e.target.value));
+                                                            setPage(1);
+                                                        }}
+                                                        className="border border-gray-300 rounded-lg px-2 py-1 text-xs outline-none focus:border-[#D3423E] bg-white text-gray-900 cursor-pointer"
+                                                    >
+                                                        {[10, 20, 30, 50, 100].map((opt) => (
+                                                            <option key={opt} value={opt}>{opt}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {totalPages > 1 && (
+                                                <nav className="flex items-center justify-center gap-1">
+                                                    <button
+                                                        onClick={() => setPage(p => Math.max(p - 1, 1))}
+                                                        disabled={page === 1}
+                                                        className={`p-2 rounded-lg transition-colors ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
+                                                    >
+                                                        <FaChevronLeft size={12} />
+                                                    </button>
+                                                    {visiblePages.map((num, idx) => {
+                                                        const isGap = idx > 0 && num - visiblePages[idx - 1] > 1;
+                                                        return (
+                                                            <React.Fragment key={num}>
+                                                                {isGap && <span className="text-gray-400 px-1">…</span>}
+                                                                <button
+                                                                    onClick={() => setPage(num)}
+                                                                    className={`w-9 h-9 rounded-lg text-sm font-bold transition-colors ${page === num ? "bg-[#D3423E] text-white shadow-sm" : "text-gray-700 hover:bg-gray-100"}`}
+                                                                >
+                                                                    {num}
+                                                                </button>
+                                                            </React.Fragment>
+                                                        );
+                                                    })}
+                                                    <button
+                                                        onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+                                                        disabled={page === totalPages}
+                                                        className={`p-2 rounded-lg transition-colors ${page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-100"}`}
+                                                    >
+                                                        <FaChevronRight size={12} />
+                                                    </button>
+                                                </nav>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             ) : (
@@ -754,10 +783,7 @@ export default function LocalizationView() {
                             streetViewControl: false,
                             mapTypeControl: false,
                             fullscreenControl: true,
-                            styles: [
-                                { featureType: "poi", stylers: [{ visibility: "off" }] },
-                                { featureType: "transit", stylers: [{ visibility: "off" }] },
-                            ],
+                            styles: MAP_STYLE_MODERN,
                         }}
                     >
                         {showMunicipios && Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
@@ -952,12 +978,7 @@ export default function LocalizationView() {
                         })}
                     </GoogleMap>
                 ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
-                            <p className="text-gray-600 font-medium">Cargando mapa...</p>
-                        </div>
-                    </div>
+                    <MapSkeleton />
                 )}
 
                 <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
@@ -1014,11 +1035,11 @@ export default function LocalizationView() {
                     </button>
                 </div>
 
-                <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
-                    <div className="relative">
+              <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+                    <div className="relative z-50">
                         <button
                             onClick={() => setShowViewOptions(!showViewOptions)}
-                            className="bg-white rounded-xl shadow-lg p-3 border border-gray-200 flex items-center gap-2 transition-all hover:shadow-xl"
+        className="bg-white rounded-xl shadow-lg p-3 border border-gray-200 flex items-center gap-2 transition-all hover:shadow-xl"
                         >
                             <FaCog className="text-gray-600" size={13} />
                             <span className="text-xs font-bold text-gray-700">Vista</span>
@@ -1029,7 +1050,7 @@ export default function LocalizationView() {
                         </button>
 
                         {showViewOptions && (
-                            <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                            <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50">
                                 <div className="p-2 border-b border-gray-100">
                                     <p className="text-[10px] font-bold text-gray-500 uppercase px-2 py-1">Capas del mapa</p>
                                 </div>
@@ -1057,7 +1078,7 @@ export default function LocalizationView() {
                         )}
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[220px]">
+                    <div className="bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[220px] relative z-10">
                         <p className="text-xs font-bold text-gray-700 mb-2 uppercase flex items-center gap-1">
                             <FaLayerGroup size={10} /> Canales
                         </p>

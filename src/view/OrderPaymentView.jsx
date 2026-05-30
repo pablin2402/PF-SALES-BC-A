@@ -47,7 +47,133 @@ const PAYMENT_STATUS_CONFIG = {
     icon: FaTimesCircle
   }
 };
+const SHIMMER_STYLE = {
+  background: "linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)",
+  backgroundSize: "200% 100%",
+  animation: "shimmer 1.5s infinite"
+};
 
+const SkeletonBox = ({ className = "", style = {} }) => (
+  <div
+    className={`rounded-lg ${className}`}
+    style={{ ...SHIMMER_STYLE, ...style }}
+  />
+);
+
+const SkeletonStatsRow = () => (
+  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+    {[...Array(4)].map((_, i) => (
+      <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex items-center gap-3">
+        <SkeletonBox className="w-10 h-10 rounded-xl flex-shrink-0" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <SkeletonBox className="h-3 w-20" />
+          <SkeletonBox className="h-6 w-12" />
+        </div>
+      </div>
+    ))}
+    <div className="bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-xl">
+      <div className="flex items-center justify-between mb-3">
+        <div className="w-11 h-11 rounded-xl bg-white/20" />
+        <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-3 w-16 bg-white/20 rounded" />
+        <div className="h-8 w-10 bg-white/30 rounded" />
+        <div className="h-3 w-24 bg-white/20 rounded" />
+      </div>
+    </div>
+  </div>
+);
+
+const SkeletonTableRow = () => (
+  <tr className="border-b border-gray-100">
+    <td className="px-4 py-4"><SkeletonBox className="h-4 w-16" /></td>
+    <td className="px-4 py-4">
+      <div className="space-y-1.5">
+        <SkeletonBox className="h-4 w-24" />
+        <SkeletonBox className="h-3 w-16" />
+      </div>
+    </td>
+    <td className="px-4 py-4"><SkeletonBox className="h-4 w-28" /></td>
+    <td className="px-4 py-4"><SkeletonBox className="h-4 w-32" /></td>
+    <td className="px-4 py-4"><SkeletonBox className="h-4 w-20 ml-auto" /></td>
+    <td className="px-4 py-4"><SkeletonBox className="h-4 w-20 ml-auto" /></td>
+    <td className="px-4 py-4"><SkeletonBox className="h-4 w-20 ml-auto" /></td>
+    <td className="px-4 py-4"><SkeletonBox className="h-6 w-24 mx-auto rounded-full" /></td>
+    <td className="px-4 py-4">
+      <div className="flex flex-col items-center gap-1">
+        <SkeletonBox className="h-3 w-24" />
+        <SkeletonBox className="h-2.5 w-16" />
+      </div>
+    </td>
+    <td className="px-4 py-4"><SkeletonBox className="h-6 w-6 mx-auto rounded" /></td>
+  </tr>
+);
+
+const SkeletonMobileCard = () => (
+  <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+    <div className="flex justify-between items-start">
+      <div className="space-y-1.5">
+        <SkeletonBox className="h-4 w-20" />
+        <SkeletonBox className="h-3 w-24" />
+      </div>
+      <SkeletonBox className="h-6 w-24 rounded-full" />
+    </div>
+    <SkeletonBox className="h-4 w-40" />
+    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+      <SkeletonBox className="h-3 w-28" />
+      <SkeletonBox className="h-5 w-20" />
+    </div>
+  </div>
+);
+
+const SkeletonTableContainer = () => (
+  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="p-6 border-b border-gray-200">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+        <SkeletonBox className="h-10 w-full max-w-md rounded-xl" />
+        <SkeletonBox className="h-10 w-28 rounded-xl" />
+        <div className="ml-auto text-right space-y-1.5">
+          <SkeletonBox className="h-3 w-20" />
+          <SkeletonBox className="h-5 w-24" />
+        </div>
+      </div>
+    </div>
+
+    <div className="hidden lg:block overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-200 border-b border-gray-200">
+          <tr>
+            {["Nota", "Fecha", "Vendedor", "Cliente", "Pago", "Total", "Deuda", "Estado", "Blockchain", ""].map((header, i) => (
+              <th key={i} className="px-4 py-3 text-left">
+                <SkeletonBox className="h-3 w-16" style={{ background: "#d1d5db" }} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} />)}
+        </tbody>
+      </table>
+    </div>
+
+    <div className="lg:hidden p-4 space-y-3">
+      {[...Array(4)].map((_, i) => <SkeletonMobileCard key={i} />)}
+    </div>
+
+    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-4">
+      <SkeletonBox className="h-4 w-40" />
+      <SkeletonBox className="h-8 w-64 rounded-lg" />
+    </div>
+  </div>
+);
+
+const PaymentSkeletons = () => (
+  <>
+    <SkeletonStatsRow />
+    <SkeletonTableContainer />
+  </>
+);
 const extractTxHash = (item) => {
   return (
     item?.txHash ||
@@ -115,7 +241,8 @@ const verifyOnChain = async (txHash) => {
 
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [initialLoading, setInitialLoading] = useState(true);
+const [tableLoading, setTableLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -139,8 +266,8 @@ const OrderPaymentView = () => {
   const token = localStorage.getItem("token");
   const id_user = localStorage.getItem("id_user");
 
-  const fetchProducts = useCallback(async (pageNumber = 1) => {
-    setLoading(true);
+const fetchProducts = useCallback(async (pageNumber = 1) => {
+    setTableLoading(true);
     try {
       const filters = {
         id_owner: user,
@@ -185,7 +312,8 @@ const OrderPaymentView = () => {
       console.error("Error fetching products:", error);
       setSalesData([]);
     } finally {
-      setLoading(false);
+      setTableLoading(false);
+      setInitialLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token, itemsPerPage, searchTerm, startDate, endDate]);
@@ -412,17 +540,19 @@ const OrderPaymentView = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
-              <p className="text-gray-600 text-sm">Cargando pagos...</p>
-            </div>
-          </div>
+       {initialLoading ? (
+          <PaymentSkeletons />
         ) : (
           <>
             {viewMode === "table" ? (
               <>
+                {tableLoading ? (
+                  <>
+                    <SkeletonStatsRow />
+                    <SkeletonTableContainer />
+                  </>
+                ) : (
+                  <>
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
                   <StatCard label="Total" value={stats.total} icon={<FaReceipt />} color="bg-gray-100 text-gray-700" />
                   <StatCard label="Ingresados" value={stats.ingresados} icon={<FaReceipt />} color="bg-blue-100 text-blue-700" />
@@ -756,8 +886,10 @@ const OrderPaymentView = () => {
                         </button>
                       </nav>
                     )}
-                  </div>
+            </div>
                 </div>
+                </>
+                )}
               </>
             ) : (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">

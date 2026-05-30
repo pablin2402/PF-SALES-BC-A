@@ -184,7 +184,7 @@ const DeliveryView = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <style>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
@@ -209,7 +209,7 @@ const DeliveryView = () => {
               <FaFileExport size={14} />
               <span className="hidden sm:inline">Exportar</span>
             </button>
-            <PrincipalBUtton onClick={() => navigate("/delivery/creation")} icon={IoPersonAdd}>
+            <PrincipalBUtton onClick={() => navigate("/delivery/creation")} disabled={!salesData.length} icon={IoPersonAdd}>
               Nuevo Repartidor
             </PrincipalBUtton>
           </div>

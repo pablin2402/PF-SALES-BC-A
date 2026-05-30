@@ -420,7 +420,7 @@ const ClientCreationComponent = () => {
   }));
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <div className="max-w-5xl mx-auto">
        
 

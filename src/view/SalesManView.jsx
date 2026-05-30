@@ -12,10 +12,10 @@ import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import {SkeletonCards,SkeletonTable,SkeletonStats} from "../utils/SkeletonLoading";
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading";
 import { ModernPagination } from "../utils/ModernPagination";
 
-import {ActionsMenu, PasswordStrength, ConfirmModal, ResultModal} from "../utils/Modal";
+import { ActionsMenu, PasswordStrength, ConfirmModal, ResultModal } from "../utils/Modal";
 const COLOR_CLASSES = [
   "bg-gradient-to-br from-red-500 to-red-700",
   "bg-gradient-to-br from-blue-500 to-blue-700",
@@ -315,7 +315,7 @@ const SalesManView = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
       <style>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
@@ -326,7 +326,7 @@ const SalesManView = () => {
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-              <FaUserTie className="text-[#D3423E]" size={22} />
+            <FaUserTie className="text-[#D3423E]" size={22} />
             <div>
               <h1 className="text-3xl font-black text-gray-900 leading-tight">
                 Personal de Ventas
@@ -337,19 +337,14 @@ const SalesManView = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+
             <button
               onClick={exportToExcel}
-              disabled={exporting || (!loading && salesData.length === 0)}
-              className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl flex items-center gap-2 font-semibold text-sm transition-all hover:border-[#D3423E] hover:text-[#D3423E] disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed"
+              disabled={!salesData.length}
+              className={`px-4 py-2.5 border rounded-xl flex items-center gap-2 font-semibold text-sm transition-all ${salesData.length ? 'bg-white text-gray-700 border-gray-300 hover:border-[#D3423E] hover:text-[#D3423E]' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}
             >
-              {exporting ? (
-                <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-gray-300 border-t-[#D3423E]"></div>
-              ) : (
-                <FaFileExport size={14} />
-              )}
-              <span className="hidden sm:inline">
-                {exporting ? "Exportando..." : "Exportar"}
-              </span>
+              <FaFileExport size={14} />
+              <span className="hidden sm:inline">Exportar</span>
             </button>
             <PrincipalBUtton onClick={() => navigate("/sales/create")} icon={IoPersonAdd}>
               Nuevo Vendedor

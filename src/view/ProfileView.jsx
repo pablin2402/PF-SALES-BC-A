@@ -11,7 +11,8 @@ import DateInput from "../Components/LittleComponents/DateInput";
 import { HiFilter } from "react-icons/hi";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaUser, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, } from "react-icons/fa";
 import { motion } from "framer-motion";
-
+import { ModernPagination } from "../utils/ModernPagination";
+import { ProfileFullSkeleton, ProfileTableSkeleton } from "../utils/ProfileCardLoaders";
 const ACCOUNT_STATUS_CONFIG = {
   "Crédito": { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300", label: "CRÉDITO" },
   "Contado": { bg: "bg-green-100", text: "text-green-700", border: "border-green-300", label: "CONTADO" },
@@ -237,20 +238,10 @@ export default function ProfileView() {
   const totalSaldoSum = salesData.reduce((sum, item) => sum + (item.restante || 0), 0);
   const ordersWithOverdue = salesData.filter(item => calculateDaysRemaining(item.dueDate) > 0 && item.restante > 0).length;
 
-  if (loading) {
-    return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
-          <p className="text-gray-600 font-medium">Cargando perfil...</p>
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <ProfileFullSkeleton bg="bg-white" />;
   if (!client) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <FaExclamationCircle className="text-red-500 text-5xl mx-auto mb-3" />
           <p className="text-gray-700 font-bold text-lg">No se pudo cargar el perfil</p>
@@ -266,7 +257,13 @@ export default function ProfileView() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
+    <div className="bg-white min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
           <div className="h-32 bg-gradient-to-br from-[#D3423E] to-red-700 relative">
@@ -439,10 +436,7 @@ export default function ProfileView() {
           </div>
 
           {loadingTable ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando tus pedidos...</p>
-            </div>
+              <ProfileTableSkeleton />
           ) : salesData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -457,7 +451,7 @@ export default function ProfileView() {
             <>
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
+                  <thead className="text-xs text-gray-600 uppercase bg-white border-b border-gray-200">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Ref.</th>
                       <th className="px-4 py-3 font-semibold">Fecha</th>
@@ -478,7 +472,7 @@ export default function ProfileView() {
                         <tr
                           key={item._id}
                           onClick={() => handleRowClick(item)}
-                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-gray-100 hover:bg-white transition-colors cursor-pointer"
                         >
                           <td className="px-4 py-3">
                             <span className="font-bold text-gray-900">#{item.receiveNumber}</span>
@@ -581,7 +575,7 @@ export default function ProfileView() {
                 })}
               </div>
 
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <div className="px-6 py-4 bg-white border-t border-gray-200">
                 <div className="flex justify-end mb-3 pb-3 border-b border-gray-200">
                   <div className="text-right">
                     <p className="text-xs text-gray-500 uppercase font-semibold">Total general</p>
@@ -614,49 +608,11 @@ export default function ProfileView() {
                   </div>
 
                   {totalPages > 1 && (
-                    <nav className="flex items-center gap-1">
-                      <button
-                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={page === 1}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        ← Anterior
-                      </button>
-                      <button
-                        onClick={() => setPage(1)}
-                        className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        1
-                      </button>
-                      {page > 3 && <span className="px-1 text-gray-400">…</span>}
-                      {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                        .filter((p) => p > 1 && p < totalPages)
-                        .map((p) => (
-                          <button
-                            key={p}
-                            onClick={() => setPage(p)}
-                            className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-                      {totalPages > 1 && (
-                        <button
-                          onClick={() => setPage(totalPages)}
-                          className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          {totalPages}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={page === totalPages}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                      >
-                        Siguiente →
-                      </button>
-                    </nav>
+                    <ModernPagination
+                      page={page}
+                      totalPages={totalPages}
+                      onChange={setPage}
+                    />
                   )}
                 </div>
               </div>

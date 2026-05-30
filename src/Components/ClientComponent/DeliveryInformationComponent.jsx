@@ -10,6 +10,7 @@ import DateInput from "../LittleComponents/DateInput";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, FaFilter, FaTruck, FaBoxOpen, FaUser } from "react-icons/fa";
 import { HiFilter } from "react-icons/hi";
 import { motion } from "framer-motion";
+import { ProfileFullSkeleton, ProfileTableSkeleton } from "../../utils/ProfileCardLoaders";
 
 const ACCOUNT_STATUS_CONFIG = {
   "Crédito": { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300", label: "CRÉDITO" },
@@ -295,15 +296,8 @@ export default function DeliveryInformationComponent() {
   const totalSaldoSum = salesData.reduce((sum, item) => sum + (item.restante || 0), 0);
   const ordersWithOverdue = salesData.filter(item => calculateDaysRemaining(item.dueDate) > 0 && item.restante > 0).length;
 
-  if (loading) {
-    return (
-      <div className="bg-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D3423E] mx-auto mb-3"></div>
-          <p className="text-gray-600 font-medium">Cargando datos del repartidor...</p>
-        </div>
-      </div>
-    );
+if (loading) {
+    return <ProfileFullSkeleton />;
   }
 
   if (!client) {
@@ -325,6 +319,12 @@ export default function DeliveryInformationComponent() {
 
   return (
     <div className="bg-white min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
@@ -526,11 +526,8 @@ export default function DeliveryInformationComponent() {
             )}
           </div>
 
-          {loadingTable ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando entregas...</p>
-            </div>
+         {loadingTable ? (
+            <ProfileTableSkeleton />
           ) : salesData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">

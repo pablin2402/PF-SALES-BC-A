@@ -3,11 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { IoPersonAdd } from "react-icons/io5";
-import {FaUserShield, FaEnvelope, FaPhone, FaCity, FaMapMarkerAlt, FaFileExport, FaTimes, FaCrown, FaSort, FaSortUp, FaSortDown, FaExclamationCircle } from "react-icons/fa";
+import { FaUserShield, FaSearch, FaEnvelope, FaPhone, FaCity, FaMapMarkerAlt, FaFileExport, FaTimes, FaCrown, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
-import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading"
 
 const COLOR_CLASSES = [
   'bg-gradient-to-br from-purple-500 to-purple-700',
@@ -96,8 +96,7 @@ const AdminView = () => {
     );
   };
 
-  const filteredAndSorted = salesData
-    .filter(item => {
+  const filteredAndSorted = salesData.filter(item => {
       const fullName = `${item.salesId?.fullName || ""} ${item.salesId?.lastName || ""}`.toLowerCase();
       const email = (item.salesId?.email || "").toLowerCase();
       const matchesSearch = !searchTerm || fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
@@ -130,6 +129,12 @@ const AdminView = () => {
 
   return (
     <div className="bg-white min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -153,7 +158,9 @@ const AdminView = () => {
             </PrincipalBUtton>
           </div>
         </div>
-
+{loading && salesData.length === 0 ? (
+          <SkeletonStats />
+        ) : (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
           <StatCard
             label="Total administradores"
@@ -174,15 +181,27 @@ const AdminView = () => {
             color="bg-green-100 text-green-700"
           />
         </div>
-
+ )}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             <div className="relative flex-1 max-w-md">
-              <TextInputFilter
+
+              <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+              <input
+                type="text"
                 value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Buscar por nombre o correo..."
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar vendedor por nombre..."
+                className="w-full pl-10 pr-9 py-2.5 text-sm bg-gray-50 border border-gray-200 text-gray-900 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] focus:bg-white transition-all"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                >
+                  <FaTimes size={12} />
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -228,23 +247,10 @@ const AdminView = () => {
             </div>
           </div>
 
+
+
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando administradores...</p>
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-              <FaExclamationCircle className="text-red-500 text-5xl mb-3" />
-              <p className="text-gray-700 font-bold">Error al cargar</p>
-              <p className="text-sm text-gray-500 mt-1">{error}</p>
-              <button
-                onClick={fetchProducts}
-                className="mt-4 px-4 py-2 bg-[#D3423E] text-white font-bold text-sm rounded-xl hover:bg-red-700 transition-colors"
-              >
-                Reintentar
-              </button>
-            </div>
+            viewMode === "table" ? <SkeletonTable /> : <SkeletonCards />
           ) : filteredAndSorted.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -263,138 +269,142 @@ const AdminView = () => {
                 </button>
               )}
             </div>
-          ) : viewMode === "table" ? (
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3"></th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("name")}>
-                      <div className="flex items-center gap-1">Nombre {getSortIcon("name")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("email")}>
-                      <div className="flex items-center gap-1">Correo {getSortIcon("email")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold">Teléfono</th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("region")}>
-                      <div className="flex items-center gap-1">Ciudad {getSortIcon("region")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-center">Rol</th>
-                  </tr>
-                </thead>
-                <tbody>
+          ) : (
+            <>
+              <div className="hidden lg:block">
+                {viewMode === "table" && (
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3"></th>
+                          <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("name")}>
+                            <div className="flex items-center gap-1">Nombre {getSortIcon("name")}</div>
+                          </th>
+                          <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("email")}>
+                            <div className="flex items-center gap-1">Correo {getSortIcon("email")}</div>
+                          </th>
+                          <th className="px-4 py-3 font-semibold">Teléfono</th>
+                          <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("region")}>
+                            <div className="flex items-center gap-1">Ciudad {getSortIcon("region")}</div>
+                          </th>
+                          <th className="px-4 py-3 font-semibold text-center">Rol</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredAndSorted.map((item) => (
+                          <tr
+                            key={item._id}
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <div className="relative">
+                                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${getColor(item.salesId?.fullName, item.salesId?.lastName)}`}>
+                                  {getInitials(item.salesId?.fullName, item.salesId?.lastName)}
+                                </div>
+                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white">
+                                  <FaCrown className="text-yellow-700" size={9} />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <p className="font-bold text-gray-900">{item.salesId?.fullName} {item.salesId?.lastName}</p>
+                            </td>
+                            <td className="px-4 py-4 text-gray-700">
+                              {item.salesId?.email ? (
+
+                                <a href={`mailto:${item.salesId.email}`}
+                                  className="hover:text-[#D3423E] transition-colors flex items-center gap-1.5"
+                                >
+                                  <FaEnvelope size={10} className="text-gray-400" />
+                                  {item.salesId.email}
+                                </a>
+                              ) : "-"}
+                            </td>
+                            <td className="px-4 py-4 text-gray-700">
+                              {item.salesId?.phoneNumber ? (
+
+                                <a href={`tel:${item.salesId.phoneNumber}`}
+                                  className="hover:text-[#D3423E] transition-colors flex items-center gap-1.5"
+                                >
+                                  <FaPhone size={10} className="text-gray-400" />
+                                  {item.salesId.phoneNumber}
+                                </a>
+                              ) : "-"}
+                            </td>
+                            <td className="px-4 py-4">
+                              {item.salesId?.region ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
+                                  <FaMapMarkerAlt size={9} />
+                                  {item.salesId.region}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-xs">Sin ciudad</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                                <FaUserShield size={9} />
+                                ADMIN
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              {(viewMode === "cards" || (viewMode === "table" && filteredAndSorted.length > 0)) && (
+                <div className={viewMode === "cards" ? "p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" : "lg:hidden p-4 space-y-3"}>
                   {filteredAndSorted.map((item) => (
-                    <tr
+                    <div
                       key={item._id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="bg-white border-2 border-gray-200 hover:border-gray-300 rounded-2xl p-4 hover:shadow-md transition-all"
                     >
-                      <td className="px-6 py-4">
-                        <div className="relative">
-                          <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${getColor(item.salesId?.fullName, item.salesId?.lastName)}`}>
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="relative flex-shrink-0">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${getColor(item.salesId?.fullName, item.salesId?.lastName)}`}>
                             {getInitials(item.salesId?.fullName, item.salesId?.lastName)}
                           </div>
                           <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white">
                             <FaCrown className="text-yellow-700" size={9} />
                           </div>
                         </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="font-bold text-gray-900">{item.salesId?.fullName} {item.salesId?.lastName}</p>
-                      </td>
-                      <td className="px-4 py-4 text-gray-700">
-                        {item.salesId?.email ? (
-                          
-                            <a href={`mailto:${item.salesId.email}`}
-                            className="hover:text-[#D3423E] transition-colors flex items-center gap-1.5"
-                          >
-                            <FaEnvelope size={10} className="text-gray-400" />
-                            {item.salesId.email}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-gray-900 truncate">{item.salesId?.fullName} {item.salesId?.lastName}</p>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-[10px] font-bold mt-1">
+                            <FaUserShield size={8} /> ADMINISTRADOR
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs text-gray-600">
+                        {item.salesId?.email && (
+                          <a href={`mailto:${item.salesId.email}`} className="flex items-center gap-2 truncate hover:text-[#D3423E] transition-colors">
+                            <FaEnvelope className="text-gray-400 flex-shrink-0" size={11} />
+                            <span className="truncate">{item.salesId.email}</span>
                           </a>
-                        ) : "-"}
-                      </td>
-                      <td className="px-4 py-4 text-gray-700">
-                        {item.salesId?.phoneNumber ? (
-                          
-                            <a href={`tel:${item.salesId.phoneNumber}`}
-                            className="hover:text-[#D3423E] transition-colors flex items-center gap-1.5"
-                          >
-                            <FaPhone size={10} className="text-gray-400" />
+                        )}
+                        {item.salesId?.phoneNumber && (
+                          <a href={`tel:${item.salesId.phoneNumber}`} className="flex items-center gap-2 hover:text-[#D3423E] transition-colors">
+                            <FaPhone className="text-gray-400 flex-shrink-0" size={11} />
                             {item.salesId.phoneNumber}
                           </a>
-                        ) : "-"}
-                      </td>
-                      <td className="px-4 py-4">
-                        {item.salesId?.region ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
-                            <FaMapMarkerAlt size={9} />
-                            {item.salesId.region}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-xs">Sin ciudad</span>
                         )}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
-                          <FaUserShield size={9} />
-                          ADMIN
-                        </span>
-                      </td>
-                    </tr>
+                        {item.salesId?.region && (
+                          <p className="flex items-center gap-2">
+                            <FaCity className="text-gray-400 flex-shrink-0" size={11} />
+                            {item.salesId.region}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-
-          {(viewMode === "cards" || (viewMode === "table" && filteredAndSorted.length > 0)) && (
-            <div className={viewMode === "cards" ? "p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" : "lg:hidden p-4 space-y-3"}>
-              {filteredAndSorted.map((item) => (
-                <div
-                  key={item._id}
-                  className="bg-white border-2 border-gray-200 hover:border-gray-300 rounded-2xl p-4 hover:shadow-md transition-all"
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="relative flex-shrink-0">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${getColor(item.salesId?.fullName, item.salesId?.lastName)}`}>
-                        {getInitials(item.salesId?.fullName, item.salesId?.lastName)}
-                      </div>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white">
-                        <FaCrown className="text-yellow-700" size={9} />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 truncate">{item.salesId?.fullName} {item.salesId?.lastName}</p>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-[10px] font-bold mt-1">
-                        <FaUserShield size={8} /> ADMINISTRADOR
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 text-xs text-gray-600">
-                    {item.salesId?.email && (
-                      <a href={`mailto:${item.salesId.email}`} className="flex items-center gap-2 truncate hover:text-[#D3423E] transition-colors">
-                        <FaEnvelope className="text-gray-400 flex-shrink-0" size={11} />
-                        <span className="truncate">{item.salesId.email}</span>
-                      </a>
-                    )}
-                    {item.salesId?.phoneNumber && (
-                      <a href={`tel:${item.salesId.phoneNumber}`} className="flex items-center gap-2 hover:text-[#D3423E] transition-colors">
-                        <FaPhone className="text-gray-400 flex-shrink-0" size={11} />
-                        {item.salesId.phoneNumber}
-                      </a>
-                    )}
-                    {item.salesId?.region && (
-                      <p className="flex items-center gap-2">
-                        <FaCity className="text-gray-400 flex-shrink-0" size={11} />
-                        {item.salesId.region}
-                      </p>
-                    )}
-                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
-
           {!loading && filteredAndSorted.length > 0 && (
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600">
               Mostrando <strong className="text-gray-900">{filteredAndSorted.length}</strong> de <strong className="text-gray-900">{salesData.length}</strong> administradores
@@ -417,5 +427,6 @@ const StatCard = ({ label, value, icon, color }) => (
     </div>
   </div>
 );
+
 
 export default AdminView;
