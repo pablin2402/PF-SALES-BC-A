@@ -10,7 +10,6 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({ numberOfBoxes: 0, saleLastYear1: 0, startDate: "", endDate: "", categoria: "", ciudad: "", salesMan: "" });
   const [salesData, setSalesData] = useState([]);
@@ -140,6 +139,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
     fetchCategories();
     fetchObjectiveDataRegion(page);
     fetchVendedores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, itemsPerPage]);
 
   const totalBotellas = objectiveData.reduce((s, i) => s + (i.totalBotellas || 0), 0);
@@ -197,7 +197,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
               <select
                 value={selectedPayment}
                 onChange={(e) => setSelectedPayment(e.target.value)}
-                className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                className="app-select"
               >
                 <option value="">Todos</option>
                 <option value="Pagado">Pagado</option>
@@ -300,7 +300,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                   <select
                     value={itemsPerPage}
                     onChange={(e) => { setItemsPerPage(Number(e.target.value)); setPage(1); }}
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                    className="app-select"
                   >
                     {[5, 10, 20, 50].map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -373,7 +373,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                   name="categoria"
                   value={formData.categoria}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition appearance-none cursor-pointer"
+                  className="app-select"
                 >
                   <option value="">Selecciona una categoría</option>
                   {Array.isArray(salesData) && salesData.map((cat) => (
@@ -387,7 +387,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                   name="ciudad"
                   value={formData.ciudad}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition appearance-none cursor-pointer"
+                  className="app-select"
                 >
                   <option value="">Selecciona una ciudad</option>
                   <option value="TOTAL CBB">Cochabamba</option>
@@ -422,7 +422,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                   name="salesMan"
                   value={formData.salesMan}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition appearance-none cursor-pointer"
+                  className="app-select"
                 >
                   <option value="">Todos los vendedores</option>
                   {vendedores.map((v) => (

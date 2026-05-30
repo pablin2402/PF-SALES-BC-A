@@ -19,7 +19,7 @@ import {
 import {
     MUNICIPIOS_COCHABAMBA, getMunicipioForPoint, groupClientsByMunicipio,
 } from "../utils/CochabambaMunicipios";
-import { MAP_STYLE_MODERN,CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM, VIEW_ALL_LIMIT, FALLBACK_IMAGE } from "../utils/MapDetails";
+import { MAP_STYLE_MODERN, CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM, VIEW_ALL_LIMIT, FALLBACK_IMAGE } from "../utils/MapDetails";
 import { SidebarSkeleton, MapSkeleton } from "../utils/MapSkeleton"
 
 
@@ -410,7 +410,7 @@ export default function LocalizationView() {
                                         <select
                                             value={selectedSalesmen}
                                             onChange={(e) => setSelectedSalesmen(e.target.value)}
-                                            className="w-full pl-8 pr-2 py-2.5 text-xs text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all appearance-none cursor-pointer"
+                                            className="app-select"
                                         >
                                             <option value="">Todos</option>
                                             {salesManData.map((s) => (
@@ -426,7 +426,7 @@ export default function LocalizationView() {
                                         <select
                                             value={selectedCategories}
                                             onChange={(e) => setSelectedCategories(e.target.value)}
-                                            className="w-full pl-8 pr-2 py-2.5 text-xs text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all appearance-none cursor-pointer"
+                                            className="app-select"
                                         >
                                             <option value="">Todos</option>
                                             {CHANNEL_LIST.map((c) => (
@@ -681,7 +681,7 @@ export default function LocalizationView() {
                                                             setLimit(Number(e.target.value));
                                                             setPage(1);
                                                         }}
-                                                        className="border border-gray-300 rounded-lg px-2 py-1 text-xs outline-none focus:border-[#D3423E] bg-white text-gray-900 cursor-pointer"
+                                                        className="app-select"
                                                     >
                                                         {[10, 20, 30, 50, 100].map((opt) => (
                                                             <option key={opt} value={opt}>{opt}</option>

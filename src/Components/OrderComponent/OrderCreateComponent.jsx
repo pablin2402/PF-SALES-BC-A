@@ -11,7 +11,6 @@ import AlertModal from "../modal/AlertModal";
 import ErrorModal from "../modal/ErrorModal";
 import { motion, AnimatePresence } from "framer-motion";
 import OrderDetailsComponent from "./OrderDetailsComponent";
-import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 
 const PAYMENT_TYPES = [
   { value: "Crédito", label: "Crédito", color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: "💳" },
@@ -284,7 +283,6 @@ const OrderCreateComponent = () => {
           </div>
         </div>
 
-        {/* ── STEPPER MODERNO ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
           <div className="flex items-center justify-between">
             {STEPS.map((step, idx) => {
@@ -339,8 +337,6 @@ const OrderCreateComponent = () => {
         {viewMode === "card" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-
-              {/* ── SEARCHBOX MODERNO ── */}
               <div className="p-5 border-b border-gray-200 bg-gray-50">
                 <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                   <div className="relative flex-1">
@@ -359,7 +355,7 @@ const OrderCreateComponent = () => {
                     <select
                       value={selectedCategory}
                       onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
-                      className="pl-10 pr-10 py-3 text-sm text-gray-900 border border-gray-200 rounded-xl bg-white outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 appearance-none cursor-pointer shadow-sm transition-all"
+  className="app-select"
                     >
                       <option value="">Todas las categorías</option>
                       {categoriesList.map((c) => (

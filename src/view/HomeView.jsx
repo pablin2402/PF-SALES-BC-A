@@ -301,7 +301,7 @@ return (
                     {filterType === "monthYear" ? (
                       <div className="flex gap-2">
                         <select
-                          className="px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+  className="app-select"
                           value={selectedYear}
                           onChange={(e) => setSelectedYear(e.target.value)}
                         >
@@ -310,7 +310,7 @@ return (
                           ))}
                         </select>
                         <select
-                          className="px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+  className="app-select"
                           value={selectedMonth}
                           onChange={(e) => setSelectedMonth(e.target.value)}
                         >

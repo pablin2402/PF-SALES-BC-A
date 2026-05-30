@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import axios from "axios";
 import {
-  useJsApiLoader, GoogleMap, Marker, OverlayView, DirectionsRenderer, Polyline,
+  useJsApiLoader, GoogleMap, Marker, OverlayView, Polyline,
 } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../../config";
 import {
   FaMapMarkerAlt, FaUser, FaCalendarAlt, FaRoute, FaTrash, FaChevronLeft, FaChevronRight,
   FaCheckCircle, FaPlayCircle, FaRegClock, FaEye, FaChevronDown, FaFilter, FaClock,
-  FaPlus, FaMinus, FaTimes, FaCog, FaExpand, FaLayerGroup, FaBuilding, FaSearch,
+  FaPlus, FaMinus, FaTimes, FaCog, FaExpand, FaLayerGroup, FaBuilding,
   FaExclamationTriangle,
 } from "react-icons/fa";
 import { HiFilter } from "react-icons/hi";
@@ -431,7 +431,7 @@ export default function ShowRouteComponent() {
                         setSelectedSaler(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full pl-8 pr-2 py-2.5 text-xs text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 appearance-none cursor-pointer"
+                      className="app-select"
                     >
                       <option value="">Todos los vendedores</option>
                       {vendedores.map((v) => (
@@ -454,7 +454,7 @@ export default function ShowRouteComponent() {
                         setSelectedStatus(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full pl-8 pr-2 py-2.5 text-xs text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 appearance-none cursor-pointer"
+                      className="app-select"
                     >
                       <option value="">Todos los estados</option>
                       <option value="Por iniciar">Por iniciar</option>
@@ -739,7 +739,7 @@ export default function ShowRouteComponent() {
                         <select
                           value={pageSize}
                           onChange={(e) => setPageSize(Number(e.target.value))}
-                          className="bg-white border border-gray-300 rounded-lg px-2 py-1 text-xs font-bold text-gray-700 cursor-pointer focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+                          className="app-select"
                         >
                           {PAGE_SIZE_OPTIONS.map((n) => (
                             <option key={n} value={n}>{n}</option>

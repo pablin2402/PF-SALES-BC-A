@@ -483,7 +483,7 @@ const DeliveryView = () => {
                       setItemsPerPage(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+  className="app-select"
                   >
                     {[5, 10, 20, 50, 100].map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>

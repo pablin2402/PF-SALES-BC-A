@@ -600,7 +600,7 @@ const OrderPaymentView = () => {
                           <select
                             value={selectedFilter}
                             onChange={(e) => handleFilterChange(e.target.value)}
-                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer"
+                            className="app-select"
                           >
                             <option value="none">Filtros</option>
                             <option value="all">Mostrar todos</option>
@@ -664,8 +664,8 @@ const OrderPaymentView = () => {
                                   <tr
                                     key={item._id}
                                     className={`border-b border-gray-100 transition-all hover:bg-gray-50 ${hasChain
-                                        ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5"
-                                        : ""
+                                      ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5"
+                                      : ""
                                       }`}
                                   >
                                     <td className="px-4 py-3">
@@ -831,7 +831,7 @@ const OrderPaymentView = () => {
                                 setItemsPerPage(Number(e.target.value));
                                 setPage(1);
                               }}
-                              className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                              className="app-select"
                             >
                               {[5, 10, 20, 50, 100].map((option) => (
                                 <option key={option} value={option}>{option}</option>
@@ -1098,20 +1098,18 @@ const OrderPaymentView = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => setSelectedItem({ ...selectedItem, confirmed: "confirmado" })}
-                        className={`relative p-3.5 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${
-                          selectedItem.confirmed === "confirmado"
+                        className={`relative p-3.5 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${selectedItem.confirmed === "confirmado"
                             ? 'border-green-500 bg-green-500 text-white shadow-md shadow-green-200'
                             : 'border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:bg-green-50'
-                        }`}
+                          }`}
                       >
                         {selectedItem.confirmed === "confirmado" && (
                           <div className="absolute top-2 right-2 w-4 h-4 bg-white rounded-full flex items-center justify-center">
                             <FaCheck size={8} className="text-green-500" />
                           </div>
                         )}
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          selectedItem.confirmed === "confirmado" ? 'bg-white/20' : 'bg-green-100'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedItem.confirmed === "confirmado" ? 'bg-white/20' : 'bg-green-100'
+                          }`}>
                           <FaCheck size={18} className={selectedItem.confirmed === "confirmado" ? 'text-white' : 'text-green-600'} />
                         </div>
                         <span className={`text-sm font-bold ${selectedItem.confirmed === "confirmado" ? 'text-white' : 'text-gray-700'}`}>
@@ -1124,20 +1122,18 @@ const OrderPaymentView = () => {
 
                       <button
                         onClick={() => setSelectedItem({ ...selectedItem, confirmed: "rechazado" })}
-                        className={`relative p-3.5 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${
-                          selectedItem.confirmed === "rechazado"
+                        className={`relative p-3.5 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${selectedItem.confirmed === "rechazado"
                             ? 'border-[#D3423E] bg-[#D3423E] text-white shadow-md shadow-red-200'
                             : 'border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:bg-red-50'
-                        }`}
+                          }`}
                       >
                         {selectedItem.confirmed === "rechazado" && (
                           <div className="absolute top-2 right-2 w-4 h-4 bg-white rounded-full flex items-center justify-center">
                             <FaCheck size={8} className="text-[#D3423E]" />
                           </div>
                         )}
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          selectedItem.confirmed === "rechazado" ? 'bg-white/20' : 'bg-red-100'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedItem.confirmed === "rechazado" ? 'bg-white/20' : 'bg-red-100'
+                          }`}>
                           <FaTimes size={18} className={selectedItem.confirmed === "rechazado" ? 'text-white' : 'text-[#D3423E]'} />
                         </div>
                         <span className={`text-sm font-bold ${selectedItem.confirmed === "rechazado" ? 'text-white' : 'text-gray-700'}`}>
@@ -1153,11 +1149,10 @@ const OrderPaymentView = () => {
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`mt-3 text-xs font-semibold text-center px-3 py-2 rounded-lg ${
-                          selectedItem.confirmed === "confirmado"
+                        className={`mt-3 text-xs font-semibold text-center px-3 py-2 rounded-lg ${selectedItem.confirmed === "confirmado"
                             ? 'bg-green-100 text-green-700'
                             : 'bg-red-100 text-[#D3423E]'
-                        }`}
+                          }`}
                       >
                         {selectedItem.confirmed === "confirmado"
                           ? '✓ El pago será marcado como confirmado'

@@ -77,8 +77,8 @@ export default function DeliveryRouteView() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [markers, setMarkers] = useState([]);
-  const [center, setCenter] = useState(DEPOT);
-  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+  const [center,] = useState(DEPOT);
+  const [mapZoom,] = useState(DEFAULT_ZOOM);
   const [selectedSaler, setSelectedSaler] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -627,7 +627,7 @@ export default function DeliveryRouteView() {
                         setCustomCapacity(null);
                         setActiveTab(TABS.PEDIDOS);
                       }}
-                      className="flex-1 min-w-0 bg-white text-gray-800 text-sm font-bold focus:outline-none focus:ring-0 focus:border-transparent border-0 cursor-pointer appearance-none truncate rounded-lg px-2 py-1.5"
+                      className="app-select"
                       style={{ colorScheme: "light" }}
                     >
                       <option value="" className="text-gray-700 bg-white">Sin repartidor asignado</option>
@@ -692,7 +692,7 @@ export default function DeliveryRouteView() {
                     setSelectedMunicipio(e.target.value);
                     if (e.target.value) fitMunicipio(e.target.value);
                   }}
-                  className="flex-1 text-xs px-2.5 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E]"
+                  className="app-select"
                 >
                   <option value="">Todas las zonas</option>
                   {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
@@ -1607,7 +1607,7 @@ const PedidosListPanel = ({
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="bg-white border border-gray-300 rounded-lg px-2 py-1 text-xs font-bold text-gray-700 cursor-pointer focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+              className="app-select"
             >
               {PAGE_SIZE_OPTIONS.map(n => (<option key={n} value={n}>{n}</option>))}
             </select>

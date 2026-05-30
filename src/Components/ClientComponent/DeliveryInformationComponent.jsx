@@ -296,7 +296,7 @@ export default function DeliveryInformationComponent() {
   const totalSaldoSum = salesData.reduce((sum, item) => sum + (item.restante || 0), 0);
   const ordersWithOverdue = salesData.filter(item => calculateDaysRemaining(item.dueDate) > 0 && item.restante > 0).length;
 
-if (loading) {
+  if (loading) {
     return <ProfileFullSkeleton />;
   }
 
@@ -452,7 +452,7 @@ if (loading) {
                   <select
                     value={selectedEstadoPago}
                     onChange={(e) => { setSelectedEstadoPago(e.target.value); setPage(1); }}
-                    className="pl-9 pr-8 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer appearance-none"
+                    className="app-select"
                   >
                     <option value="">Todos los estados</option>
                     <option value="Pagado">Pagados</option>
@@ -526,7 +526,7 @@ if (loading) {
             )}
           </div>
 
-         {loadingTable ? (
+          {loadingTable ? (
             <ProfileTableSkeleton />
           ) : salesData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -689,7 +689,7 @@ if (loading) {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
                         }}
-                        className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                        className="app-select"
                       >
                         {[5, 10, 20, 50, 100].map((opt) => (
                           <option key={opt} value={opt}>{opt}</option>

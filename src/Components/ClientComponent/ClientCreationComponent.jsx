@@ -5,7 +5,7 @@ import { API_URL, GOOGLE_API_KEY } from "../../config";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaUser, FaMapMarkerAlt, FaCamera, FaArrowLeft,
+  FaUser, FaMapMarkerAlt, FaCamera,
   FaTimes, FaUpload, FaIdCard, FaPhone, FaEnvelope, FaStore,
   FaCity, FaUserTie, FaTag, FaHashtag, FaCheck, FaUserCircle,
 } from "react-icons/fa";
@@ -83,8 +83,9 @@ const SelectField = ({ icon: Icon, label, options, required, value, onChange, na
         value={value}
         onChange={onChange}
         required={required}
-        className={`bg-white border border-gray-200 text-sm text-gray-900 rounded-xl ${Icon ? 'pl-10' : 'pl-4'} pr-10 py-3 w-full focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] cursor-pointer appearance-none transition-colors`}
-      >
+  className="app-select"
+
+>
         <option value="">{placeholder}</option>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -187,6 +188,7 @@ const ClientCreationComponent = () => {
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
+    id: "google-map-script",
   });
 
   const handleFileChange = (e) => {

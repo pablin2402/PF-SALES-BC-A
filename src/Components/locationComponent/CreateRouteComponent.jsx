@@ -77,7 +77,7 @@ export default function CreateRouteComponent() {
     const [vendedores, setVendedores] = useState([]);
     const [selectedMarkers, setSelectedMarkers] = useState([]);
     const [selectedSaler, setSelectedSaler] = useState("");
-    const [selectedSalerData, setSelectedSalerData] = useState(null);
+    const [, setSelectedSalerData] = useState(null);
     const [selectedChannel, setSelectedChannel] = useState("");
     const [selectedMunicipio, setSelectedMunicipio] = useState("");
 
@@ -94,7 +94,7 @@ export default function CreateRouteComponent() {
     const [zonePresetKey, setZonePresetKey] = useState("full_metropolitan");
 
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const [creating, setCreating] = useState(false);
     const [iconsReady, setIconsReady] = useState(false);
 
@@ -530,7 +530,7 @@ export default function CreateRouteComponent() {
                                     <select
                                         value={selectedSaler}
                                         onChange={(e) => onSelectVendor(e.target.value)}
-                                        className="w-full pl-9 pr-3 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all appearance-none cursor-pointer"
+                                        className="app-select"
                                     >
                                         <option value="">Seleccionar vendedor...</option>
                                         {vendedores.map((v) => (
@@ -582,7 +582,7 @@ export default function CreateRouteComponent() {
                                 <select
                                     value={selectedChannel}
                                     onChange={(e) => setSelectedChannel(e.target.value)}
-                                    className="text-xs px-2 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:border-[#D3423E]"
+                                    className="app-select"
                                 >
                                     <option value="">Canal: Todos</option>
                                     {CHANNEL_LIST.map(c => (
@@ -595,7 +595,7 @@ export default function CreateRouteComponent() {
                                         setSelectedMunicipio(e.target.value);
                                         if (e.target.value) fitMunicipio(e.target.value);
                                     }}
-                                    className="text-xs px-2 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:border-[#D3423E]"
+                                    className="app-select"
                                 >
                                     <option value="">Zona: Todas</option>
                                     {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
@@ -1233,7 +1233,7 @@ export default function CreateRouteComponent() {
                                         <select
                                             value={zonePresetKey}
                                             onChange={(e) => setZonePresetKey(e.target.value)}
-                                            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl text-gray-900 cursor-pointer focus:outline-none focus:border-[#D3423E]"
+                                            className="app-select"
                                         >
                                             {Object.entries(ZONE_PRESETS).map(([key, preset]) => (
                                                 <option key={key} value={key}>{preset.label}</option>

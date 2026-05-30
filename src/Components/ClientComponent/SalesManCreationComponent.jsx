@@ -437,8 +437,8 @@ const SalesManCreationComponent = () => {
                         name="role"
                         value={formData.role}
                         onChange={handleChange}
-                        className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 text-gray-900 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 appearance-none cursor-pointer"
-                        required
+                        className="app-select"
+                          required
                       >
                         <option value="">Seleccione una ciudad</option>
                         {CITIES.map(c => (

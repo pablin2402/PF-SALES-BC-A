@@ -93,9 +93,10 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
     fetchObjectiveDataRegion(customFilters);
   };
 
-  useEffect(() => {
+useEffect(() => {
     fetchCategories();
     fetchObjectiveDataRegion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clearFilter = (type) => {
@@ -144,7 +145,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
             <select
               value={selectedFilter}
               onChange={(e) => setSelectedFilter(e.target.value)}
-              className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+              className="app-select"
             >
               <option value="">Filtrar por</option>
               <option value="payment">Estado de pago</option>
@@ -169,7 +170,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                 <select
                   value={selectedPayment}
                   onChange={(e) => setSelectedPayment(e.target.value)}
-                  className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                  className="app-select"
                 >
                   <option value="">Todos</option>
                   <option value="Pagado">Pagado</option>
@@ -374,7 +375,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
                   name="categoria"
                   value={formData.categoria}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition appearance-none cursor-pointer"
+                  className="app-select"
                 >
                   <option value="">Selecciona una categoría</option>
                   {Array.isArray(salesData) && salesData.map((cat) => (

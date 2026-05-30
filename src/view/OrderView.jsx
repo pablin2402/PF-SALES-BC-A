@@ -61,7 +61,7 @@ const OrderView = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showCancelCheck, setShowCancelCheck] = useState(null);
   const [counts, setCounts] = useState(null);
-  const [error, setError] = useState(null);
+  const [ , setError] = useState(null);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [page, setPage] = useState(1);
@@ -94,7 +94,7 @@ const OrderView = () => {
       console.error("Error obteniendo vendedores", error);
       setVendedores([]);
     }
-  };  
+  };
 
   useEffect(() => {
     fetchVendedores();
@@ -441,7 +441,7 @@ const OrderView = () => {
                   <select
                     value={selectedFilter}
                     onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
+                    className="app-select"
                   >
                     <option value="">Más filtros</option>
                     <option value="payment">Estado de pago</option>
@@ -466,7 +466,7 @@ const OrderView = () => {
                 <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl">
                   {selectedFilter === "seller" && (
                     <select
-                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      className="app-select"
                       value={selectedSaler}
                       onChange={(e) => setSelectedSaler(e.target.value)}
                     >
@@ -480,7 +480,7 @@ const OrderView = () => {
                     <select
                       value={selectedPaymentType}
                       onChange={(e) => setSelectedPaymentType(e.target.value)}
-                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      className="app-select"
                     >
                       <option value="">Todos los tipos</option>
                       <option value="Crédito">Crédito</option>
@@ -492,7 +492,7 @@ const OrderView = () => {
                     <select
                       value={selectedPayment}
                       onChange={(e) => setSelectedPayment(e.target.value)}
-                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      className="app-select"
                     >
                       <option value="">Todos los estados</option>
                       <option value="Pagado">Pagado</option>
@@ -509,7 +509,7 @@ const OrderView = () => {
                     <select
                       value={selectedRegion}
                       onChange={(e) => setSelectedRegion(e.target.value)}
-                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E]"
+                      className="app-select"
                     >
                       <option value="">Todas las ciudades</option>
                       <option value="TOTAL CBB">Cochabamba</option>
@@ -799,7 +799,7 @@ const OrderView = () => {
                           setItemsPerPage(Number(e.target.value));
                           setPage(1);
                         }}
-                        className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                        className="app-select"
                       >
                         {[5, 10, 20, 50].map((option) => (
                           <option key={option} value={option}>{option}</option>
@@ -883,7 +883,7 @@ const OrderView = () => {
                           <select
                             value={selectedItem.confirmed || ""}
                             onChange={(e) => setSelectedItem({ ...selectedItem, confirmed: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-xl focus:outline-none focus:border-[#D3423E]"
+                            className="app-select"
                           >
                             <option value="">Seleccione una opción</option>
                             <option value="aproved">✓ Aprobar pedido</option>

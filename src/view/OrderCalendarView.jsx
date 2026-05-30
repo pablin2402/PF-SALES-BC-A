@@ -53,17 +53,17 @@ const OrderCalendarView = () => {
                     total: `${order.total}`,
                     status: `${order.paymentStatus === "paid" ? "Pagado" : order.paymentStatus}`,
                     saleImage: `${order?.saleImage}`,
-                    dates:  `${order.creationDate 
+                    dates: `${order.creationDate
                         ? new Date(order.creationDate).toLocaleString("es-ES", {
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
                             day: 'numeric',
-                            hour: "2-digit", 
-                            minute: "2-digit", 
+                            hour: "2-digit",
+                            minute: "2-digit",
                             second: "2-digit",
-                            hour12: false, 
-                          }).toUpperCase()
+                            hour12: false,
+                        }).toUpperCase()
                         : ''}`,
                 }));
 
@@ -150,7 +150,7 @@ const OrderCalendarView = () => {
                                         }}
                                     >
                                         {event.client + " - " + event.notes}
-                                        
+
                                     </div>
                                 );
                             })}
@@ -195,7 +195,8 @@ const OrderCalendarView = () => {
                 </button>
                 <div className="flex gap-2 items-center">
                     <select value={currentDate.getMonth()} onChange={handleMonthChange}
-                        className="border text-gray-900 px-2 py-1 font-bold rounded-xl">
+                        className="app-select"
+                    >
                         {Array.from({ length: 12 }, (_, i) => (
                             <option key={i} value={i}>
                                 {format(new Date(2025, i, 1), "MMMM", { locale: es })}
@@ -205,7 +206,7 @@ const OrderCalendarView = () => {
                     <select
                         value={currentDate.getFullYear()}
                         onChange={handleYearChange}
-                        className="border px-2 py-1 rounded-xl text-gray-900 font-bold"
+                        className="app-select"
                     >
                         {Array.from({ length: 10 }, (_, i) => {
                             const y = currentDate.getFullYear() - 5 + i;

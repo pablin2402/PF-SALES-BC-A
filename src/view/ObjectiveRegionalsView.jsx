@@ -891,8 +891,8 @@ className="border-b border-gray-100 hover:bg-gray-50 transition-colors"         
                     value={formData.ciudad}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900
-                               focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition appearance-none cursor-pointer"
+                      className="app-select"
+
                   >
                     <option value="">Seleccione una ciudad</option>
                     <option value="TOTAL CBB">Cochabamba</option>

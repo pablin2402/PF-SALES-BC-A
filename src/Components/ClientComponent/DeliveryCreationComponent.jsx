@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     FaUser, FaEnvelope, FaPhone, FaLock, FaCity, FaMapMarkerAlt,
     FaHome, FaHashtag, FaCheck, FaChevronLeft, FaChevronRight,
-    FaTruck, FaSave, FaExclamationTriangle, FaArrowLeft, FaIdCard,
+    FaTruck, FaSave, FaExclamationTriangle, FaIdCard,
     FaCloudUploadAlt, FaImage, FaTimes, FaArrowRight,
 } from "react-icons/fa";
 
@@ -182,6 +182,7 @@ const DeliveryCreationComponent = () => {
 
     const isFormValid = useMemo(
         () => validateStep1() && validateStep3(),
+         // eslint-disable-next-line react-hooks/exhaustive-deps
         [formData, address]
     );
 
@@ -433,11 +434,12 @@ const DeliveryCreationComponent = () => {
                                     <div className="relative">
                                         <FaCity className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                                         <select
-                                            className="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 text-sm text-gray-900 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] cursor-pointer appearance-none"
                                             name="region"
                                             value={formData.region}
                                             onChange={handleChange}
                                             required
+                                              className="app-select"
+
                                         >
                                             <option value="">Seleccione una ciudad</option>
                                             {CITIES.map((c) => (

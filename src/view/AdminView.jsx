@@ -23,7 +23,7 @@ const COLOR_CLASSES = [
 const AdminView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("table");
   const [sortBy, setSortBy] = useState("name");
@@ -97,12 +97,12 @@ const AdminView = () => {
   };
 
   const filteredAndSorted = salesData.filter(item => {
-      const fullName = `${item.salesId?.fullName || ""} ${item.salesId?.lastName || ""}`.toLowerCase();
-      const email = (item.salesId?.email || "").toLowerCase();
-      const matchesSearch = !searchTerm || fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
-      const matchesRegion = regionFilter === "all" || item.salesId?.region === regionFilter;
-      return matchesSearch && matchesRegion;
-    })
+    const fullName = `${item.salesId?.fullName || ""} ${item.salesId?.lastName || ""}`.toLowerCase();
+    const email = (item.salesId?.email || "").toLowerCase();
+    const matchesSearch = !searchTerm || fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
+    const matchesRegion = regionFilter === "all" || item.salesId?.region === regionFilter;
+    return matchesSearch && matchesRegion;
+  })
     .sort((a, b) => {
       let valA, valB;
       switch (sortBy) {
@@ -158,30 +158,30 @@ const AdminView = () => {
             </PrincipalBUtton>
           </div>
         </div>
-{loading && salesData.length === 0 ? (
+        {loading && salesData.length === 0 ? (
           <SkeletonStats />
         ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-          <StatCard
-            label="Total administradores"
-            value={salesData.length}
-            icon={<FaUserShield />}
-            color="bg-purple-100 text-purple-700"
-          />
-          <StatCard
-            label="Ciudades"
-            value={allRegions.length}
-            icon={<FaCity />}
-            color="bg-blue-100 text-blue-700"
-          />
-          <StatCard
-            label="Con email registrado"
-            value={salesData.filter(s => s.salesId?.email).length}
-            icon={<FaEnvelope />}
-            color="bg-green-100 text-green-700"
-          />
-        </div>
- )}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            <StatCard
+              label="Total administradores"
+              value={salesData.length}
+              icon={<FaUserShield />}
+              color="bg-purple-100 text-purple-700"
+            />
+            <StatCard
+              label="Ciudades"
+              value={allRegions.length}
+              icon={<FaCity />}
+              color="bg-blue-100 text-blue-700"
+            />
+            <StatCard
+              label="Con email registrado"
+              value={salesData.filter(s => s.salesId?.email).length}
+              icon={<FaEnvelope />}
+              color="bg-green-100 text-green-700"
+            />
+          </div>
+        )}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-5 border-b border-gray-200 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             <div className="relative flex-1 max-w-md">
@@ -211,7 +211,7 @@ const AdminView = () => {
                   <select
                     value={regionFilter}
                     onChange={(e) => setRegionFilter(e.target.value)}
-                    className="pl-9 pr-8 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer appearance-none"
+                    className="app-select"
                   >
                     <option value="all">Todas las ciudades</option>
                     {allRegions.map(r => (

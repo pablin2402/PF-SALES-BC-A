@@ -63,7 +63,7 @@ const ClientView = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [exporting, setExporting] = useState(false);
+  const [, setExporting] = useState(false);
 
   const getInitials = (name, lastName) => {
     const firstInitial = name?.charAt(0).toUpperCase() || "";
@@ -318,8 +318,8 @@ const ClientView = () => {
               <FaFileExport size={14} />
               <span className="hidden sm:inline">Exportar</span>
             </button>
-            <PrincipalBUtton 
-              onClick={() => navigate("/client/creation")} 
+            <PrincipalBUtton
+              onClick={() => navigate("/client/creation")}
               disabled={!salesData.length}
               icon={IoPersonAdd}
             >
@@ -387,7 +387,7 @@ const ClientView = () => {
                   <select
                     value={selectedSaler}
                     onChange={(e) => { setSelectedSaler(e.target.value); setPage(1); }}
-                    className="pl-8 pr-8 py-2 text-sm border border-gray-200 bg-white text-gray-700 font-semibold rounded-xl focus:outline-none focus:border-[#D3423E] cursor-pointer appearance-none"
+                    className="app-select"
                   >
                     <option value="">Todos los vendedores</option>
                     {vendedores.map((v) => (
@@ -403,7 +403,7 @@ const ClientView = () => {
                   <select
                     value={selectedRegion}
                     onChange={(e) => { setSelectedRegion(e.target.value); setPage(1); }}
-                    className="pl-8 pr-8 py-2 text-sm border border-gray-200 bg-white text-gray-700 font-semibold rounded-xl focus:outline-none focus:border-[#D3423E] cursor-pointer appearance-none"
+                    className="app-select"
                   >
                     <option value="">Todas las ciudades</option>
                     {REGIONS.map((r) => (
@@ -723,7 +723,7 @@ const ClientView = () => {
                       setItemsPerPage(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:outline-none focus:border-[#D3423E]"
+                    className="app-select"
                   >
                     {[5, 10, 20, 50, 100].map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -822,7 +822,7 @@ const ClientView = () => {
                   <select
                     value={selectedSaler1}
                     onChange={(e) => setSelectedSaler1(e.target.value)}
-                    className="bg-white border border-gray-300 text-sm text-gray-900 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] cursor-pointer"
+                    className="app-select"
                   >
                     <option value="">Sin vendedor asignado</option>
                     {vendedores.map((vendedor) => (

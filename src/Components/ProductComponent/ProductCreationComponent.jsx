@@ -319,10 +319,7 @@ const SalesView = () => {
                     name="categoryId"
                     value={formData.categoryId}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl
-                               text-sm text-gray-900
-                               focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100
-                               transition appearance-none cursor-pointer"
+                   className="app-select"
                   >
                     <option value="">Todas las categorías</option>
                     {categoriesList.map((cat) => (

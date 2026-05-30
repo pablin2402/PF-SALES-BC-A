@@ -14,10 +14,6 @@ import { MAP_STYLE_MODERN, CITIES, STEPS, CONTAINER_STYLE, DEFAULT_CENTER, DEFAU
 
 import SuccessModal from "../modal/SuccessModal";
 import ErrorModal from "../modal/ErrorModal";
-
-
-
-
 const initialAddress = { road: "", state: "", house_number: "" };
 const initialFormData = {
     nombre: "", apellido: "", email: "", telefono: "",
@@ -27,7 +23,6 @@ const initialFormData = {
 const DeliveryCreationComponent = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
-
     const [step, setStep] = useState(1);
     const [location, setLocation] = useState(DEFAULT_CENTER);
     const [address, setAddress] = useState(initialAddress);
@@ -35,14 +30,13 @@ const DeliveryCreationComponent = () => {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [dragOver, setDragOver] = useState(false);
-    const [center, setCenter] = useState(DEFAULT_CENTER);
-
+    const [center,] = useState(DEFAULT_CENTER);
     const [successModal, setSuccessModal] = useState(false);
     const [errorModal, setErrorModal] = useState(false);
     const [errorMsg, setErrorMsg] = useState("Error al crear el repartidor");
     const [submitting, setSubmitting] = useState(false);
     const [fetchingAddress, setFetchingAddress] = useState(false);
-    const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+    const [mapZoom, ] = useState(DEFAULT_ZOOM);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -165,11 +159,11 @@ const DeliveryCreationComponent = () => {
         return address.road?.trim() && address.state?.trim() && address.house_number;
     };
 
-    const isFormValid = useMemo(
-        () => validateStep1() && validateStep3(),
-        [formData, address]
-    );
-
+const isFormValid = useMemo(
+    () => validateStep1() && validateStep3(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [formData, address]
+  );
     const goNext = () => {
         if (step === 1 && validateStep1()) setStep(2);
         else if (step === 2) setStep(3);
@@ -416,7 +410,7 @@ const DeliveryCreationComponent = () => {
                                     <div className="relative">
                                         <FaCity className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                                         <select
-                                            className="w-full pl-11 pr-10 py-3.5 bg-white border border-gray-200 text-sm text-gray-900 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] cursor-pointer appearance-none"
+                    className="pl-8 pr-8 py-2 text-sm border border-gray-200 bg-white text-gray-700 font-semibold rounded-xl focus:outline-none focus:border-[#D3423E] cursor-pointer appearance-none"
                                             name="region"
                                             value={formData.region}
                                             onChange={handleChange}

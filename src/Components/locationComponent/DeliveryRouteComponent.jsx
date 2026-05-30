@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { GoogleMap, Marker, InfoWindow, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
-import { API_URL, GOOGLE_API_KEY, GOOGLE_MAPS_ID } from "../../config";
+import { API_URL, GOOGLE_API_KEY } from "../../config";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTrash, FaChevronLeft, FaChevronRight, FaCheckCircle, FaPlayCircle, FaRegClock, FaEye, FaChevronDown, FaFilter, FaClock, FaTruck, FaRoad } from "react-icons/fa";
 import { HiFilter } from "react-icons/hi";
 import DateInput from "../LittleComponents/DateInput";
@@ -453,7 +453,8 @@ export default function DeliveryRouteComponent() {
                     <select
                       value={selectedSaler2}
                       onChange={(e) => { setSelectedSaler2(e.target.value); setPage(1); }}
-                      className="w-full pl-8 pr-2 py-2.5 text-xs text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 appearance-none cursor-pointer"
+  className="app-select"
+
                     >
                       <option value="">Todos</option>
                       <option value="todos">Todos</option>
@@ -470,7 +471,7 @@ export default function DeliveryRouteComponent() {
                     <select
                       value={selectedStatus}
                       onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-                      className="w-full pl-8 pr-2 py-2.5 text-xs text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 appearance-none cursor-pointer"
+                      className="app-select"
                     >
                       <option value="">Todos</option>
                       <option value="Por iniciar">Por iniciar</option>

@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { motion } from "framer-motion";
-import Spinner from "../Components/LittleComponents/Spinner";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import TrendLineChart from "../Components/charts/TrendLineChart";
@@ -68,7 +67,45 @@ const MONTHS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
+const SHIMMER = {
+  background: "linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)",
+  backgroundSize: "200% 100%",
+  animation: "shimmer 1.5s infinite",
+};
 
+const SBox = ({ className = "", style = {} }) => (
+  <div className={`rounded-lg ${className}`} style={{ ...SHIMMER, ...style }} />
+);
+
+const ChartSkeleton = () => (
+  <div className="p-5 space-y-3 h-72 flex flex-col justify-end">
+    <div className="flex items-end gap-3 flex-1">
+      {[55, 80, 40, 90, 65, 75, 50, 85].map((h, i) => (
+        <SBox
+          key={i}
+          className="flex-1 rounded-t-lg"
+          style={{ height: `${h}%`, animationDelay: `${i * 0.08}s` }}
+        />
+      ))}
+    </div>
+    <div className="flex gap-3">
+      {[...Array(8)].map((_, i) => (
+        <SBox key={i} className="flex-1 h-3" />
+      ))}
+    </div>
+  </div>
+);
+
+const ProductTableSkeleton = () => (
+  <>
+    {[...Array(5)].map((_, i) => (
+      <tr key={i} className="border-b border-gray-100" style={{ opacity: 1 - i * 0.15 }}>
+        <td className="px-6 py-4"><SBox className="h-4 w-48" /></td>
+        <td className="px-6 py-4 text-right"><SBox className="h-4 w-20 ml-auto" /></td>
+      </tr>
+    ))}
+  </>
+);
 const StatisticsView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -191,9 +228,14 @@ const StatisticsView = () => {
   const mesLabel = selectedMonth ? MONTHS[selectedMonth - 1] : "Todos";
 
   return (
-    <div className="bg-white min-h-screen p-4 sm:p-6">
+<div className="bg-white min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1400px] mx-auto px-6 py-8">
-
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -261,8 +303,7 @@ const StatisticsView = () => {
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900
-                             focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition cursor-pointer"
+                  className="app-select"
                 >
                   {years.map((year) => (
                     <option key={year} value={year}>{year}</option>
@@ -279,8 +320,7 @@ const StatisticsView = () => {
                     const month = e.target.value ? parseInt(e.target.value) : null;
                     setSelectedMonth(month);
                   }}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900
-                             focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition cursor-pointer"
+                  className="app-select"
                 >
                   <option value="">Todos los meses</option>
                   {MONTHS.map((m, idx) => (
@@ -309,9 +349,7 @@ const StatisticsView = () => {
           >
             <div className="p-5">
               {loading ? (
-                <div className="flex justify-center items-center h-72">
-                  <Spinner />
-                </div>
+                <ChartSkeleton />
               ) : (
                 <VentasChart labels={labels} values={values} year={selectedYear} />
               )}
@@ -326,9 +364,7 @@ const StatisticsView = () => {
           >
             <div className="p-5">
               {loading2 ? (
-                <div className="flex justify-center items-center h-72">
-                  <Spinner />
-                </div>
+                <ChartSkeleton />
               ) : (
                 <TrendLineChart products={products} />
               )}
@@ -344,25 +380,19 @@ const StatisticsView = () => {
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    Producto
-                  </th>
-                  <th className="px-6 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    Unidades vendidas
-                  </th>
-                </tr>
-              </thead>
+              <thead className="bg-gray-200 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                        Producto
+                      </th>
+                      <th className="px-6 py-3 text-right text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                        Unidades vendidas
+                      </th>
+                    </tr>
+                  </thead>
               <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-16">
-                      <div className="flex justify-center">
-                        <Spinner />
-                      </div>
-                    </td>
-                  </tr>
+               {loading ? (
+                  <ProductTableSkeleton />
                 ) : salesData.length > 0 ? (
                   salesData.map((item) => (
                     <tr
@@ -413,8 +443,7 @@ const StatisticsView = () => {
                       setItemsPerPage(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700
-                               focus:outline-none focus:border-[#D3423E] cursor-pointer"
+                      className="app-select"
                   >
                     {[5, 10, 20].map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -505,19 +534,17 @@ const StatisticsView = () => {
             icon={FaBrain}
             delay={0.24}
           >
-            {loading2 ? (
-              <div className="flex justify-center items-center h-72">
-                <Spinner />
-              </div>
+           {loading2 ? (
+              <ChartSkeleton />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                   <tr className="bg-gray-200 border-b border-gray-200">
+                      <th className="px-6 py-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider">
                         Producto
                       </th>
-                      <th className="px-4 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th className="px-4 py-3 text-right text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
                         Vta. acum.
                       </th>
                       <th className="px-4 py-3 text-right text-[11px] font-bold text-[#D3423E] uppercase tracking-wider whitespace-nowrap">

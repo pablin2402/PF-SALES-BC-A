@@ -92,7 +92,6 @@ const ActivityMapSkeleton = () => (
             <line x1="45%" y1="0" x2="50%" y2="60%" stroke="#9ca3af" strokeWidth="2" />
         </svg>
 
-        {/* Ruta simulada */}
         <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M 15% 70% Q 30% 50% 45% 55% Q 60% 60% 75% 35%"
@@ -279,7 +278,7 @@ export default function ActivityRouteComponent() {
     const visitsCompletadas = salesData.filter(c => c.details === "Termina la visita").length;
     const visitsEnCurso = salesData.filter(c => c.details === "Visita al cliente").length;
 
-   return (
+    return (
         <div className="h-screen w-full flex overflow-hidden bg-gray-50">
             <style>{`
                 @keyframes shimmer {
@@ -329,7 +328,7 @@ export default function ActivityRouteComponent() {
                                 <div className="relative">
                                     <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                                     <select
-                                        className="w-full pl-9 pr-3 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all appearance-none"
+                                        className="app-select"
                                         value={selectedSaler}
                                         onChange={(e) => {
                                             setSelectedSaler(e.target.value);
@@ -383,7 +382,7 @@ export default function ActivityRouteComponent() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4">
-                           {loading ? (
+                            {loading ? (
                                 <ActivitySidebarSkeleton />
                             ) : filteredData.length > 0 ? (
                                 <div className="space-y-3">
@@ -503,7 +502,7 @@ export default function ActivityRouteComponent() {
                 {sidebarCollapsed && (
                     <button
                         onClick={() => setSidebarCollapsed(false)}
-            className="hidden lg:flex h-full w-full rounded-r-xl border-4 border-red-700 items-center justify-center hover:bg-gray-100 transition-colors flex-col gap-2"
+                        className="hidden lg:flex h-full w-full rounded-r-xl border-4 border-red-700 items-center justify-center hover:bg-gray-100 transition-colors flex-col gap-2"
                     >
                         <FaChevronRight className="text-red-700" />
                     </button>
@@ -522,8 +521,8 @@ export default function ActivityRouteComponent() {
                             streetViewControl: false,
                             mapTypeControl: false,
                             fullscreenControl: true,
-                                                        styles: MAP_STYLE_MODERN,
-                            
+                            styles: MAP_STYLE_MODERN,
+
                         }}
                     >
                         {salesData.length > 0 &&
@@ -578,7 +577,7 @@ export default function ActivityRouteComponent() {
                             />
                         )}
                     </GoogleMap>
-               ) : (
+                ) : (
                     <ActivityMapSkeleton />
                 )}
 

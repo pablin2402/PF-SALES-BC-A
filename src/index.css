@@ -9,7 +9,34 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+@layer components {
+  .app-select {
+    @apply
+      pl-8 pr-8 py-2
+      text-sm font-bold
+      border border-gray-200
+      bg-white text-gray-700
+      rounded-xl
+      cursor-pointer
+      appearance-none
+      transition-all duration-200
 
+      hover:border-red-400
+      hover:shadow-sm
+
+      focus:outline-none
+      focus:ring-0
+      focus:ring-offset-0
+      focus:border-[#D3423E];
+  }
+
+  .app-select:focus,
+  .app-select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #D3423E !important;
+  }
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

@@ -58,7 +58,7 @@ const SalesManView = () => {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
   const [togglingId, setTogglingId] = useState(null);
-  const [exporting, setExporting] = useState(false);
+  const [, setExporting] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState(null);
 
   const navigate = useNavigate();
@@ -417,7 +417,7 @@ const SalesManView = () => {
                   <select
                     value={regionFilter}
                     onChange={(e) => setRegionFilter(e.target.value)}
-                    className="pl-8 pr-8 py-2 text-sm border border-gray-200 bg-white text-gray-700 font-semibold rounded-xl focus:outline-none focus:border-[#D3423E] cursor-pointer appearance-none"
+                    className="app-select"
                   >
                     <option value="all">Todas las ciudades</option>
                     {availableRegions.map((r) => (
@@ -711,7 +711,7 @@ const SalesManView = () => {
                       setItemsPerPage(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:outline-none focus:border-[#D3423E]"
+                    className="app-select"
                   >
                     {[5, 10, 20, 50, 100].map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
