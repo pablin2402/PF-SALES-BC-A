@@ -24,17 +24,13 @@ import {
 import {
     optimizeByProximity, optimizeByZones, checkCapacity, ZONE_PRESETS, DEPOT,
 } from "../../utils/SalesRouteOptimizer";
+import { MAP_STYLE_MODERN, CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM, FALLBACK_IMAGE } from "../../utils/MapDetails";
 
-const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg";
 
 const ROUTE_COLOR = "#D3423E";
 const ROUTE_HALO_COLOR = "#FCA5A5";
 const ROUTE_COLOR_DARK = "#991B1B";
 
-const containerStyle = {
-    width: "100%",
-    height: "100%",
-};
 
 const buildOrderedChannelMarker = (orderIndex, channel, isSelected = true, pulsing = false) => {
     const config = getChannelConfig(channel);
@@ -766,9 +762,9 @@ export default function CreateRouteComponent() {
             <div className="flex-1 h-full relative bg-gray-200">
                 {isLoaded ? (
                     <GoogleMap
-                        mapContainerStyle={containerStyle}
-                        center={{ lat: -17.3835, lng: -66.1568 }}
-                        zoom={13}
+                        mapContainerStyle={CONTAINER_STYLE}
+                        center={DEFAULT_CENTER}
+                        zoom={DEFAULT_ZOOM}
                         onLoad={(map) => { mapRef.current = map; }}
                         options={{
                             disableDefaultUI: false,
@@ -776,10 +772,7 @@ export default function CreateRouteComponent() {
                             streetViewControl: false,
                             mapTypeControl: false,
                             fullscreenControl: false,
-                            styles: [
-                                { featureType: "poi", stylers: [{ visibility: "off" }] },
-                                { featureType: "transit", stylers: [{ visibility: "off" }] },
-                            ],
+                            styles: MAP_STYLE_MODERN,
                         }}
                     >
                         {showMunicipios && Object.values(MUNICIPIOS_COCHABAMBA).map(m => (

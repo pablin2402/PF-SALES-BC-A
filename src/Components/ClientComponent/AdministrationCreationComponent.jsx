@@ -7,34 +7,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     FaUser, FaEnvelope, FaPhone, FaLock, FaCity, FaMapMarkerAlt,
     FaHome, FaHashtag, FaCheck, FaChevronLeft, FaChevronRight,
-    FaTruck, FaSave, FaExclamationTriangle, FaArrowLeft, FaIdCard,
+    FaTruck, FaSave, FaExclamationTriangle, FaIdCard,
     FaCloudUploadAlt, FaImage, FaTimes, FaArrowRight,
 } from "react-icons/fa";
+import { MAP_STYLE_MODERN, CITIES, STEPS, CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM } from "../../utils/MapDetails";
 
 import SuccessModal from "../modal/SuccessModal";
 import ErrorModal from "../modal/ErrorModal";
 
-const containerStyle = {
-    width: "100%",
-    height: "400px",
-    borderRadius: "16px",
-};
 
-const CITIES = [
-    { value: "TOTAL CBB", label: "Cochabamba" },
-    { value: "TOTAL SC", label: "Santa Cruz" },
-    { value: "TOTAL LP", label: "La Paz" },
-    { value: "TOTAL OR", label: "Oruro" },
-];
 
-const STEPS = [
-    { id: 1, label: "Datos personales", icon: FaUser },
-    { id: 2, label: "Documento", icon: FaIdCard },
-    { id: 3, label: "Ubicación", icon: FaMapMarkerAlt },
-    { id: 4, label: "Confirmar", icon: FaCheck },
-];
 
-const initialLocation = { lat: -17.3835, lng: -66.1568 };
 const initialAddress = { road: "", state: "", house_number: "" };
 const initialFormData = {
     nombre: "", apellido: "", email: "", telefono: "",
@@ -46,18 +29,20 @@ const DeliveryCreationComponent = () => {
     const fileInputRef = useRef(null);
 
     const [step, setStep] = useState(1);
-    const [location, setLocation] = useState(initialLocation);
+    const [location, setLocation] = useState(DEFAULT_CENTER);
     const [address, setAddress] = useState(initialAddress);
     const [formData, setFormData] = useState(initialFormData);
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [dragOver, setDragOver] = useState(false);
+    const [center, setCenter] = useState(DEFAULT_CENTER);
 
     const [successModal, setSuccessModal] = useState(false);
     const [errorModal, setErrorModal] = useState(false);
     const [errorMsg, setErrorMsg] = useState("Error al crear el repartidor");
     const [submitting, setSubmitting] = useState(false);
     const [fetchingAddress, setFetchingAddress] = useState(false);
+    const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
 
     const user = localStorage.getItem("id_owner");
     const token = localStorage.getItem("token");
@@ -162,7 +147,7 @@ const DeliveryCreationComponent = () => {
     const resetForm = () => {
         setFormData(initialFormData);
         setAddress(initialAddress);
-        setLocation(initialLocation);
+        setLocation(DEFAULT_CENTER);
         setImageFile(null);
         setImagePreview(null);
         setStep(1);
@@ -324,23 +309,21 @@ const DeliveryCreationComponent = () => {
                                                 scale: isActive ? 1.1 : 1,
                                             }}
                                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                            className={`rounded-full flex items-center justify-center font-bold transition-all ${
-                                                isActive
+                                            className={`rounded-full flex items-center justify-center font-bold transition-all ${isActive
                                                     ? "w-14 h-14 bg-[#D3423E] text-white text-xl shadow-lg shadow-red-200"
                                                     : isCompleted
                                                         ? "w-12 h-12 bg-red-100 text-[#D3423E] text-base"
                                                         : "w-12 h-12 bg-gray-100 text-gray-400 text-base"
-                                            }`}
+                                                }`}
                                         >
                                             {isCompleted ? <FaCheck size={16} /> : s.id}
                                         </motion.div>
-                                        <p className={`text-sm font-bold text-center ${
-                                            isActive
+                                        <p className={`text-sm font-bold text-center ${isActive
                                                 ? "text-gray-900"
                                                 : isCompleted
                                                     ? "text-gray-700"
                                                     : "text-gray-400"
-                                        }`}>
+                                            }`}>
                                             {s.label}
                                         </p>
                                     </div>
@@ -472,11 +455,10 @@ const DeliveryCreationComponent = () => {
                                     onDragLeave={() => setDragOver(false)}
                                     onDrop={handleDrop}
                                     onClick={() => fileInputRef.current?.click()}
-                                    className={`border-2 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all ${
-                                        dragOver
+                                    className={`border-2 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all ${dragOver
                                             ? "border-[#D3423E] bg-red-50"
                                             : "border-gray-300 hover:border-[#D3423E] hover:bg-red-50/30"
-                                    }`}
+                                        }`}
                                 >
                                     <input
                                         ref={fileInputRef}
@@ -605,19 +587,17 @@ const DeliveryCreationComponent = () => {
                             <div className="relative overflow-hidden rounded-2xl border border-gray-200">
                                 {isLoaded ? (
                                     <GoogleMap
-                                        mapContainerStyle={containerStyle}
-                                        center={location}
-                                        zoom={15}
+                                        mapContainerStyle={CONTAINER_STYLE}
+                                        center={center}
+                                        zoom={mapZoom}
                                         onClick={handleMapClick}
                                         options={{
                                             disableDefaultUI: false,
                                             streetViewControl: false,
                                             mapTypeControl: false,
                                             fullscreenControl: true,
-                                            styles: [
-                                                { featureType: "poi", stylers: [{ visibility: "off" }] },
-                                                { featureType: "transit", stylers: [{ visibility: "off" }] },
-                                            ],
+                                            styles: MAP_STYLE_MODERN,
+
                                         }}
                                     >
                                         <Marker
@@ -827,11 +807,10 @@ const FooterButtons = ({
         <button
             onClick={onNext}
             disabled={nextDisabled}
-            className={`flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold transition-all ${
-                nextDisabled
+            className={`flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold transition-all ${nextDisabled
                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                     : "bg-[#D3423E] text-white hover:bg-red-700 shadow-md hover:shadow-lg"
-            }`}
+                }`}
         >
             {nextLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

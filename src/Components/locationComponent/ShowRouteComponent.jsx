@@ -13,6 +13,7 @@ import {
 import { HiFilter } from "react-icons/hi";
 import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 import { motion, AnimatePresence } from "framer-motion";
+import { MAP_STYLE_MODERN, CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM } from "../../utils/MapDetails";
 
 const ROUTE_COLOR = "#D3423E";
 const ROUTE_COLOR_DARK = "#991B1B";
@@ -21,7 +22,6 @@ const VISITED_COLOR = "#10B981";
 const PENDING_COLOR = "#F59E0B";
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
-const DEPOT = { lat: -17.3905, lng: -66.16301 };
 
 const STATUS_CONFIG = {
   "Por iniciar": {
@@ -62,7 +62,6 @@ const SHIMMER_STYLE = {
   animation: "shimmer 1.6s linear infinite",
 };
 
-const containerStyle = { width: "100%", height: "100%" };
 
 const buildDepotIcon = () => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
@@ -194,7 +193,7 @@ export default function ShowRouteComponent() {
     setSelectedMarkers([route]);
     if (route.route && route.route.length > 0 && mapRef.current && window.google) {
       const bounds = new window.google.maps.LatLngBounds();
-      bounds.extend(DEPOT);
+      bounds.extend(DEFAULT_ZOOM);
       route.route.forEach((c) => {
         if (c.client_location?.latitud && c.client_location?.longitud) {
           bounds.extend({
@@ -323,7 +322,7 @@ export default function ShowRouteComponent() {
   const fitToRoute = () => {
     if (!mapRef.current || !window.google || !activeRoute) return;
     const bounds = new window.google.maps.LatLngBounds();
-    bounds.extend(DEPOT);
+    bounds.extend(DEFAULT_ZOOM);
     activeRoute.route?.forEach((c) => {
       if (c.client_location?.latitud && c.client_location?.longitud) {
         bounds.extend({
@@ -779,9 +778,9 @@ export default function ShowRouteComponent() {
       <div className="flex-1 h-full relative bg-gray-200">
         {isLoaded ? (
           <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={DEPOT}
-            zoom={13}
+            mapContainerStyle={CONTAINER_STYLE}
+            center={DEFAULT_CENTER}
+            zoom={DEFAULT_ZOOM}
             onLoad={(map) => { mapRef.current = map; }}
             options={{
               disableDefaultUI: true,
@@ -789,14 +788,12 @@ export default function ShowRouteComponent() {
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: false,
-              styles: [
-                { featureType: "poi", stylers: [{ visibility: "off" }] },
-                { featureType: "transit", stylers: [{ visibility: "off" }] },
-              ],
+              styles: MAP_STYLE_MODERN,
+
             }}
           >
             <Marker
-              position={DEPOT}
+              position={DEFAULT_ZOOM}
               icon={window.google ? {
                 url: buildDepotIcon(),
                 scaledSize: new window.google.maps.Size(60, 60),
@@ -807,7 +804,7 @@ export default function ShowRouteComponent() {
             />
 
             <OverlayView
-              position={DEPOT}
+              position={DEFAULT_ZOOM}
               mapPaneName={OverlayView.OVERLAY_LAYER}
             >
               <div
@@ -1028,7 +1025,7 @@ export default function ShowRouteComponent() {
                   )}
                   <button
                     onClick={() => {
-                      mapRef.current?.panTo(DEPOT);
+                      mapRef.current?.panTo(DEFAULT_ZOOM);
                       mapRef.current?.setZoom(15);
                       setShowViewOptions(false);
                     }}

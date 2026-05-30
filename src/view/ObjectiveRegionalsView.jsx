@@ -7,10 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FaTimesCircle,
   FaBullseye,
-  FaChartLine,
-  FaBoxOpen,
-  FaPercent,
-  FaArrowDown,
   FaPlus,
   FaHome,
 } from "react-icons/fa";
@@ -18,27 +14,7 @@ import {
 import ObjectiveDepartmentComponent from "../Components/ObjectiveComponent/ObjectiveDepartmentComponent";
 import ObjectiveSalesDetailComponent from "../Components/ObjectiveComponent/ObjectiveSalesDetailComponent";
 import DateInput from "../Components/LittleComponents/DateInput";
-import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading";
 
-const StatCard = ({ icon: Icon, label, value, iconBg, iconColor }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-    className="bg-white border border-gray-200 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-sm hover:shadow-md transition"
-  >
-    <div
-      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-      style={{ background: iconBg }}
-    >
-      <Icon size={20} style={{ color: iconColor }} />
-    </div>
-    <div className="flex flex-col min-w-0">
-      <span className="text-xs text-gray-500 font-medium truncate">{label}</span>
-      <span className="text-xl font-bold text-gray-900 leading-tight truncate">{value}</span>
-    </div>
-  </motion.div>
-);
 
 const Pill = ({ children, color = "gray" }) => {
   const palette = {
@@ -56,9 +32,7 @@ const Pill = ({ children, color = "gray" }) => {
     </span>
   );
 };
-// ─────────────────────────────────────────────
-// SKELETON COMPONENTS — ObjectiveRegionalsView
-// ─────────────────────────────────────────────
+
 const SHIMMER = {
   background: "linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)",
   backgroundSize: "200% 100%",
@@ -484,6 +458,27 @@ const ObjectiveRegionalsView = () => {
                 </div>
               )}
             </motion.div>
+            {!loading && salesData.length > 0 && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                {[
+                  { label: "Objetivo total", value: totalObjetivo, color: "bg-blue-100 text-blue-700" },
+                  { label: "Venta acumulada", value: totalVendido.toFixed(2), color: "bg-green-100 text-green-700" },
+                  { label: "Venta año pasado", value: totalVtaAA, color: "bg-yellow-100 text-yellow-700" },
+                  { label: "Por vender", value: porVender.toFixed(2), color: "bg-red-100 text-red-700" },
+                ].map((card) => (
+                  <div key={card.label} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${card.color}`}>
+                      <FaBullseye size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500 font-semibold uppercase truncate">{card.label}</p>
+                      <p className="text-xl font-bold text-gray-900 truncate">{card.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -499,8 +494,8 @@ const ObjectiveRegionalsView = () => {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100">
+                 <thead className="bg-gray-200 border-b border-gray-200">
+                    <tr>
                       {[
                         "Inicio", "Fin", "Región", "Línea", "Objetivo",
                         "VTA AA", "VTA ACUM", "VS AA", "VS OBJ", "Tendencia",
@@ -508,7 +503,7 @@ const ObjectiveRegionalsView = () => {
                       ].map((h, i) => (
                         <th
                           key={i}
-                          className="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                          className="px-4 py-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap"
                         >
                           {h}
                         </th>
@@ -528,8 +523,7 @@ const ObjectiveRegionalsView = () => {
                               setViewMode("form");
                               setSelectedItem(item);
                             }}
-                            className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition"
-                          >
+className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"                          >
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.startDate
                                 ? new Date(item.startDate)
@@ -662,15 +656,15 @@ const ObjectiveRegionalsView = () => {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100">
+                 <thead className="bg-gray-200 border-b border-gray-200">
+                    <tr>
                       {[
                         "Inicio", "Fin", "Línea", "Objetivo", "VTA AA",
                         "VTA ACUM", "VS AA", "VS OBJ", "Tendencia", "Por vender", "",
                       ].map((h, i) => (
                         <th
                           key={i}
-                          className="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                          className="px-4 py-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap"
                         >
                           {h}
                         </th>
@@ -686,8 +680,7 @@ const ObjectiveRegionalsView = () => {
                         return (
                           <tr
                             key={item._id + item.saleLastYear}
-                            className="border-b border-gray-50 hover:bg-gray-50 transition"
-                          >
+className="border-b border-gray-100 hover:bg-gray-50 transition-colors"                          >
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.startDate
                                 ? new Date(item.startDate)

@@ -8,9 +8,8 @@ import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
 import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimesCircle, FaExclamationCircle, FaTruck, FaCheckCircle, FaBoxOpen, FaEllipsisV, FaSearch, FaTrash, FaCheck } from "react-icons/fa";
+import { FaTimesCircle, FaExclamationCircle, FaTruck, FaCheckCircle, FaBoxOpen, FaEllipsisV, FaTrash, FaCheck } from "react-icons/fa";
 import { MdCancel, MdLocalShipping, MdDoneAll } from 'react-icons/md';
-import Spinner from "../Components/LittleComponents/Spinner";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ModernPagination } from "../utils/ModernPagination";
@@ -38,9 +37,9 @@ const PAY_STATUS_CONFIG = {
 
 const OrderView = () => {
   const [salesData, setSalesData] = useState([]);
-const [initialLoading, setInitialLoading] = useState(true); 
-const [tableLoading, setTableLoading] = useState(false); 
-const [statsLoading, setStatsLoading] = useState(false);    
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [inputValue, setInputValue] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("");
@@ -95,58 +94,58 @@ const [statsLoading, setStatsLoading] = useState(false);
       console.error("Error obteniendo vendedores", error);
       setVendedores([]);
     }
-  };
+  };  
 
   useEffect(() => {
     fetchVendedores();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token]);
 
-const fetchOrders = async (pageNumber, customFilters) => {
-  setTableLoading(true);
-  setError(null);
-  try {
-    const filters = {
-      id_owner: user,
-      page: pageNumber,
-      limit: itemsPerPage,
-      fullName: inputValue,
-      ...customFilters,
-    };
-    const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setSalesData(response.data.orders || []);
-    setTotalPages(response.data.totalPages || 1);
-    setItems(response.data.totalRecords || 0);
-  } catch (error) {
-    console.error(error);
-    setError(error);
-    setSalesData([]);
-  } finally {
-    setTableLoading(false);
-    setInitialLoading(false);
-  }
-};
+  const fetchOrders = async (pageNumber, customFilters) => {
+    setTableLoading(true);
+    setError(null);
+    try {
+      const filters = {
+        id_owner: user,
+        page: pageNumber,
+        limit: itemsPerPage,
+        fullName: inputValue,
+        ...customFilters,
+      };
+      const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSalesData(response.data.orders || []);
+      setTotalPages(response.data.totalPages || 1);
+      setItems(response.data.totalRecords || 0);
+    } catch (error) {
+      console.error(error);
+      setError(error);
+      setSalesData([]);
+    } finally {
+      setTableLoading(false);
+      setInitialLoading(false);
+    }
+  };
 
   const fetchOrdersFilters = async (customFilters) => {
-  setStatsLoading(true);
-  try {
-    const filters = {
-      id_owner: user,
-      fullName: inputValue,
-      ...customFilters,
-    };
-    const response = await axios.post(API_URL + "/whatsapp/order/filter/id", filters, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setCounts(response.data.counts);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setStatsLoading(false);
-  }
-};
+    setStatsLoading(true);
+    try {
+      const filters = {
+        id_owner: user,
+        fullName: inputValue,
+        ...customFilters,
+      };
+      const response = await axios.post(API_URL + "/whatsapp/order/filter/id", filters, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCounts(response.data.counts);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const buildCustomFilters = (statusOverride) => {
     const customFilters = {};
@@ -165,40 +164,40 @@ const fetchOrders = async (pageNumber, customFilters) => {
     return customFilters;
   };
 
-const filterByStatus = (status) => {
-  const newStatus = selectedStatus === status ? "" : status;
-  setSelectedStatus(newStatus);
-  const customFilters = buildCustomFilters(newStatus);
-  if (startDate && endDate) setDateFilterActive(true);
-  if (page === 1) {
-    fetchOrdersFilters(customFilters);
-    fetchOrders(1, customFilters);
-  } else {
-    setPage(1);
-  }
-};
+  const filterByStatus = (status) => {
+    const newStatus = selectedStatus === status ? "" : status;
+    setSelectedStatus(newStatus);
+    const customFilters = buildCustomFilters(newStatus);
+    if (startDate && endDate) setDateFilterActive(true);
+    if (page === 1) {
+      fetchOrdersFilters(customFilters);
+      fetchOrders(1, customFilters);
+    } else {
+      setPage(1);
+    }
+  };
 
   const applyFilters = () => {
-  const customFilters = buildCustomFilters();
-  if (startDate && endDate) setDateFilterActive(true);
-  if (page === 1) {
-    fetchOrdersFilters(customFilters);
-    fetchOrders(1, customFilters);
-  } else {
-    setPage(1);
-  }
-};
+    const customFilters = buildCustomFilters();
+    if (startDate && endDate) setDateFilterActive(true);
+    if (page === 1) {
+      fetchOrdersFilters(customFilters);
+      fetchOrders(1, customFilters);
+    } else {
+      setPage(1);
+    }
+  };
 
   useEffect(() => {
-  const loadData = async () => {
-    await Promise.all([
-      fetchOrders(page),
-      fetchOrdersFilters()
-    ]);
-  };
-  loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [page, itemsPerPage]);
+    const loadData = async () => {
+      await Promise.all([
+        fetchOrders(page),
+        fetchOrdersFilters()
+      ]);
+    };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, itemsPerPage]);
 
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, {
@@ -290,24 +289,24 @@ const filterByStatus = (status) => {
     }, 0);
   };
 
-const clearAllFilters = () => {
-  setSelectedFilter("");
-  setStartDate("");
-  setEndDate("");
-  setSelectedSaler("");
-  setSelectedPaymentType("");
-  setSelectedPayment("");
-  setSelectedRegion("");
-  setSelectedStatus("");
-  setDateFilterActive(false);
-  setInputValue("");
-  if (page === 1) {
-    fetchOrdersFilters({});
-    fetchOrders(1, {});
-  } else {
-    setPage(1); 
-  }
-};
+  const clearAllFilters = () => {
+    setSelectedFilter("");
+    setStartDate("");
+    setEndDate("");
+    setSelectedSaler("");
+    setSelectedPaymentType("");
+    setSelectedPayment("");
+    setSelectedRegion("");
+    setSelectedStatus("");
+    setDateFilterActive(false);
+    setInputValue("");
+    if (page === 1) {
+      fetchOrdersFilters({});
+      fetchOrders(1, {});
+    } else {
+      setPage(1);
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -377,8 +376,8 @@ const clearAllFilters = () => {
             <p className="text-sm text-gray-500">Gestiona todos los pedidos desde un solo lugar</p>
           </div>
           {initialLoading || statsLoading ? (
-  <SkeletonStats />
-) : (
+            <SkeletonStats />
+          ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
               <StatCard
                 icon={<HiOutlineDocumentAdd size={24} />}
@@ -566,260 +565,260 @@ const clearAllFilters = () => {
               )}
             </div>
             {initialLoading || tableLoading ? (
-    <>
-      <div className="lg:hidden">
-        <SkeletonCards />
-      </div>
-      <div className="hidden lg:block">
-        <SkeletonTable />
-      </div>
-    </>
-  ) : salesData.length === 0 ? (
-                <EmptyState
-              hasFilters={hasActiveFilters}
-              onClear={clearAllFilters}
-              onCreate={() => navigate("/client/creation")}
-            />
-              
-              ) : (
-                  <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold">Fecha</th>
-                        <th className="px-4 py-3 font-semibold">Ciudad</th>
-                        <th className="px-4 py-3 font-semibold">Cliente</th>
-                        <th className="px-4 py-3 font-semibold">Tipo</th>
-                        <th className="px-4 py-3 font-semibold">Vendedor</th>
-                        <th className="px-4 py-3 font-semibold">Pago</th>
-                        <th className="px-4 py-3 font-semibold text-right">Total</th>
-                        <th className="px-4 py-3 font-semibold text-right">Saldo</th>
-                        <th className="px-4 py-3 font-semibold text-center">Mora</th>
-                        <th className="px-4 py-3 font-semibold text-center">Estado</th>
-                        <th className="px-4 py-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {
-                        salesData.map((item) => {
-                          const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                          const StatusIcon = statusConfig?.icon;
-                          return (
-                            <tr
-                              key={item._id}
-                              onClick={() => goToClientDetails(item)}
-                              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-                            >
-                              <td className="px-4 py-3 text-gray-700">
-                                {item.creationDate ? (
-                                  <div>
-                                    <p className="font-medium text-gray-900">
-                                      {new Date(item.creationDate).toLocaleDateString("es-ES", {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                      })}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      {new Date(item.creationDate).toLocaleTimeString("es-ES", {
-                                        hour: "2-digit",
-                                        minute: "2-digit"
-                                      })}
-                                    </p>
-                                  </div>
-                                ) : "-"}
-                              </td>
-                              <td className="px-4 py-3 text-gray-700">{item.region}</td>
-                              <td className="px-4 py-3 font-medium text-gray-900">
-                                {item.id_client.name} {item.id_client.lastName}
-                              </td>
-                              <td className="px-4 py-3">
-                                {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                                    {item.accountStatus.toUpperCase()}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 text-gray-700">
-                                {item.salesId?.fullName} {item.salesId?.lastName}
-                              </td>
-                              <td className="px-4 py-3">
-                                {PAY_STATUS_CONFIG[item.payStatus] && (
-                                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                                    {item.payStatus.toUpperCase()}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 text-right font-bold text-gray-900">
-                                Bs. {Number(item.totalAmount).toFixed(2)}
-                              </td>
-                              <td className="px-4 py-3 text-right text-gray-700">
-                                <span className={item.restante > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
-                                  Bs. {Number(item.restante).toFixed(2)}
+              <>
+                <div className="lg:hidden">
+                  <SkeletonCards />
+                </div>
+                <div className="hidden lg:block">
+                  <SkeletonTable />
+                </div>
+              </>
+            ) : salesData.length === 0 ? (
+              <EmptyState
+                hasFilters={hasActiveFilters}
+                onClear={clearAllFilters}
+                onCreate={() => navigate("/client/creation")}
+              />
+
+            ) : (
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">Fecha</th>
+                      <th className="px-4 py-3 font-semibold">Ciudad</th>
+                      <th className="px-4 py-3 font-semibold">Cliente</th>
+                      <th className="px-4 py-3 font-semibold">Tipo</th>
+                      <th className="px-4 py-3 font-semibold">Vendedor</th>
+                      <th className="px-4 py-3 font-semibold">Pago</th>
+                      <th className="px-4 py-3 font-semibold text-right">Total</th>
+                      <th className="px-4 py-3 font-semibold text-right">Saldo</th>
+                      <th className="px-4 py-3 font-semibold text-center">Mora</th>
+                      <th className="px-4 py-3 font-semibold text-center">Estado</th>
+                      <th className="px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      salesData.map((item) => {
+                        const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                        const StatusIcon = statusConfig?.icon;
+                        return (
+                          <tr
+                            key={item._id}
+                            onClick={() => goToClientDetails(item)}
+                            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <td className="px-4 py-3 text-gray-700">
+                              {item.creationDate ? (
+                                <div>
+                                  <p className="font-medium text-gray-900">
+                                    {new Date(item.creationDate).toLocaleDateString("es-ES", {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(item.creationDate).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                    })}
+                                  </p>
+                                </div>
+                              ) : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">{item.region}</td>
+                            <td className="px-4 py-3 font-medium text-gray-900">
+                              {item.id_client.name} {item.id_client.lastName}
+                            </td>
+                            <td className="px-4 py-3">
+                              {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                                  {item.accountStatus.toUpperCase()}
                                 </span>
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                {item.diasMora > 0 ? (
-                                  <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
-                                    {item.diasMora} días
-                                  </span>
-                                ) : (
-                                  <span className="text-gray-400">-</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3">
-                                {statusConfig && (
-                                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                                    <StatusIcon className={statusConfig.iconColor} />
-                                    <span>{statusConfig.label}</span>
-                                  </div>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 relative">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(openMenuId === item._id ? null : item._id);
-                                  }}
-                                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                  aria-label="Opciones"
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">
+                              {item.salesId?.fullName} {item.salesId?.lastName}
+                            </td>
+                            <td className="px-4 py-3">
+                              {PAY_STATUS_CONFIG[item.payStatus] && (
+                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                                  {item.payStatus.toUpperCase()}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right font-bold text-gray-900">
+                              Bs. {Number(item.totalAmount).toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-700">
+                              <span className={item.restante > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
+                                Bs. {Number(item.restante).toFixed(2)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {item.diasMora > 0 ? (
+                                <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
+                                  {item.diasMora} días
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {statusConfig && (
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                                  <StatusIcon className={statusConfig.iconColor} />
+                                  <span>{statusConfig.label}</span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 relative">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuId(openMenuId === item._id ? null : item._id);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                aria-label="Opciones"
+                              >
+                                <FaEllipsisV className="text-gray-600" />
+                              </button>
+                              {openMenuId === item._id && !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
+                                <div
+                                  ref={menuRef}
+                                  className="absolute right-4 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  <FaEllipsisV className="text-gray-600" />
-                                </button>
-                                {openMenuId === item._id && !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
-                                  <div
-                                    ref={menuRef}
-                                    className="absolute right-4 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
-                                    onClick={(e) => e.stopPropagation()}
+                                  <button
+                                    onClick={() => {
+                                      setSelectedItem(item);
+                                      setShowEditModal(true);
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                   >
-                                    <button
-                                      onClick={() => {
-                                        setSelectedItem(item);
-                                        setShowEditModal(true);
-                                        setOpenMenuId(null);
-                                      }}
-                                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                    >
-                                      <FaCheck className="text-green-500" />
-                                      Confirmar pedido
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (item.totalAmount === item.restante) {
-                                          setItemToDelete(item);
-                                          setShowConfirmDeleteModal(true);
-                                        } else {
-                                          setShowPaymentWarningModal(true);
-                                        }
-                                        setOpenMenuId(null);
-                                      }}
-                                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
-                                    >
-                                      <FaTrash />
-                                      Eliminar pedido
-                                    </button>
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-{!initialLoading && !tableLoading && salesData.length > 0 && (              
-  <>
-              <div className="lg:hidden p-4 space-y-3">
-                {
-                  salesData.map((item) => {
-                    const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                    const StatusIcon = statusConfig?.icon;
-                    return (
-                      <div
-                        key={item._id}
-                        onClick={() => goToClientDetails(item)}
-                        className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
-                            </p>
-                          </div>
-                          {statusConfig && (
-                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                              <StatusIcon className={statusConfig.iconColor} />
-                              {statusConfig.label}
+                                    <FaCheck className="text-green-500" />
+                                    Confirmar pedido
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (item.totalAmount === item.restante) {
+                                        setItemToDelete(item);
+                                        setShowConfirmDeleteModal(true);
+                                      } else {
+                                        setShowPaymentWarningModal(true);
+                                      }
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                                  >
+                                    <FaTrash />
+                                    Eliminar pedido
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!initialLoading && !tableLoading && salesData.length > 0 && (
+              <>
+                <div className="lg:hidden p-4 space-y-3">
+                  {
+                    salesData.map((item) => {
+                      const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                      const StatusIcon = statusConfig?.icon;
+                      return (
+                        <div
+                          key={item._id}
+                          onClick={() => goToClientDetails(item)}
+                          className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
+                              </p>
                             </div>
-                          )}
-                        </div>
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex gap-2 flex-wrap">
-                            {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                                {item.accountStatus.toUpperCase()}
-                              </span>
-                            )}
-                            {PAY_STATUS_CONFIG[item.payStatus] && (
-                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                                {item.payStatus.toUpperCase()}
-                              </span>
+                            {statusConfig && (
+                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                                <StatusIcon className={statusConfig.iconColor} />
+                                {statusConfig.label}
+                              </div>
                             )}
                           </div>
-                        </div>
-                        <div className="flex justify-between items-end border-t border-gray-100 pt-2">
-                          <div>
-                            <p className="text-xs text-gray-500">Vendedor</p>
-                            <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="flex gap-2 flex-wrap">
+                              {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                                  {item.accountStatus.toUpperCase()}
+                                </span>
+                              )}
+                              {PAY_STATUS_CONFIG[item.payStatus] && (
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                                  {item.payStatus.toUpperCase()}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-gray-500">Total</p>
-                            <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
-                            {item.restante > 0 && (
-                              <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
-                            )}
+                          <div className="flex justify-between items-end border-t border-gray-100 pt-2">
+                            <div>
+                              <p className="text-xs text-gray-500">Vendedor</p>
+                              <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500">Total</p>
+                              <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
+                              {item.restante > 0 && (
+                                <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
-                }
-              </div>
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
-                  <div className="h-4 w-px bg-gray-300"></div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
-                    <select
-                      id="itemsPerPage"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setPage(1);
-                      }}
-                      className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
-                    >
-                      {[5, 10, 20, 50].map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
+                      );
+                    })
+                  }
                 </div>
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                    <div className="h-4 w-px bg-gray-300"></div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                      <select
+                        id="itemsPerPage"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setPage(1);
+                        }}
+                        className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                      >
+                        {[5, 10, 20, 50].map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
 
-                {totalPages > 1 && (
-                  <ModernPagination
-                    page={page}
-                    totalPages={totalPages}
-                    onChange={setPage}
-                  />
-                )}
-              </div>
-                            </>
+                  {totalPages > 1 && (
+                    <ModernPagination
+                      page={page}
+                      totalPages={totalPages}
+                      onChange={setPage}
+                    />
+                  )}
+                </div>
+              </>
 
-                        )}
+            )}
           </div>
         </div>
 

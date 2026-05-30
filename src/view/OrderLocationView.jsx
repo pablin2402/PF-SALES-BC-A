@@ -4,6 +4,7 @@ import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../config";
 import { useNavigate } from "react-router-dom";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import {MAP_STYLE_MODERN, DEFAULT_CENTER, DEFAULT_ZOOM, VIEW_ALL_LIMIT} from "../utils/MapDetails";
 
 export default function OrderLocationView() {
     const navigate = useNavigate();
@@ -13,8 +14,8 @@ export default function OrderLocationView() {
 
     const [markers, setMarkers] = useState([]);
 
-    const [center, setCenter] = useState({ lat: -17.3835, lng: -66.1568 });
-    const [mapZoom, setMapZoom] = useState(13);
+    const [center, setCenter] = useState(DEFAULT_CENTER);
+    const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
 
     const [salesData, setSalesData] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
@@ -155,6 +156,14 @@ export default function OrderLocationView() {
                         mapContainerStyle={containerStyle}
                         center={center}
                         zoom={mapZoom}
+                        options={{
+                                                    disableDefaultUI: false,
+                                                    zoomControl: true,
+                                                    streetViewControl: false,
+                                                    mapTypeControl: false,
+                                                    fullscreenControl: true,
+                                                    styles: MAP_STYLE_MODERN,
+                                                }}
                     >
                         {markers.map((location, index) => (
                             <Marker

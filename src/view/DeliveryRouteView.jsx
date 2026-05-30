@@ -7,10 +7,8 @@ import {
 import { API_URL, GOOGLE_API_KEY } from "../config";
 import {
   FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaRoute, FaTrash, FaCheck,
-  FaPlus, FaMinus, FaBuilding, FaTimes, FaTruck, FaReceipt, FaDollarSign,
-  FaInfoCircle, FaBoxes, FaMagic, FaClock, FaChartLine, FaRoad, FaWineBottle,
-  FaSearch, FaCog, FaCity, FaLayerGroup, FaEye, FaEyeSlash, FaExpand,
-  FaFilter, FaCheckCircle,
+  FaPlus, FaMinus, FaBuilding, FaTimes, FaTruck, FaReceipt,
+  FaInfoCircle, FaBoxes, FaMagic, FaClock, FaChartLine, FaRoad, FaWineBottle, FaCog, FaCity, FaLayerGroup, FaEye, FaEyeSlash, FaExpand,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
@@ -33,6 +31,7 @@ import {
 import {
   MUNICIPIOS_COCHABAMBA, getMunicipioForPoint, groupClientsByMunicipio,
 } from "../utils/CochabambaMunicipios";
+import { MAP_STYLE_MODERN, CONTAINER_STYLE, DEPOT, DEFAULT_TRUCK_CAPACITY, DEFAULT_ZOOM } from "../utils/MapDetails";
 
 export const GOOGLE_MAPS_LIBRARIES = ["maps"];
 
@@ -42,11 +41,8 @@ const ACCOUNT_STATUS_CONFIG = {
   "Cheque": { color: "bg-blue-100 text-blue-800 border-blue-300", label: "CHEQUE" }
 };
 
-const containerStyle = { width: "100%", height: "100%" };
 const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg";
 
-const DEFAULT_TRUCK_CAPACITY = 80;
-const DEPOT = { lat: -17.3835, lng: -66.1568 };
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 const OPTIMIZATION_METHOD = "Nearest Neighbor + 2-opt + CVRP Capacity Split";
 
@@ -82,7 +78,7 @@ export default function DeliveryRouteView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [markers, setMarkers] = useState([]);
   const [center, setCenter] = useState(DEPOT);
-  const [mapZoom, setMapZoom] = useState(13);
+  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [selectedSaler, setSelectedSaler] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -327,7 +323,6 @@ export default function DeliveryRouteView() {
     setTimeout(() => fitToMarkers(trip.orders), 200);
   };
 
-  // Agrupa clientes de un viaje por municipio (para guardar en BD)
   const buildClientsZonesBreakdown = (orders) => {
     const breakdown = {};
     orders.forEach(o => {
@@ -724,7 +719,7 @@ export default function DeliveryRouteView() {
                 className={`w-full px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 relative overflow-hidden ${!canOptimize
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-br from-[#D3423E] to-red-700 text-white shadow-md hover:shadow-lg'
-                }`}
+                  }`}
               >
                 {isOptimizing ? (
                   <>
@@ -738,7 +733,7 @@ export default function DeliveryRouteView() {
                     <FaMagic size={13} />
                     {!selectedSaler ? "Selecciona un repartidor"
                       : markers.length < MIN_ORDERS_TO_OPTIMIZE ? `Mínimo ${MIN_ORDERS_TO_OPTIMIZE} pedidos (${markers.length} actuales)`
-                      : `Optimizar ruta automáticamente`}
+                        : `Optimizar ruta automáticamente`}
                   </>
                 )}
               </motion.button>
@@ -832,7 +827,7 @@ export default function DeliveryRouteView() {
       <div className="flex-1 h-full relative bg-gray-200">
         {isLoaded ? (
           <GoogleMap
-            mapContainerStyle={containerStyle}
+            mapContainerStyle={CONTAINER_STYLE}
             center={center}
             zoom={mapZoom}
             onLoad={(map) => { mapRef.current = map; }}
@@ -842,10 +837,8 @@ export default function DeliveryRouteView() {
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: false,
-              styles: [
-                { featureType: "poi", stylers: [{ visibility: "off" }] },
-                { featureType: "transit", stylers: [{ visibility: "off" }] },
-              ],
+              styles: MAP_STYLE_MODERN,
+
             }}
           >
             {showMunicipios && Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
@@ -1034,9 +1027,8 @@ export default function DeliveryRouteView() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className={`absolute right-4 z-10 bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[210px] max-h-[55vh] overflow-y-auto ${
-              selectedMarkers.length > 0 ? 'bottom-[150px]' : 'bottom-4'
-            }`}
+            className={`absolute right-4 z-10 bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[210px] max-h-[55vh] overflow-y-auto ${selectedMarkers.length > 0 ? 'bottom-[150px]' : 'bottom-4'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1">
@@ -1107,9 +1099,8 @@ export default function DeliveryRouteView() {
         {!showLegend && (
           <button
             onClick={() => setShowLegend(true)}
-            className={`absolute right-4 z-10 bg-white rounded-full shadow-lg p-2.5 border border-gray-200 hover:shadow-xl transition-all ${
-              selectedMarkers.length > 0 ? 'bottom-[150px]' : 'bottom-4'
-            }`}
+            className={`absolute right-4 z-10 bg-white rounded-full shadow-lg p-2.5 border border-gray-200 hover:shadow-xl transition-all ${selectedMarkers.length > 0 ? 'bottom-[150px]' : 'bottom-4'
+              }`}
             title="Mostrar leyenda"
           >
             <FaLayerGroup className="text-gray-600" size={13} />

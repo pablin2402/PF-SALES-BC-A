@@ -241,8 +241,8 @@ const verifyOnChain = async (txHash) => {
 
 const OrderPaymentView = () => {
   const [salesData, setSalesData] = useState([]);
-const [initialLoading, setInitialLoading] = useState(true);
-const [tableLoading, setTableLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -266,7 +266,7 @@ const [tableLoading, setTableLoading] = useState(false);
   const token = localStorage.getItem("token");
   const id_user = localStorage.getItem("id_user");
 
-const fetchProducts = useCallback(async (pageNumber = 1) => {
+  const fetchProducts = useCallback(async (pageNumber = 1) => {
     setTableLoading(true);
     try {
       const filters = {
@@ -540,7 +540,7 @@ const fetchProducts = useCallback(async (pageNumber = 1) => {
           </div>
         </div>
 
-       {initialLoading ? (
+        {initialLoading ? (
           <PaymentSkeletons />
         ) : (
           <>
@@ -553,342 +553,341 @@ const fetchProducts = useCallback(async (pageNumber = 1) => {
                   </>
                 ) : (
                   <>
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-                  <StatCard label="Total" value={stats.total} icon={<FaReceipt />} color="bg-gray-100 text-gray-700" />
-                  <StatCard label="Ingresados" value={stats.ingresados} icon={<FaReceipt />} color="bg-blue-100 text-blue-700" />
-                  <StatCard label="Confirmados" value={stats.confirmados} icon={<FaCheckCircle />} color="bg-green-100 text-green-700" />
-                  <StatCard label="Rechazados" value={stats.rechazados} icon={<FaTimesCircle />} color="bg-red-100 text-red-700" />
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-xl text-white"
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
-                          <FaLink />
-                        </div>
-                        <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                      </div>
-
-                      <p className="text-xs uppercase text-purple-100 font-bold tracking-wider">On-chain</p>
-
-                      <h3 className="text-3xl font-black mt-1">{stats.enBlockchain}</h3>
-
-                      <p className="text-sm text-purple-100 mt-1">
-                        {stats.total > 0
-                          ? `${Math.round((stats.enBlockchain / stats.total) * 100)}% verificados`
-                          : "0%"}
-                      </p>
-                    </div>
-                  </motion.div>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="p-6 border-b border-gray-200">
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-                      <div className="relative flex-1 max-w-md">
-                        <TextInputFilter
-                          value={searchTerm}
-                          onChange={setSearchTerm}
-                          onEnter={() => fetchProducts(1)}
-                          placeholder="Buscar por cliente..."
-                        />
-                      </div>
-
-                      <select
-                        value={selectedFilter}
-                        onChange={(e) => handleFilterChange(e.target.value)}
-                        className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer"
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                      <StatCard label="Total" value={stats.total} icon={<FaReceipt />} color="bg-gray-100 text-gray-700" />
+                      <StatCard label="Ingresados" value={stats.ingresados} icon={<FaReceipt />} color="bg-blue-100 text-blue-700" />
+                      <StatCard label="Confirmados" value={stats.confirmados} icon={<FaCheckCircle />} color="bg-green-100 text-green-700" />
+                      <StatCard label="Rechazados" value={stats.rechazados} icon={<FaTimesCircle />} color="bg-red-100 text-red-700" />
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-xl text-white"
                       >
-                        <option value="none">Filtros</option>
-                        <option value="all">Mostrar todos</option>
-                        <option value="date">Por fecha</option>
-                      </select>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
 
-                      {selectedFilter === "date" && (
-                        <div className="flex gap-2 flex-wrap">
-                          <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                          <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
-                          <PrincipalBUtton onClick={() => setApplyFilter(true)} icon={HiFilter}>
-                            Aplicar
-                          </PrincipalBUtton>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
+                              <FaLink />
+                            </div>
+                            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                          </div>
+
+                          <p className="text-xs uppercase text-purple-100 font-bold tracking-wider">On-chain</p>
+
+                          <h3 className="text-3xl font-black mt-1">{stats.enBlockchain}</h3>
+
+                          <p className="text-sm text-purple-100 mt-1">
+                            {stats.total > 0
+                              ? `${Math.round((stats.enBlockchain / stats.total) * 100)}% verificados`
+                              : "0%"}
+                          </p>
                         </div>
-                      )}
-
-                      <div className="ml-auto text-right">
-                        <p className="text-xs text-gray-500 uppercase font-semibold">Monto total</p>
-                        <p className="text-lg font-bold text-gray-900">Bs. {totalAmount.toFixed(2)}</p>
-                      </div>
+                      </motion.div>
                     </div>
 
-                    {dateFilterActive && (
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className="bg-[#D3423E] text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2">
-                          <FaCalendarAlt size={10} />
-                          {startDate} → {endDate}
-                          <button onClick={() => clearFilter("date")} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5">
-                            <FaTimes size={10} />
-                          </button>
-                        </span>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="p-6 border-b border-gray-200">
+                        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                          <div className="relative flex-1 max-w-md">
+                            <TextInputFilter
+                              value={searchTerm}
+                              onChange={setSearchTerm}
+                              onEnter={() => fetchProducts(1)}
+                              placeholder="Buscar por cliente..."
+                            />
+                          </div>
+
+                          <select
+                            value={selectedFilter}
+                            onChange={(e) => handleFilterChange(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 cursor-pointer"
+                          >
+                            <option value="none">Filtros</option>
+                            <option value="all">Mostrar todos</option>
+                            <option value="date">Por fecha</option>
+                          </select>
+
+                          {selectedFilter === "date" && (
+                            <div className="flex gap-2 flex-wrap">
+                              <DateInput value={startDate} onChange={setStartDate} label="Desde" />
+                              <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+                              <PrincipalBUtton onClick={() => setApplyFilter(true)} icon={HiFilter}>
+                                Aplicar
+                              </PrincipalBUtton>
+                            </div>
+                          )}
+
+                          <div className="ml-auto text-right">
+                            <p className="text-xs text-gray-500 uppercase font-semibold">Monto total</p>
+                            <p className="text-lg font-bold text-gray-900">Bs. {totalAmount.toFixed(2)}</p>
+                          </div>
+                        </div>
+
+                        {dateFilterActive && (
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <span className="bg-[#D3423E] text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2">
+                              <FaCalendarAlt size={10} />
+                              {startDate} → {endDate}
+                              <button onClick={() => clearFilter("date")} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5">
+                                <FaTimes size={10} />
+                              </button>
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <div className="hidden lg:block overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
-                        <tr>
-                          <th className="px-4 py-3 font-semibold">Nota</th>
-                          <th className="px-4 py-3 font-semibold">Fecha</th>
-                          <th className="px-4 py-3 font-semibold">Vendedor</th>
-                          <th className="px-4 py-3 font-semibold">Cliente</th>
-                          <th className="px-4 py-3 font-semibold text-right">Pago</th>
-                          <th className="px-4 py-3 font-semibold text-right">Total</th>
-                          <th className="px-4 py-3 font-semibold text-right">Deuda</th>
-                          <th className="px-4 py-3 font-semibold text-center">Estado</th>
-                          <th className="px-4 py-3 font-semibold text-center">Blockchain</th>
-                          <th className="px-4 py-3"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {salesData.length > 0 ? (
-                          salesData.map((item) => {
-                            const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
-                            const StatusIcon = statusConfig?.icon;
-                            const itemTxHash = item.txHash;
-                            const hasChain = !!itemTxHash;
+                      <div className="hidden lg:block overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                          <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">
+                            <tr>
+                              <th className="px-4 py-3 font-semibold">Nota</th>
+                              <th className="px-4 py-3 font-semibold">Fecha</th>
+                              <th className="px-4 py-3 font-semibold">Vendedor</th>
+                              <th className="px-4 py-3 font-semibold">Cliente</th>
+                              <th className="px-4 py-3 font-semibold text-right">Pago</th>
+                              <th className="px-4 py-3 font-semibold text-right">Total</th>
+                              <th className="px-4 py-3 font-semibold text-right">Deuda</th>
+                              <th className="px-4 py-3 font-semibold text-center">Estado</th>
+                              <th className="px-4 py-3 font-semibold text-center">Blockchain</th>
+                              <th className="px-4 py-3"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {salesData.length > 0 ? (
+                              salesData.map((item) => {
+                                const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
+                                const StatusIcon = statusConfig?.icon;
+                                const itemTxHash = item.txHash;
+                                const hasChain = !!itemTxHash;
 
-                            return (
-                              <tr
-                                key={item._id}
-                                className={`border-b border-gray-100 transition-all hover:bg-gray-50 ${
-                                  hasChain
-                                    ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5"
-                                    : ""
-                                }`}
-                              >
-                                <td className="px-4 py-3">
-                                  <span className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</span>
-                                </td>
-                                <td className="px-4 py-3 text-gray-700">
-                                  {item.creationDate ? (
-                                    <div>
-                                      <p className="font-medium text-gray-900">
-                                        {new Date(item.creationDate).toLocaleDateString("es-ES", {
-                                          day: 'numeric', month: 'short', year: 'numeric'
-                                        })}
-                                      </p>
-                                      <p className="text-xs text-gray-500">
-                                        {new Date(item.creationDate).toLocaleTimeString("es-ES", {
-                                          hour: "2-digit", minute: "2-digit"
-                                        })}
-                                      </p>
-                                    </div>
-                                  ) : "-"}
-                                </td>
-                                <td className="px-4 py-3 text-gray-700 text-xs">
-                                  {(item.sales_id || item.delivery_id)?.fullName} {(item.sales_id || item.delivery_id)?.lastName}
-                                </td>
-                                <td className="px-4 py-3 font-medium text-gray-900">
-                                  {item.id_client?.name} {item.id_client?.lastName}
-                                </td>
-                                <td className="px-4 py-3 text-right font-bold text-gray-900">
-                                  Bs. {Number(item.total).toFixed(2)}
-                                </td>
-                                <td className="px-4 py-3 text-right text-gray-700">
-                                  Bs. {Number(item.orderId?.totalAmount || 0).toFixed(2)}
-                                </td>
-                                <td className="px-4 py-3 text-right">
-                                  <span className={item.debt > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
-                                    {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "-"}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3">
-                                  {statusConfig && (
-                                    <div className="flex justify-center">
-                                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor} text-xs font-bold`}>
-                                        <StatusIcon size={10} />
-                                        {statusConfig.label}
+                                return (
+                                  <tr
+                                    key={item._id}
+                                    className={`border-b border-gray-100 transition-all hover:bg-gray-50 ${hasChain
+                                        ? "border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-500/10 to-indigo-500/5"
+                                        : ""
+                                      }`}
+                                  >
+                                    <td className="px-4 py-3">
+                                      <span className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-700">
+                                      {item.creationDate ? (
+                                        <div>
+                                          <p className="font-medium text-gray-900">
+                                            {new Date(item.creationDate).toLocaleDateString("es-ES", {
+                                              day: 'numeric', month: 'short', year: 'numeric'
+                                            })}
+                                          </p>
+                                          <p className="text-xs text-gray-500">
+                                            {new Date(item.creationDate).toLocaleTimeString("es-ES", {
+                                              hour: "2-digit", minute: "2-digit"
+                                            })}
+                                          </p>
+                                        </div>
+                                      ) : "-"}
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-700 text-xs">
+                                      {(item.sales_id || item.delivery_id)?.fullName} {(item.sales_id || item.delivery_id)?.lastName}
+                                    </td>
+                                    <td className="px-4 py-3 font-medium text-gray-900">
+                                      {item.id_client?.name} {item.id_client?.lastName}
+                                    </td>
+                                    <td className="px-4 py-3 text-right font-bold text-gray-900">
+                                      Bs. {Number(item.total).toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-3 text-right text-gray-700">
+                                      Bs. {Number(item.orderId?.totalAmount || 0).toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-3 text-right">
+                                      <span className={item.debt > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
+                                        {item.debt !== undefined ? `Bs. ${item.debt.toFixed(2)}` : "-"}
                                       </span>
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="px-4 py-3">
-                                  <div className="flex justify-center">
-                                    {hasChain ? (
-                                      <a
-                                        href={`https://polygonscan.com/tx/${itemTxHash}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="group flex flex-col items-center"
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      {statusConfig && (
+                                        <div className="flex justify-center">
+                                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor} text-xs font-bold`}>
+                                            <StatusIcon size={10} />
+                                            {statusConfig.label}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <div className="flex justify-center">
+                                        {hasChain ? (
+                                          <a
+                                            href={`https://polygonscan.com/tx/${itemTxHash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="group flex flex-col items-center"
+                                          >
+                                            <span className="text-[11px] font-mono text-purple-700 font-bold">
+                                              {truncateHash(itemTxHash, 8, 6)}
+                                            </span>
+                                            <span className="text-[10px] text-purple-500 flex items-center gap-1 opacity-70 group-hover:opacity-100">
+                                              Polygon
+                                              <FiExternalLink size={9} />
+                                            </span>
+                                          </a>
+                                        ) : (
+                                          <span className="text-xs text-gray-400">—</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedItem(item);
+                                          setVerifyResult(null);
+                                          setShowEditModal(true);
+                                        }}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                       >
-                                        <span className="text-[11px] font-mono text-purple-700 font-bold">
-                                          {truncateHash(itemTxHash, 8, 6)}
-                                        </span>
-                                        <span className="text-[10px] text-purple-500 flex items-center gap-1 opacity-70 group-hover:opacity-100">
-                                          Polygon
-                                          <FiExternalLink size={9} />
-                                        </span>
-                                      </a>
-                                    ) : (
-                                      <span className="text-xs text-gray-400">—</span>
-                                    )}
+                                        <FaEllipsisV className="text-gray-600" size={14} />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            ) : (
+                              <tr>
+                                <td colSpan="10" className="px-6 py-16 text-center">
+                                  <div className="flex flex-col items-center justify-center text-gray-500">
+                                    <FaReceipt className="text-5xl mb-3 text-gray-300" />
+                                    <p className="text-lg font-semibold">No hay pagos</p>
+                                    <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros</p>
                                   </div>
                                 </td>
-                                <td className="px-4 py-3">
-                                  <button
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setVerifyResult(null);
-                                      setShowEditModal(true);
-                                    }}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                  >
-                                    <FaEllipsisV className="text-gray-600" size={14} />
-                                  </button>
-                                </td>
                               </tr>
-                            );
-                          })
-                        ) : (
-                          <tr>
-                            <td colSpan="10" className="px-6 py-16 text-center">
-                              <div className="flex flex-col items-center justify-center text-gray-500">
-                                <FaReceipt className="text-5xl mb-3 text-gray-300" />
-                                <p className="text-lg font-semibold">No hay pagos</p>
-                                <p className="text-sm text-gray-400 mt-1">Intenta ajustar los filtros</p>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="lg:hidden p-4 space-y-3">
-                    {salesData.length > 0 ? salesData.map((item) => {
-                      const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
-                      const StatusIcon = statusConfig?.icon;
-                      const hasChain = !!item.txHash;
-                      return (
-                        <div
-                          key={item._id}
-                          onClick={() => {
-                            setSelectedItem(item);
-                            setVerifyResult(null);
-                            setShowEditModal(true);
-                          }}
-                          className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(item.creationDate).toLocaleDateString("es-ES")}
-                              </p>
-                            </div>
-                            {statusConfig && (
-                              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor} text-xs font-bold`}>
-                                <StatusIcon size={10} />
-                                {statusConfig.label}
-                              </span>
                             )}
-                          </div>
-                          <p className="text-sm text-gray-700 mb-2">
-                            {item.id_client?.name} {item.id_client?.lastName}
-                          </p>
-                          <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                            <span className="text-xs text-gray-500">
-                              {hasChain ? (
-                                <span className="text-purple-700 font-bold flex items-center gap-1">
-                                  <FaLink size={10} /> En blockchain
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="lg:hidden p-4 space-y-3">
+                        {salesData.length > 0 ? salesData.map((item) => {
+                          const statusConfig = PAYMENT_STATUS_CONFIG[item.paymentStatus];
+                          const StatusIcon = statusConfig?.icon;
+                          const hasChain = !!item.txHash;
+                          return (
+                            <div
+                              key={item._id}
+                              onClick={() => {
+                                setSelectedItem(item);
+                                setVerifyResult(null);
+                                setShowEditModal(true);
+                              }}
+                              className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <p className="font-bold text-gray-900">#{item.orderId?.receiveNumber}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(item.creationDate).toLocaleDateString("es-ES")}
+                                  </p>
+                                </div>
+                                {statusConfig && (
+                                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor} text-xs font-bold`}>
+                                    <StatusIcon size={10} />
+                                    {statusConfig.label}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-700 mb-2">
+                                {item.id_client?.name} {item.id_client?.lastName}
+                              </p>
+                              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                <span className="text-xs text-gray-500">
+                                  {hasChain ? (
+                                    <span className="text-purple-700 font-bold flex items-center gap-1">
+                                      <FaLink size={10} /> En blockchain
+                                    </span>
+                                  ) : "Sin blockchain"}
                                 </span>
-                              ) : "Sin blockchain"}
-                            </span>
-                            <span className="font-bold text-gray-900">Bs. {Number(item.total).toFixed(2)}</span>
+                                <span className="font-bold text-gray-900">Bs. {Number(item.total).toFixed(2)}</span>
+                              </div>
+                            </div>
+                          );
+                        }) : (
+                          <div className="text-center py-12 text-gray-500">
+                            <FaReceipt className="text-4xl mb-3 mx-auto text-gray-300" />
+                            <p className="font-semibold">Sin pagos</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <span>Total: <strong className="text-gray-900">{items}</strong> pagos</span>
+                          <div className="h-4 w-px bg-gray-300"></div>
+                          <div className="flex items-center gap-2">
+                            <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                            <select
+                              id="itemsPerPage"
+                              value={itemsPerPage}
+                              onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setPage(1);
+                              }}
+                              className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
+                            >
+                              {[5, 10, 20, 50, 100].map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
+                            </select>
                           </div>
                         </div>
-                      );
-                    }) : (
-                      <div className="text-center py-12 text-gray-500">
-                        <FaReceipt className="text-4xl mb-3 mx-auto text-gray-300" />
-                        <p className="font-semibold">Sin pagos</p>
-                      </div>
-                    )}
-                  </div>
 
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                      <span>Total: <strong className="text-gray-900">{items}</strong> pagos</span>
-                      <div className="h-4 w-px bg-gray-300"></div>
-                      <div className="flex items-center gap-2">
-                        <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
-                        <select
-                          id="itemsPerPage"
-                          value={itemsPerPage}
-                          onChange={(e) => {
-                            setItemsPerPage(Number(e.target.value));
-                            setPage(1);
-                          }}
-                          className="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#D3423E]"
-                        >
-                          {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
+                        {totalPages > 1 && (
+                          <nav className="flex items-center gap-1">
+                            <button
+                              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                              disabled={page === 1}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
+                            >
+                              ← Anterior
+                            </button>
+                            <button
+                              onClick={() => setPage(1)}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
+                            >
+                              1
+                            </button>
+                            {page > 3 && <span className="px-1 text-gray-400">…</span>}
+                            {Array.from({ length: 3 }, (_, i) => page - 1 + i)
+                              .filter((p) => p > 1 && p < totalPages)
+                              .map((p) => (
+                                <button
+                                  key={p}
+                                  onClick={() => setPage(p)}
+                                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
+                                >
+                                  {p}
+                                </button>
+                              ))}
+                            {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
+                            {totalPages > 1 && (
+                              <button
+                                onClick={() => setPage(totalPages)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
+                              >
+                                {totalPages}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                              disabled={page === totalPages}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
+                            >
+                              Siguiente →
+                            </button>
+                          </nav>
+                        )}
                       </div>
                     </div>
-
-                    {totalPages > 1 && (
-                      <nav className="flex items-center gap-1">
-                        <button
-                          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                          disabled={page === 1}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          ← Anterior
-                        </button>
-                        <button
-                          onClick={() => setPage(1)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === 1 ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          1
-                        </button>
-                        {page > 3 && <span className="px-1 text-gray-400">…</span>}
-                        {Array.from({ length: 3 }, (_, i) => page - 1 + i)
-                          .filter((p) => p > 1 && p < totalPages)
-                          .map((p) => (
-                            <button
-                              key={p}
-                              onClick={() => setPage(p)}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-                        {page < totalPages - 2 && <span className="px-1 text-gray-400">…</span>}
-                        {totalPages > 1 && (
-                          <button
-                            onClick={() => setPage(totalPages)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "bg-[#D3423E] text-white" : "text-gray-700 hover:bg-gray-200"}`}
-                          >
-                            {totalPages}
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                          disabled={page === totalPages}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${page === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          Siguiente →
-                        </button>
-                      </nav>
-                    )}
-            </div>
-                </div>
-                </>
+                  </>
                 )}
               </>
             ) : (
@@ -1028,9 +1027,8 @@ const fetchProducts = useCallback(async (pageNumber = 1) => {
                           <motion.div
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`rounded-xl p-3 text-sm ${
-                              verifyResult.exists ? "bg-green-500/20 border border-green-400/30" : "bg-red-500/20 border border-red-400/30"
-                            }`}
+                            className={`rounded-xl p-3 text-sm ${verifyResult.exists ? "bg-green-500/20 border border-green-400/30" : "bg-red-500/20 border border-red-400/30"
+                              }`}
                           >
                             {verifyResult.exists ? (
                               <>
@@ -1089,26 +1087,83 @@ const fetchProducts = useCallback(async (pageNumber = 1) => {
                 )}
 
                 {selectedItem.paymentStatus === "paid" && (
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 uppercase block mb-1.5">
-                      ¿Desea confirmar este pago? <span className="text-[#D3423E]">*</span>
-                    </label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 bg-[#D3423E] rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">?</span>
+                      </div>
+                      <p className="text-sm font-bold text-gray-800">¿Validar este pago?</p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => setSelectedItem({ ...selectedItem, confirmed: "confirmado" })}
-                        className={`p-3 rounded-xl border-2 flex items-center gap-2 justify-center transition-all ${selectedItem.confirmed === "confirmado" ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-400'}`}
+                        className={`relative p-3.5 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                          selectedItem.confirmed === "confirmado"
+                            ? 'border-green-500 bg-green-500 text-white shadow-md shadow-green-200'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:bg-green-50'
+                        }`}
                       >
-                        <FaCheck size={14} />
-                        <span className="font-bold text-gray-600 text-lg">Confirmar</span>
+                        {selectedItem.confirmed === "confirmado" && (
+                          <div className="absolute top-2 right-2 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                            <FaCheck size={8} className="text-green-500" />
+                          </div>
+                        )}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          selectedItem.confirmed === "confirmado" ? 'bg-white/20' : 'bg-green-100'
+                        }`}>
+                          <FaCheck size={18} className={selectedItem.confirmed === "confirmado" ? 'text-white' : 'text-green-600'} />
+                        </div>
+                        <span className={`text-sm font-bold ${selectedItem.confirmed === "confirmado" ? 'text-white' : 'text-gray-700'}`}>
+                          Confirmar
+                        </span>
+                        <span className={`text-[10px] ${selectedItem.confirmed === "confirmado" ? 'text-green-100' : 'text-gray-400'}`}>
+                          Aprobar el pago
+                        </span>
                       </button>
+
                       <button
                         onClick={() => setSelectedItem({ ...selectedItem, confirmed: "rechazado" })}
-                        className={`p-3 rounded-xl border-2 flex items-center gap-2 justify-center transition-all ${selectedItem.confirmed === "rechazado" ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 hover:border-gray-400'}`}
+                        className={`relative p-3.5 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                          selectedItem.confirmed === "rechazado"
+                            ? 'border-[#D3423E] bg-[#D3423E] text-white shadow-md shadow-red-200'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:bg-red-50'
+                        }`}
                       >
-                        <FaTimes size={14} />
-                        <span className="font-bold text-gray-600 text-lg">Rechazar</span>
+                        {selectedItem.confirmed === "rechazado" && (
+                          <div className="absolute top-2 right-2 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                            <FaCheck size={8} className="text-[#D3423E]" />
+                          </div>
+                        )}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          selectedItem.confirmed === "rechazado" ? 'bg-white/20' : 'bg-red-100'
+                        }`}>
+                          <FaTimes size={18} className={selectedItem.confirmed === "rechazado" ? 'text-white' : 'text-[#D3423E]'} />
+                        </div>
+                        <span className={`text-sm font-bold ${selectedItem.confirmed === "rechazado" ? 'text-white' : 'text-gray-700'}`}>
+                          Rechazar
+                        </span>
+                        <span className={`text-[10px] ${selectedItem.confirmed === "rechazado" ? 'text-red-100' : 'text-gray-400'}`}>
+                          Denegar el pago
+                        </span>
                       </button>
                     </div>
+
+                    {selectedItem.confirmed && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`mt-3 text-xs font-semibold text-center px-3 py-2 rounded-lg ${
+                          selectedItem.confirmed === "confirmado"
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-[#D3423E]'
+                        }`}
+                      >
+                        {selectedItem.confirmed === "confirmado"
+                          ? '✓ El pago será marcado como confirmado'
+                          : '✗ El pago será marcado como rechazado'}
+                      </motion.p>
+                    )}
                   </div>
                 )}
 

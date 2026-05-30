@@ -19,8 +19,8 @@ import {
 import {
     MUNICIPIOS_COCHABAMBA, getMunicipioForPoint, groupClientsByMunicipio,
 } from "../utils/CochabambaMunicipios";
-import {MAP_STYLE_MODERN, DEFAULT_CENTER, DEFAULT_ZOOM, VIEW_ALL_LIMIT} from "../utils/MapDetails";
-import {SidebarSkeleton, MapSkeleton } from "../utils/MapSkeleton"
+import { MAP_STYLE_MODERN,CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM, VIEW_ALL_LIMIT, FALLBACK_IMAGE } from "../utils/MapDetails";
+import { SidebarSkeleton, MapSkeleton } from "../utils/MapSkeleton"
 
 
 const SORT_OPTIONS = [
@@ -30,12 +30,6 @@ const SORT_OPTIONS = [
     { value: "creationDateAsc", label: "Más antiguos" },
     { value: "company", label: "Empresa (A-Z)" },
 ];
-
-const containerStyle = { width: "100%", height: "100%" };
-
-const FALLBACK_IMAGE = "https://us.123rf.com/450wm/tkacchuk/tkacchuk2004/tkacchuk200400017/143745488-no-hay-icono-de-imagen-vector-de-línea-editable-no-hay-imagen-no-hay-foto-disponible-o-no-hay.jpg";
-
-
 export default function LocalizationView() {
     const navigate = useNavigate();
 
@@ -57,8 +51,8 @@ export default function LocalizationView() {
     const [locations, setLocations] = useState([]);
 
     const [page, setPage] = useState(1);
-const [limit, setLimit] = useState(10);   
- const [totalPages, setTotalPages] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [sortBy, setSortBy] = useState("name");
     const [hasLocationOnly, setHasLocationOnly] = useState(false);
@@ -167,7 +161,7 @@ const [limit, setLimit] = useState(10);
                     limit: VIEW_ALL_LIMIT,
                     sortBy: "name",
                     hasLocation: true,
-                },  
+                },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             const allClients = response.data.users || [];
@@ -334,8 +328,8 @@ const [limit, setLimit] = useState(10);
     const sortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label || "Ordenar";
 
     return (
-    <div className="h-screen w-full flex overflow-hidden bg-gray-50">
-      <style>{`
+        <div className="h-screen w-full flex overflow-hidden bg-gray-50">
+            <style>{`
         @keyframes shimmer {
           0%   { background-position:  200% 0; }
           100% { background-position: -200% 0; }
@@ -392,7 +386,7 @@ const [limit, setLimit] = useState(10);
                                     value={searchInput}
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     placeholder="Nombre, empresa, NIT, teléfono..."
-className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 rounded-xl bg-white outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"                                />
+                                    className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 rounded-xl bg-white outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all" />
                                 {searchInput && (
                                     <button
                                         onClick={() => { setSearchInput(""); setSearchTerm(""); }}
@@ -671,7 +665,7 @@ className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 
                                         </div>
                                     )}
 
-                                {!viewAllMode && !selectedMunicipio && (
+                                    {!viewAllMode && !selectedMunicipio && (
                                         <div className="pt-4 space-y-3 border-t border-gray-100 mt-3">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[11px] text-gray-500 font-semibold">
@@ -772,7 +766,7 @@ className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 
             <div className="flex-1 h-full relative bg-gray-200">
                 {isLoaded ? (
                     <GoogleMap
-                        mapContainerStyle={containerStyle}
+                        mapContainerStyle={CONTAINER_STYLE}
                         center={center}
                         zoom={mapZoom}
                         onLoad={(map) => { mapRef.current = map; }}
@@ -1035,11 +1029,11 @@ className="w-full pl-9 pr-9 py-2.5 text-sm border border-gray-300 text-gray-900 
                     </button>
                 </div>
 
-              <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+                <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
                     <div className="relative z-50">
                         <button
                             onClick={() => setShowViewOptions(!showViewOptions)}
-        className="bg-white rounded-xl shadow-lg p-3 border border-gray-200 flex items-center gap-2 transition-all hover:shadow-xl"
+                            className="bg-white rounded-xl shadow-lg p-3 border border-gray-200 flex items-center gap-2 transition-all hover:shadow-xl"
                         >
                             <FaCog className="text-gray-600" size={13} />
                             <span className="text-xs font-bold text-gray-700">Vista</span>
