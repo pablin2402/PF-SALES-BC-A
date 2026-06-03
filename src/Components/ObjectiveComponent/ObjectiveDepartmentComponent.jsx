@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../config";
 import { HiFilter } from "react-icons/hi";
-import DateInput from "../LittleComponents/DateInput";
 import { motion } from "framer-motion";
 import { FaTimesCircle, FaBullseye, FaBoxOpen, FaChartLine, FaShoppingCart, FaTimes } from "react-icons/fa";
 
@@ -93,7 +92,7 @@ const ObjectiveDepartmentComponent = ({ item, setViewMode, setSelectedRegion, se
     fetchObjectiveDataRegion(customFilters);
   };
 
-useEffect(() => {
+  useEffect(() => {
     fetchCategories();
     fetchObjectiveDataRegion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -154,8 +153,27 @@ useEffect(() => {
 
             {selectedFilter === "date" && (
               <div className="flex flex-wrap gap-2 items-end">
-                <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Desde</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hasta</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                    />
+                  </div>
+                </div>
                 <button
                   onClick={() => { applyFilters(); setDateFilterActive(true); }}
                   className="px-4 py-2.5 bg-[#D3423E] text-white font-bold text-sm rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"

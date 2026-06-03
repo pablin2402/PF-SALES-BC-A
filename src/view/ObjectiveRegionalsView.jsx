@@ -13,7 +13,6 @@ import {
 
 import ObjectiveDepartmentComponent from "../Components/ObjectiveComponent/ObjectiveDepartmentComponent";
 import ObjectiveSalesDetailComponent from "../Components/ObjectiveComponent/ObjectiveSalesDetailComponent";
-import DateInput from "../Components/LittleComponents/DateInput";
 
 
 const Pill = ({ children, color = "gray" }) => {
@@ -401,20 +400,24 @@ const ObjectiveRegionalsView = () => {
               className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-6"
             >
               <div className="flex flex-col lg:flex-row lg:items-end gap-3">
-                <div className="flex-1 flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1">
-                    <DateInput
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Desde</label>
+                    <input
+                      type="date"
                       value={startDate}
-                      onChange={setStartDate}
-                      label="Fecha de Inicio"
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
                     />
                   </div>
-                  <div className="flex-1">
-                    <DateInput
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hasta</label>
+                    <input
+                      type="date"
                       value={endDate}
-                      onChange={setEndDate}
                       min={startDate}
-                      label="Fecha Final"
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
                     />
                   </div>
                 </div>
@@ -494,7 +497,7 @@ const ObjectiveRegionalsView = () => {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                 <thead className="bg-gray-200 border-b border-gray-200">
+                  <thead className="bg-gray-200 border-b border-gray-200">
                     <tr>
                       {[
                         "Inicio", "Fin", "Región", "Línea", "Objetivo",
@@ -523,7 +526,7 @@ const ObjectiveRegionalsView = () => {
                               setViewMode("form");
                               setSelectedItem(item);
                             }}
-className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"                          >
+                            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"                          >
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.startDate
                                 ? new Date(item.startDate)
@@ -656,7 +659,7 @@ className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-c
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                 <thead className="bg-gray-200 border-b border-gray-200">
+                  <thead className="bg-gray-200 border-b border-gray-200">
                     <tr>
                       {[
                         "Inicio", "Fin", "Línea", "Objetivo", "VTA AA",
@@ -671,7 +674,7 @@ className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-c
                       ))}
                     </tr>
                   </thead>
-                 <tbody>
+                  <tbody>
                     {loading ? (
                       <ObjectiveTableSkeleton cols={11} />
                     ) : salesNationalData.length > 0 ? (
@@ -680,7 +683,7 @@ className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-c
                         return (
                           <tr
                             key={item._id + item.saleLastYear}
-className="border-b border-gray-100 hover:bg-gray-50 transition-colors"                          >
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"                          >
                             <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                               {item.startDate
                                 ? new Date(item.startDate)
@@ -891,7 +894,7 @@ className="border-b border-gray-100 hover:bg-gray-50 transition-colors"         
                     value={formData.ciudad}
                     onChange={handleChange}
                     required
-                      className="app-select"
+                    className="app-select"
 
                   >
                     <option value="">Seleccione una ciudad</option>

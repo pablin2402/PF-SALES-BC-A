@@ -3,17 +3,15 @@ import axios from "axios";
 import { API_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 import { FaFileExport } from "react-icons/fa6";
-import { HiFilter, HiOutlineCheckCircle, HiOutlineDocumentAdd, HiX } from "react-icons/hi";
+import { HiFilter, HiOutlineCheckCircle, HiOutlineDocumentAdd } from "react-icons/hi";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
-import DateInput from "../Components/LittleComponents/DateInput";
-import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimesCircle, FaExclamationCircle, FaTruck, FaCheckCircle, FaBoxOpen, FaEllipsisV, FaTrash, FaCheck } from "react-icons/fa";
-import { MdCancel, MdLocalShipping, MdDoneAll } from 'react-icons/md';
+import { FaTimesCircle, FaTimes, FaSearch, FaExclamationCircle, FaTruck, FaCheckCircle, FaBoxOpen, FaEllipsisV, FaTrash, FaCheck } from "react-icons/fa";
+import { MdCancel, MdLocalShipping, MdDoneAll } from "react-icons/md";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { ModernPagination } from "../utils/ModernPagination";
-import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading"
+import { SkeletonCards, SkeletonTable, SkeletonStats } from "../utils/SkeletonLoading";
 import { StatCard, EmptyState } from "../utils/StatCard";
 
 const ORDER_STATUS_CONFIG = {
@@ -21,19 +19,21 @@ const ORDER_STATUS_CONFIG = {
   aproved: { label: "Aprobado", icon: FaCheckCircle, color: "bg-green-100 text-green-700 border-green-300", iconColor: "text-green-500" },
   "En Ruta": { label: "En Ruta", icon: FaTruck, color: "bg-blue-100 text-blue-700 border-blue-300", iconColor: "text-blue-500" },
   cancelled: { label: "Cancelado", icon: FaTimesCircle, color: "bg-red-100 text-red-700 border-red-300", iconColor: "text-red-500" },
-  deliver: { label: "Entregado", icon: FaBoxOpen, color: "bg-emerald-100 text-emerald-700 border-emerald-300", iconColor: "text-emerald-500" }
+  deliver: { label: "Entregado", icon: FaBoxOpen, color: "bg-emerald-100 text-emerald-700 border-emerald-300", iconColor: "text-emerald-500" },
 };
 
 const ACCOUNT_STATUS_CONFIG = {
   "Crédito": "bg-yellow-100 text-yellow-800",
   "Contado": "bg-green-500 text-white",
-  "Cheque": "bg-blue-500 text-white"
+  "Cheque": "bg-blue-500 text-white",
 };
 
 const PAY_STATUS_CONFIG = {
   "Pagado": "bg-green-100 text-green-700",
-  "Pendiente": "bg-red-100 text-red-700"
+  "Pendiente": "bg-red-100 text-red-700",
 };
+
+
 
 const OrderView = () => {
   const [salesData, setSalesData] = useState([]);
@@ -55,13 +55,13 @@ const OrderView = () => {
   const [vendedores, setVendedores] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [items, setItems] = useState();
+  const [items, setItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showCancelCheck, setShowCancelCheck] = useState(null);
   const [counts, setCounts] = useState(null);
-  const [ , setError] = useState(null);
+  const [, setError] = useState(null);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [page, setPage] = useState(1);
@@ -190,10 +190,7 @@ const OrderView = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        fetchOrders(page),
-        fetchOrdersFilters()
-      ]);
+      await Promise.all([fetchOrders(page), fetchOrdersFilters()]);
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -201,21 +198,22 @@ const OrderView = () => {
 
   const goToClientDetails = (item) => {
     navigate(`/client/order/${item.id_client}`, {
-      state: { products: item.products, files: item, flag: true }
+      state: { products: item.products, files: item, flag: true },
     });
   };
 
   const exportToExcel = async () => {
     const filters = {
       id_owner: user,
-      page: page,
-      limit: items,
+      page: 1,
+      limit: items || 10000,
     };
     if (inputValue) filters.fullName = inputValue;
     if (selectedStatus) filters.status = selectedStatus;
     if (selectedPaymentType) filters.paymentType = selectedPaymentType;
     if (selectedSaler) filters.salesId = selectedSaler;
     if (selectedPayment) filters.payStatus = selectedPayment;
+    if (selectedRegion) filters.region = selectedRegion;
     if (startDate && endDate) {
       filters.startDate = startDate;
       filters.endDate = endDate;
@@ -223,18 +221,19 @@ const OrderView = () => {
 
     try {
       const response = await axios.post(API_URL + "/whatsapp/order/id", filters, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const allData = response.data.orders;
+      const allData = response.data.orders || [];
+      if (!allData.length) return;
 
       const ws = XLSX.utils.json_to_sheet(
         allData.map((item) => {
           const creationDateUTC = new Date(item.creationDate);
           creationDateUTC.setHours(creationDateUTC.getHours() - 4);
-          const formattedDate = creationDateUTC.toISOString().replace('T', ' ').substring(0, 19);
+          const formattedDate = creationDateUTC.toISOString().replace("T", " ").substring(0, 19);
           return {
             "Código de Cliente": item._id,
-            "Nombre": `${item.id_client.name} ${item.id_client.lastName}`,
+            "Nombre": `${item.id_client?.name || ""} ${item.id_client?.lastName || ""}`.trim(),
             "Fecha de confirmación": formattedDate,
             "Tipo de pago": item.accountStatus,
             "Vendedor": `${item.salesId?.fullName || ""} ${item.salesId?.lastName || ""}`.trim(),
@@ -269,7 +268,7 @@ const OrderView = () => {
         setStartDate("");
         setEndDate("");
         setDateFilterActive(false);
-      }
+      },
     };
     newState[type]?.();
 
@@ -328,11 +327,7 @@ const OrderView = () => {
     try {
       await axios.put(
         API_URL + "/whatsapp/order/status/confirm/id",
-        {
-          _id: id,
-          id_owner: user,
-          orderStatus: selectedItem.confirmed,
-        },
+        { _id: id, id_owner: user, orderStatus: selectedItem.confirmed },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -369,459 +364,484 @@ const OrderView = () => {
         }
       `}</style>
       <div className="max-w-[1600px] mx-auto">
-
-        <div>
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Órdenes de venta</h1>
-            <p className="text-sm text-gray-500">Gestiona todos los pedidos desde un solo lugar</p>
-          </div>
-          {initialLoading || statsLoading ? (
-            <SkeletonStats />
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-              <StatCard
-                icon={<HiOutlineDocumentAdd size={24} />}
-                label="Sin asignar"
-                value={counts?.created || 0}
-                color="bg-blue-100"
-                textColor="text-blue-600"
-                onClick={() => filterByStatus("created")}
-                active={selectedStatus === "created"}
-              />
-              <StatCard
-                icon={<HiOutlineCheckCircle size={24} />}
-                label="Aprobados"
-                value={counts?.aproved || 0}
-                color="bg-green-100"
-                textColor="text-green-600"
-                onClick={() => filterByStatus("aproved")}
-                active={selectedStatus === "aproved"}
-              />
-              <StatCard
-                icon={<MdLocalShipping size={24} />}
-                label="En Ruta"
-                value={counts?.["En Ruta"] || 0}
-                color="bg-yellow-100"
-                textColor="text-yellow-600"
-                onClick={() => filterByStatus("En Ruta")}
-                active={selectedStatus === "En Ruta"}
-              />
-              <StatCard
-                icon={<MdDoneAll size={24} />}
-                label="Entregados"
-                value={counts?.deliver || 0}
-                color="bg-purple-100"
-                textColor="text-purple-600"
-                onClick={() => filterByStatus("deliver")}
-                active={selectedStatus === "deliver"}
-              />
-              <StatCard
-                icon={<MdCancel size={24} />}
-                label="Cancelados"
-                value={counts?.cancelled || 0}
-                color="bg-red-100"
-                textColor="text-red-600"
-                onClick={() => filterByStatus("cancelled")}
-                active={selectedStatus === "cancelled"}
-              />
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <FaBoxOpen className="text-[#D3423E]" size={20} />
             </div>
-          )}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="relative flex-1 max-w-md">
-                    <TextInputFilter
-                      value={inputValue}
-                      onChange={setInputValue}
-                      onEnter={applyFilters}
-                      placeholder="Buscar por nombre..."
-                    />
-                  </div>
-                  <select
-                    value={selectedFilter}
-                    onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="app-select"
-                  >
-                    <option value="">Más filtros</option>
-                    <option value="payment">Estado de pago</option>
-                    <option value="date">Fecha</option>
-                    <option value="seller">Vendedores</option>
-                    <option value="paymentType">Tipo de pago</option>
-                    <option value="region">Región</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={exportToExcel}
-                    className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
-                  >
-                    <FaFileExport />
-                    Exportar
-                  </button>
-                  <PrincipalBUtton onClick={() => handleNewOrderClick()}>Nuevo Pedido</PrincipalBUtton>
-                </div>
-              </div>
-              {selectedFilter && (
-                <div className="flex flex-wrap items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl">
-                  {selectedFilter === "seller" && (
-                    <select
-                      className="app-select"
-                      value={selectedSaler}
-                      onChange={(e) => setSelectedSaler(e.target.value)}
-                    >
-                      <option value="">Todos los vendedores</option>
-                      {vendedores.map((v) => (
-                        <option key={v._id} value={v._id}>{v.fullName} {v.lastName}</option>
-                      ))}
-                    </select>
-                  )}
-                  {selectedFilter === "paymentType" && (
-                    <select
-                      value={selectedPaymentType}
-                      onChange={(e) => setSelectedPaymentType(e.target.value)}
-                      className="app-select"
-                    >
-                      <option value="">Todos los tipos</option>
-                      <option value="Crédito">Crédito</option>
-                      <option value="Contado">Contado</option>
-                      <option value="Cheque">Cheque</option>
-                    </select>
-                  )}
-                  {selectedFilter === "payment" && (
-                    <select
-                      value={selectedPayment}
-                      onChange={(e) => setSelectedPayment(e.target.value)}
-                      className="app-select"
-                    >
-                      <option value="">Todos los estados</option>
-                      <option value="Pagado">Pagado</option>
-                      <option value="Pendiente">Pendiente</option>
-                    </select>
-                  )}
-                  {selectedFilter === "date" && (
-                    <div className="flex gap-2 flex-wrap">
-                      <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                      <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
-                    </div>
-                  )}
-                  {selectedFilter === "region" && (
-                    <select
-                      value={selectedRegion}
-                      onChange={(e) => setSelectedRegion(e.target.value)}
-                      className="app-select"
-                    >
-                      <option value="">Todas las ciudades</option>
-                      <option value="TOTAL CBB">Cochabamba</option>
-                      <option value="TOTAL SC">Santa Cruz</option>
-                      <option value="TOTAL LP">La Paz</option>
-                      <option value="TOTAL OR">Oruro</option>
-                    </select>
-                  )}
-                  <button
-                    onClick={applyFilters}
-                    className="px-4 py-2 bg-[#D3423E] text-white rounded-xl hover:bg-red-700 transition-colors text-sm font-semibold flex items-center gap-2"
-                  >
-                    <HiFilter /> Aplicar
-                  </button>
-                </div>
-              )}
-
-              {hasActiveFilters && (
-                <div className="flex flex-wrap items-center gap-2">
-                  {selectedStatus && ORDER_STATUS_CONFIG[selectedStatus] && (
-                    <FilterChip
-                      label={ORDER_STATUS_CONFIG[selectedStatus].label}
-                      onRemove={() => clearFilter("status")}
-                      color="bg-gray-700"
-                    />
-                  )}
-                  {selectedSaler && (
-                    <FilterChip
-                      label={`Vendedor: ${vendedores.find(v => v._id === selectedSaler)?.fullName || "?"}`}
-                      onRemove={() => clearFilter("seller")}
-                      color="bg-blue-600"
-                    />
-                  )}
-                  {selectedPaymentType && (
-                    <FilterChip label={`Pago: ${selectedPaymentType}`} onRemove={() => clearFilter("paymentType")} color="bg-orange-500" />
-                  )}
-                  {selectedPayment && (
-                    <FilterChip label={`Estado: ${selectedPayment}`} onRemove={() => clearFilter("payment")} color="bg-green-600" />
-                  )}
-                  {dateFilterActive && (
-                    <FilterChip label={`${startDate} → ${endDate}`} onRemove={() => clearFilter("date")} color="bg-purple-600" />
-                  )}
-                  {selectedRegion && (
-                    <FilterChip label={`Región: ${selectedRegion}`} onRemove={() => clearFilter("region")} color="bg-indigo-600" />
-                  )}
-                  <button
-                    onClick={clearAllFilters}
-                    className="ml-2 text-sm font-semibold text-gray-600 hover:text-[#D3423E] transition-colors underline"
-                  >
-                    Limpiar todo
-                  </button>
-                </div>
-              )}
+            <div>
+              <h1 className="text-3xl font-black text-gray-900 leading-tight">Órdenes de venta</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Gestiona todos los pedidos desde un solo lugar</p>
             </div>
-            {initialLoading || tableLoading ? (
-              <>
-                <div className="lg:hidden">
-                  <SkeletonCards />
-                </div>
-                <div className="hidden lg:block">
-                  <SkeletonTable />
-                </div>
-              </>
-            ) : salesData.length === 0 ? (
-              <EmptyState
-                hasFilters={hasActiveFilters}
-                onClear={clearAllFilters}
-                onCreate={() => navigate("/client/creation")}
-              />
-
-            ) : (
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-s text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Fecha</th>
-                      <th className="px-4 py-3 font-semibold">Ciudad</th>
-                      <th className="px-4 py-3 font-semibold">Cliente</th>
-                      <th className="px-4 py-3 font-semibold">Tipo</th>
-                      <th className="px-4 py-3 font-semibold">Vendedor</th>
-                      <th className="px-4 py-3 font-semibold">Pago</th>
-                      <th className="px-4 py-3 font-semibold text-right">Total</th>
-                      <th className="px-4 py-3 font-semibold text-right">Saldo</th>
-                      <th className="px-4 py-3 font-semibold text-center">Mora</th>
-                      <th className="px-4 py-3 font-semibold text-center">Estado</th>
-                      <th className="px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      salesData.map((item) => {
-                        const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                        const StatusIcon = statusConfig?.icon;
-                        return (
-                          <tr
-                            key={item._id}
-                            onClick={() => goToClientDetails(item)}
-                            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <td className="px-4 py-3 text-gray-700">
-                              {item.creationDate ? (
-                                <div>
-                                  <p className="font-medium text-gray-900">
-                                    {new Date(item.creationDate).toLocaleDateString("es-ES", {
-                                      day: 'numeric',
-                                      month: 'short',
-                                      year: 'numeric'
-                                    })}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {new Date(item.creationDate).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit"
-                                    })}
-                                  </p>
-                                </div>
-                              ) : "-"}
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">{item.region}</td>
-                            <td className="px-4 py-3 font-medium text-gray-900">
-                              {item.id_client.name} {item.id_client.lastName}
-                            </td>
-                            <td className="px-4 py-3">
-                              {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                                  {item.accountStatus.toUpperCase()}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-gray-700">
-                              {item.salesId?.fullName} {item.salesId?.lastName}
-                            </td>
-                            <td className="px-4 py-3">
-                              {PAY_STATUS_CONFIG[item.payStatus] && (
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                                  {item.payStatus.toUpperCase()}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-right font-bold text-gray-900">
-                              Bs. {Number(item.totalAmount).toFixed(2)}
-                            </td>
-                            <td className="px-4 py-3 text-right text-gray-700">
-                              <span className={item.restante > 0 ? "text-[#D3423E] font-semibold" : "text-green-600"}>
-                                Bs. {Number(item.restante).toFixed(2)}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              {item.diasMora > 0 ? (
-                                <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
-                                  {item.diasMora} días
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              {statusConfig && (
-                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                                  <StatusIcon className={statusConfig.iconColor} />
-                                  <span>{statusConfig.label}</span>
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 relative">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(openMenuId === item._id ? null : item._id);
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                aria-label="Opciones"
-                              >
-                                <FaEllipsisV className="text-gray-600" />
-                              </button>
-                              {openMenuId === item._id && !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
-                                <div
-                                  ref={menuRef}
-                                  className="absolute right-4 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <button
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setShowEditModal(true);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                  >
-                                    <FaCheck className="text-green-500" />
-                                    Confirmar pedido
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (item.totalAmount === item.restante) {
-                                        setItemToDelete(item);
-                                        setShowConfirmDeleteModal(true);
-                                      } else {
-                                        setShowPaymentWarningModal(true);
-                                      }
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
-                                  >
-                                    <FaTrash />
-                                    Eliminar pedido
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {!initialLoading && !tableLoading && salesData.length > 0 && (
-              <>
-                <div className="lg:hidden p-4 space-y-3">
-                  {
-                    salesData.map((item) => {
-                      const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
-                      const StatusIcon = statusConfig?.icon;
-                      return (
-                        <div
-                          key={item._id}
-                          onClick={() => goToClientDetails(item)}
-                          className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <p className="font-bold text-gray-900">{item.id_client.name} {item.id_client.lastName}</p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
-                              </p>
-                            </div>
-                            {statusConfig && (
-                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
-                                <StatusIcon className={statusConfig.iconColor} />
-                                {statusConfig.label}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex justify-between items-center mb-2">
-                            <div className="flex gap-2 flex-wrap">
-                              {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
-                                  {item.accountStatus.toUpperCase()}
-                                </span>
-                              )}
-                              {PAY_STATUS_CONFIG[item.payStatus] && (
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
-                                  {item.payStatus.toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex justify-between items-end border-t border-gray-100 pt-2">
-                            <div>
-                              <p className="text-xs text-gray-500">Vendedor</p>
-                              <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500">Total</p>
-                              <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
-                              {item.restante > 0 && (
-                                <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  }
-                </div>
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
-                    <div className="h-4 w-px bg-gray-300"></div>
-                    <div className="flex items-center gap-2">
-                      <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
-                      <select
-                        id="itemsPerPage"
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setPage(1);
-                        }}
-                        className="app-select"
-                      >
-                        {[5, 10, 20, 50].map((option) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {totalPages > 1 && (
-                    <ModernPagination
-                      page={page}
-                      totalPages={totalPages}
-                      onChange={setPage}
-                    />
-                  )}
-                </div>
-              </>
-
-            )}
           </div>
         </div>
 
+        {initialLoading || statsLoading ? (
+          <SkeletonStats />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+            <StatCard icon={<HiOutlineDocumentAdd size={24} />} label="Sin asignar" value={counts?.created || 0} color="bg-blue-100" textColor="text-blue-600" onClick={() => filterByStatus("created")} active={selectedStatus === "created"} />
+            <StatCard icon={<HiOutlineCheckCircle size={24} />} label="Aprobados" value={counts?.aproved || 0} color="bg-green-100" textColor="text-green-600" onClick={() => filterByStatus("aproved")} active={selectedStatus === "aproved"} />
+            <StatCard icon={<MdLocalShipping size={24} />} label="En Ruta" value={counts?.["En Ruta"] || 0} color="bg-yellow-100" textColor="text-yellow-600" onClick={() => filterByStatus("En Ruta")} active={selectedStatus === "En Ruta"} />
+            <StatCard icon={<MdDoneAll size={24} />} label="Entregados" value={counts?.deliver || 0} color="bg-purple-100" textColor="text-purple-600" onClick={() => filterByStatus("deliver")} active={selectedStatus === "deliver"} />
+            <StatCard icon={<MdCancel size={24} />} label="Cancelados" value={counts?.cancelled || 0} color="bg-red-100" textColor="text-red-600" onClick={() => filterByStatus("cancelled")} active={selectedStatus === "cancelled"} />
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-5 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+              <div className="flex items-center gap-2 flex-1">
+                <div className="relative flex-1 max-w-sm">
+                  <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+                    placeholder="Buscar por nombre..."
+                    className="w-full pl-10 pr-9 py-2.5 text-sm bg-gray-50 border border-gray-200 text-gray-900 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#D3423E] focus:bg-white transition-all"
+                  />
+                  {inputValue && (
+                    <button
+                      onClick={() => { setInputValue(""); }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                    >
+                      <FaTimes size={12} />
+                    </button>
+                  )}
+                </div>
+                <select
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                  className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                >
+                  <option value="">Más filtros</option>
+                  <option value="seller">Vendedor</option>
+                  <option value="region">Ciudad</option>
+                  <option value="paymentType">Tipo de pago</option>
+                  <option value="payment">Estado de pago</option>
+                  <option value="date">Fecha</option>
+                </select>
+                <button
+                  onClick={applyFilters}
+                  className="px-4 py-2.5 bg-[#D3423E] text-white text-sm font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap"
+                >
+                  <HiFilter size={14} /> Filtrar
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-xl hover:border-[#D3423E] hover:text-[#D3423E] transition-all flex items-center gap-2 font-semibold text-sm"
+                >
+                  <FaFileExport size={14} />
+                  <span className="hidden sm:inline">Exportar</span>
+                </button>
+                <PrincipalBUtton onClick={() => handleNewOrderClick()}>Nuevo Pedido</PrincipalBUtton>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {selectedFilter && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-wrap items-end gap-3 mt-3 pt-3 border-t border-gray-100">
+                    {selectedFilter === "seller" && (
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Vendedor</label>
+                        <select
+                          value={selectedSaler}
+                          onChange={(e) => setSelectedSaler(e.target.value)}
+                          className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer min-w-[200px]"
+                        >
+                          <option value="">Todos los vendedores</option>
+                          {vendedores.map((v) => (
+                            <option key={v._id} value={v._id}>{v.fullName} {v.lastName}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {selectedFilter === "region" && (
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Ciudad</label>
+                        <select
+                          value={selectedRegion}
+                          onChange={(e) => setSelectedRegion(e.target.value)}
+                          className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer min-w-[180px]"
+                        >
+                          <option value="">Todas las ciudades</option>
+                          <option value="TOTAL CBB">Cochabamba</option>
+                          <option value="TOTAL SC">Santa Cruz</option>
+                          <option value="TOTAL LP">La Paz</option>
+                          <option value="TOTAL OR">Oruro</option>
+                        </select>
+                      </div>
+                    )}
+                    {selectedFilter === "paymentType" && (
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Tipo de pago</label>
+                        <select
+                          value={selectedPaymentType}
+                          onChange={(e) => setSelectedPaymentType(e.target.value)}
+                          className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer min-w-[180px]"
+                        >
+                          <option value="">Todos los tipos</option>
+                          <option value="Crédito">Crédito</option>
+                          <option value="Contado">Contado</option>
+                          <option value="Cheque">Cheque</option>
+                        </select>
+                      </div>
+                    )}
+                    {selectedFilter === "payment" && (
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Estado de pago</label>
+                        <select
+                          value={selectedPayment}
+                          onChange={(e) => setSelectedPayment(e.target.value)}
+                          className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer min-w-[180px]"
+                        >
+                          <option value="">Todos los estados</option>
+                          <option value="Pagado">Pagado</option>
+                          <option value="Pendiente">Pendiente</option>
+                        </select>
+                      </div>
+                    )}
+                  {selectedFilter === "date" && (
+                      <div className="flex flex-wrap gap-3 items-end">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Desde</label>
+                          <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hasta</label>
+                          <input
+                            type="date"
+                            value={endDate}
+                            min={startDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={applyFilters}
+                      className="px-4 py-2.5 bg-[#D3423E] text-white text-sm font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
+                    >
+                      <HiFilter size={14} /> Aplicar
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {hasActiveFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 mt-3 flex-wrap pt-3 border-t border-gray-100">
+                    <span className="text-xs font-bold text-gray-500 uppercase">Filtros activos:</span>
+                    {inputValue && (
+                      <FilterChip label={`"${inputValue}"`} onRemove={() => { setInputValue(""); setTimeout(() => { fetchOrders(1, { ...buildCustomFilters(), fullName: "" }); }, 0); }} />
+                    )}
+                    {selectedStatus && ORDER_STATUS_CONFIG[selectedStatus] && (
+                      <FilterChip label={ORDER_STATUS_CONFIG[selectedStatus].label} onRemove={() => clearFilter("status")} />
+                    )}
+                    {selectedSaler && (
+                      <FilterChip label={`Vendedor: ${vendedores.find((v) => v._id === selectedSaler)?.fullName || "?"}`} onRemove={() => clearFilter("seller")} />
+                    )}
+                    {selectedPaymentType && (
+                      <FilterChip label={`Tipo: ${selectedPaymentType}`} onRemove={() => clearFilter("paymentType")} />
+                    )}
+                    {selectedPayment && (
+                      <FilterChip label={`Pago: ${selectedPayment}`} onRemove={() => clearFilter("payment")} />
+                    )}
+                    {dateFilterActive && (
+                      <FilterChip label={`${startDate} → ${endDate}`} onRemove={() => clearFilter("date")} />
+                    )}
+                    {selectedRegion && (
+                      <FilterChip label={selectedRegion} onRemove={() => clearFilter("region")} />
+                    )}
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs font-bold text-[#D3423E] hover:underline flex items-center gap-1 ml-auto"
+                    >
+                      ↺ Limpiar todo
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {initialLoading || tableLoading ? (
+            <>
+              <div className="lg:hidden"><SkeletonCards /></div>
+              <div className="hidden lg:block"><SkeletonTable /></div>
+            </>
+          ) : salesData.length === 0 ? (
+            <EmptyState hasFilters={hasActiveFilters} onClear={clearAllFilters} onCreate={() => navigate("/client/creation")} />
+          ) : (
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-gray-800 uppercase bg-gray-200 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 font-bold">Fecha</th>
+                    <th className="px-4 py-3 font-bold">Ciudad</th>
+                    <th className="px-4 py-3 font-bold">Cliente</th>
+                    <th className="px-4 py-3 font-bold">Tipo</th>
+                    <th className="px-4 py-3 font-bold">Vendedor</th>
+                    <th className="px-4 py-3 font-bold">Pago</th>
+                    <th className="px-4 py-3 font-bold text-right">Total</th>
+                    <th className="px-4 py-3 font-bold text-right">Saldo</th>
+                    <th className="px-4 py-3 font-bold text-center">Mora</th>
+                    <th className="px-4 py-3 font-bold text-center">Estado</th>
+                    <th className="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {salesData.map((item) => {
+                    const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                    const StatusIcon = statusConfig?.icon;
+                    return (
+                      <tr
+                        key={item._id}
+                        onClick={() => goToClientDetails(item)}
+                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          {item.creationDate ? (
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                                {new Date(item.creationDate).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {new Date(item.creationDate).getFullYear()} · {new Date(item.creationDate).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                            </div>
+                          ) : <span className="text-gray-400">-</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.region ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-100 whitespace-nowrap">
+                              {item.region}
+                            </span>
+                          ) : <span className="text-gray-400 text-xs">-</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-[11px] font-bold text-[#D3423E] flex-shrink-0">
+                              {item.id_client?.name?.[0]}{item.id_client?.lastName?.[0]}
+                            </div>
+                            <span className="font-semibold text-gray-900 whitespace-nowrap">
+                              {item.id_client?.name} {item.id_client?.lastName}
+                            </span>
+                          </div>
+                        </td> 
+                        <td className="px-4 py-3">
+                          {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                              {item.accountStatus.toUpperCase()}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {item.salesId?.fullName} {item.salesId?.lastName}
+                        </td>
+                        <td className="px-4 py-3">
+                          {PAY_STATUS_CONFIG[item.payStatus] && (
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                              {item.payStatus.toUpperCase()}
+                            </span>
+                          )}
+                        </td>
+                       <td className="px-4 py-3 text-right">
+                          <span className="font-bold text-gray-900 tabular-nums">
+                            Bs. {Number(item.totalAmount).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {item.restante > 0 ? (
+                            <span className="inline-flex items-center px-2.5 py-1 text-[#D3423E] text-xs font-bold">
+                              Bs. {Number(item.restante).toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold border border-green-100">
+                              Pagado
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {item.diasMora > 0 ? (
+                            <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
+                              {item.diasMora} días
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {statusConfig && (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                              <StatusIcon className={statusConfig.iconColor} />
+                              <span>{statusConfig.label}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(openMenuId === item._id ? null : item._id);
+                            }}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            aria-label="Opciones"
+                          >
+                            <FaEllipsisV className="text-gray-600" />
+                          </button>
+                          {openMenuId === item._id && !["deliver", "En Ruta", "aproved"].includes(item.orderStatus) && (
+                            <div
+                              ref={menuRef}
+                              className="absolute right-4 top-12 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => {
+                                  setSelectedItem(item);
+                                  setShowEditModal(true);
+                                  setOpenMenuId(null);
+                                }}
+                                className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                <FaCheck className="text-green-500" />
+                                Confirmar pedido
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (item.totalAmount === item.restante) {
+                                    setItemToDelete(item);
+                                    setShowConfirmDeleteModal(true);
+                                  } else {
+                                    setShowPaymentWarningModal(true);
+                                  }
+                                  setOpenMenuId(null);
+                                }}
+                                className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                              >
+                                <FaTrash />
+                                Eliminar pedido
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!initialLoading && !tableLoading && salesData.length > 0 && (
+            <>
+              <div className="lg:hidden p-4 space-y-3">
+                {salesData.map((item) => {
+                  const statusConfig = ORDER_STATUS_CONFIG[item.orderStatus];
+                  const StatusIcon = statusConfig?.icon;
+                  return (
+                    <div
+                      key={item._id}
+                      onClick={() => goToClientDetails(item)}
+className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-bold text-gray-900">{item.id_client?.name} {item.id_client?.lastName}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(item.creationDate).toLocaleDateString("es-ES")} · {item.region}
+                          </p>
+                        </div>
+                        {statusConfig && (
+                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${statusConfig.color}`}>
+                            <StatusIcon className={statusConfig.iconColor} />
+                            {statusConfig.label}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex gap-2 flex-wrap">
+                          {ACCOUNT_STATUS_CONFIG[item.accountStatus] && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ACCOUNT_STATUS_CONFIG[item.accountStatus]}`}>
+                              {item.accountStatus.toUpperCase()}
+                            </span>
+                          )}
+                          {PAY_STATUS_CONFIG[item.payStatus] && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${PAY_STATUS_CONFIG[item.payStatus]}`}>
+                              {item.payStatus.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-end border-t border-gray-100 pt-2">
+                        <div>
+                          <p className="text-xs text-gray-500">Vendedor</p>
+                          <p className="text-sm text-gray-700">{item.salesId?.fullName}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">Total</p>
+                          <p className="text-lg font-bold text-gray-900">Bs. {Number(item.totalAmount).toFixed(2)}</p>
+                          {item.restante > 0 && (
+                            <p className="text-xs text-[#D3423E] font-semibold">Saldo: Bs. {Number(item.restante).toFixed(2)}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span>Total: <strong className="text-gray-900">{items || 0}</strong> pedidos</span>
+                  <div className="h-4 w-px bg-gray-300"></div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="itemsPerPage" className="font-semibold">Mostrar:</label>
+                    <select
+                      id="itemsPerPage"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="app-select"
+                    >
+                      {[5, 10, 20, 50].map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {totalPages > 1 && (
+                  <ModernPagination page={page} totalPages={totalPages} onChange={setPage} />
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <AnimatePresence>
@@ -862,21 +882,11 @@ const OrderView = () => {
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div>
                           <label className="block mb-1 text-xs font-semibold text-gray-600 uppercase">Número de Nota</label>
-                          <input
-                            type="text"
-                            disabled
-                            value={selectedItem.receiveNumber}
-                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-700 rounded-xl"
-                          />
+                          <input type="text" disabled value={selectedItem.receiveNumber} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-700 rounded-xl" />
                         </div>
                         <div>
                           <label className="block mb-1 text-xs font-semibold text-gray-600 uppercase">Monto</label>
-                          <input
-                            type="text"
-                            disabled
-                            value={`Bs. ${Number(selectedItem.totalAmount).toFixed(2)}`}
-                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-700 rounded-xl"
-                          />
+                          <input type="text" disabled value={`Bs. ${Number(selectedItem.totalAmount).toFixed(2)}`} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-700 rounded-xl" />
                         </div>
                         <div className="col-span-2">
                           <label className="block mb-1 text-xs font-semibold text-gray-600 uppercase">Acción a realizar</label>
@@ -892,16 +902,13 @@ const OrderView = () => {
                         </div>
                       </div>
                       <div className="flex gap-3">
-                        <button
-                          onClick={() => setShowEditModal(false)}
-                          className="flex-1 px-4 py-2.5 border-2 border-gray-300 bg-white rounded-xl text-gray-700 font-bold hover:bg-gray-50"
-                        >
+                        <button onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-2.5 border-2 border-gray-300 bg-white rounded-xl text-gray-700 font-bold hover:bg-gray-50">
                           Cancelar
                         </button>
                         <button
                           onClick={() => uploadProducts(selectedItem._id)}
                           disabled={!selectedItem.confirmed}
-                          className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-white ${selectedItem.confirmed ? 'bg-[#D3423E] hover:bg-red-700' : 'bg-gray-300 cursor-not-allowed'}`}
+                          className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-white ${selectedItem.confirmed ? "bg-[#D3423E] hover:bg-red-700" : "bg-gray-300 cursor-not-allowed"}`}
                         >
                           Guardar
                         </button>
@@ -909,40 +916,16 @@ const OrderView = () => {
                     </>
                   )}
                   {selectedItem?.orderStatus === "aproved" && (
-                    <StatusModal
-                      title="Pedido aprobado"
-                      subtitle="Este pedido ya fue aprobado"
-                      icon={<FaCheckCircle className="text-green-500" size={60} />}
-                      bg="bg-green-100"
-                      onClose={() => setShowEditModal(false)}
-                    />
+                    <StatusModal title="Pedido aprobado" subtitle="Este pedido ya fue aprobado" icon={<FaCheckCircle className="text-green-500" size={60} />} bg="bg-green-100" onClose={() => setShowEditModal(false)} />
                   )}
                   {selectedItem?.orderStatus === "cancelled" && (
-                    <StatusModal
-                      title="Pedido rechazado"
-                      subtitle="Este pedido fue rechazado"
-                      icon={<FaTimesCircle className="text-red-500" size={60} />}
-                      bg="bg-red-100"
-                      onClose={() => setShowEditModal(false)}
-                    />
+                    <StatusModal title="Pedido rechazado" subtitle="Este pedido fue rechazado" icon={<FaTimesCircle className="text-red-500" size={60} />} bg="bg-red-100" onClose={() => setShowEditModal(false)} />
                   )}
                   {selectedItem?.orderStatus === "En Ruta" && (
-                    <StatusModal
-                      title="Pedido en ruta"
-                      subtitle="En camino al destino"
-                      icon={<FaTruck className="text-blue-500" size={60} />}
-                      bg="bg-blue-100"
-                      onClose={() => setShowEditModal(false)}
-                    />
+                    <StatusModal title="Pedido en ruta" subtitle="En camino al destino" icon={<FaTruck className="text-blue-500" size={60} />} bg="bg-blue-100" onClose={() => setShowEditModal(false)} />
                   )}
                   {selectedItem?.orderStatus === "deliver" && (
-                    <StatusModal
-                      title="Pedido entregado"
-                      subtitle="El pedido ha sido entregado exitosamente"
-                      icon={<FaBoxOpen className="text-green-500" size={60} />}
-                      bg="bg-green-100"
-                      onClose={() => setShowEditModal(false)}
-                    />
+                    <StatusModal title="Pedido entregado" subtitle="El pedido ha sido entregado exitosamente" icon={<FaBoxOpen className="text-green-500" size={60} />} bg="bg-green-100" onClose={() => setShowEditModal(false)} />
                   )}
                 </>
               )}
@@ -971,13 +954,8 @@ const OrderView = () => {
                 <FaExclamationCircle className="text-red-500 text-3xl" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">No se puede eliminar</h3>
-              <p className="text-sm text-gray-600 mb-6">
-                Este pedido ya tiene pagos registrados y no puede ser eliminado.
-              </p>
-              <button
-                onClick={() => setShowPaymentWarningModal(false)}
-                className="w-full px-5 py-2.5 font-bold text-white bg-[#D3423E] rounded-xl hover:bg-red-700"
-              >
+              <p className="text-sm text-gray-600 mb-6">Este pedido ya tiene pagos registrados y no puede ser eliminado.</p>
+              <button onClick={() => setShowPaymentWarningModal(false)} className="w-full px-5 py-2.5 font-bold text-white bg-[#D3423E] rounded-xl hover:bg-red-700">
                 Entendido
               </button>
             </motion.div>
@@ -1005,14 +983,9 @@ const OrderView = () => {
                 <FaTrash className="text-red-500 text-2xl" />
               </div>
               <h2 className="text-lg font-bold text-gray-900 mb-2">¿Eliminar pedido?</h2>
-              <p className="text-sm text-gray-600 mb-6">
-                Esta acción no se puede deshacer. ¿Estás seguro?
-              </p>
+              <p className="text-sm text-gray-600 mb-6">Esta acción no se puede deshacer. ¿Estás seguro?</p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => setShowConfirmDeleteModal(false)}
-                  className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200"
-                >
+                <button onClick={() => setShowConfirmDeleteModal(false)} className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">
                   Cancelar
                 </button>
                 <button
@@ -1033,12 +1006,11 @@ const OrderView = () => {
   );
 };
 
-
-const FilterChip = ({ label, onRemove, color = "bg-gray-600" }) => (
-  <span className={`${color} text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2`}>
+const FilterChip = ({ label, onRemove }) => (
+  <span className="bg-red-50 border border-red-200 text-[#D3423E] px-3 py-1 rounded-full font-bold text-xs flex items-center gap-1.5">
     {label}
-    <button onClick={onRemove} className="hover:bg-white hover:bg-opacity-20 rounded-full p-0.5 transition-colors">
-      <HiX size={14} />
+    <button onClick={onRemove} className="hover:bg-red-100 rounded-full p-0.5 transition-colors">
+      <FaTimes size={9} />
     </button>
   </span>
 );
@@ -1055,10 +1027,7 @@ const StatusModal = ({ title, subtitle, icon, bg, onClose }) => (
     </motion.div>
     <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
     <p className="text-gray-600 mt-1 mb-6">{subtitle}</p>
-    <button
-      onClick={onClose}
-      className="px-6 py-2.5 border-2 border-[#D3423E] bg-white rounded-xl text-[#D3423E] font-bold hover:bg-red-50"
-    >
+    <button onClick={onClose} className="px-6 py-2.5 border-2 border-[#D3423E] bg-white rounded-xl text-[#D3423E] font-bold hover:bg-red-50">
       Cerrar
     </button>
   </div>

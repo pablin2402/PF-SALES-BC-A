@@ -15,7 +15,6 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import DateInput from "../LittleComponents/DateInput";
 
 const StatCard = ({ icon: Icon, label, value, iconBg, iconColor }) => (
   <motion.div
@@ -314,14 +313,27 @@ const ObjectiveSalesManComponent = ({ region }) => {
                 </div>
 
                 {selectedFilter === "date" && (
-                  <>
-                    <div className="flex-1 min-w-[140px]">
-                      <DateInput value={startDate} onChange={setStartDate} label="Fecha de Inicio" />
-                    </div>
-                    <div className="flex-1 min-w-[140px]">
-                      <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fecha Final" />
-                    </div>
-                  </>
+                 <div className="flex flex-wrap gap-3 items-end">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Desde</label>
+                          <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hasta</label>
+                          <input
+                            type="date"
+                            value={endDate}
+                            min={startDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          />
+                        </div>
+                      </div>
                 )}
 
                 {selectedFilter === "payment" && (

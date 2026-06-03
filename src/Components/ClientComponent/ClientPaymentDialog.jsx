@@ -66,8 +66,8 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [isBlockchainProcessing, setIsBlockchainProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("normal");
   const [order, setOrder] = useState(null);
-  const [paid, setPaid] = useState(false);
-  const [payment, setPayment] = useState(null);
+  const [, setPaid] = useState(false);
+  const [, setPayment] = useState(null);
 
   const [normalPaymentType, setNormalPaymentType] = useState('cash');
 
@@ -690,7 +690,6 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
                     onClick={() => setNormalPaymentType(key)}
                     className={`p-3 rounded-xl border-2 text-center transition-all ${normalPaymentType === key ? 'border-[#D3423E] bg-red-50' : 'border-gray-200 hover:border-gray-400'}`}
                   >
-                    <div className="text-2xl mb-1">{method.icon}</div>
                     <p className="text-xs font-bold text-gray-800">{method.name}</p>
                   </button>
                 ))}

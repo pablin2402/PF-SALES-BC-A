@@ -14,7 +14,70 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const FALLBACK_IMAGE = "https://via.placeholder.com/200?text=Sin+imagen";
+const SHIMMER = {
+  background: "linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)",
+  backgroundSize: "200% 100%",
+  animation: "shimmer 1.5s infinite",
+};
 
+const SBox = ({ className = "", style = {} }) => (
+  <div className={`rounded-lg ${className}`} style={{ ...SHIMMER, ...style }} />
+);
+
+const ProductTableSkeleton = () => (
+  <div className="overflow-x-auto">
+    <table className="w-full text-sm">
+      <thead className="bg-gray-200 border-b border-gray-200">
+        <tr>
+          {[...Array(7)].map((_, i) => (
+            <th key={i} className="px-4 py-3">
+              <SBox className="h-3 w-16" style={{ background: "#d1d5db" }} />
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {[...Array(8)].map((_, i) => (
+          <tr key={i} className="border-b border-gray-100" style={{ opacity: 1 - i * 0.1 }}>
+            <td className="px-4 py-3">
+              <SBox className="w-12 h-12 rounded-lg" />
+            </td>
+            <td className="px-4 py-3"><SBox className="h-4 w-40" /></td>
+            <td className="px-4 py-3"><SBox className="h-4 w-20" /></td>
+            <td className="px-4 py-3 text-center"><SBox className="h-6 w-20 rounded-full mx-auto" /></td>
+            <td className="px-4 py-3 text-center"><SBox className="h-6 w-16 rounded-full mx-auto" /></td>
+            <td className="px-4 py-3"><SBox className="h-6 w-24 rounded-full" /></td>
+            <td className="px-4 py-3"><SBox className="w-8 h-8 rounded-lg" /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const ProductCardsSkeleton = () => (
+  <div className="p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+    {[...Array(10)].map((_, i) => (
+      <div
+        key={i}
+        className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
+        style={{ opacity: 1 - i * 0.07 }}
+      >
+        <div className="bg-gray-50 p-3">
+          <SBox className="w-full h-32" />
+        </div>
+        <div className="p-3 space-y-2">
+          <SBox className="h-4 w-full" />
+          <SBox className="h-3 w-24" />
+          <div className="flex items-end justify-between mt-3">
+            <SBox className="h-6 w-16" />
+            <SBox className="w-9 h-9 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 const ProductView = () => {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -205,6 +268,12 @@ const ProductView = () => {
 
   return (
     <div className="bg-white min-h-screen p-4 sm:p-6">
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position:  200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -312,10 +381,7 @@ const ProductView = () => {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#D3423E] mb-3"></div>
-              <p className="text-sm">Cargando productos...</p>
-            </div>
+            viewMode === "table" ? <ProductTableSkeleton /> : <ProductCardsSkeleton />
           ) : salesData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -337,22 +403,21 @@ const ProductView = () => {
           ) : viewMode === "table" ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-3"></th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("name")}>
-                      <div className="flex items-center gap-1">Producto {getSortIcon("name")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("price")}>
-                      <div className="flex items-center gap-1">Precio {getSortIcon("price")}</div>
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-center">Oferta</th>
-                    <th className="px-4 py-3 font-semibold text-center">Descuento</th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("category")}>
-                      <div className="flex items-center gap-1">Categoría {getSortIcon("category")}</div>
-                    </th>
-                    <th className="px-4 py-3"></th>
-                  </tr>
+                <thead className="text-xs text-gray-600 uppercase bg-gray-200 border-b border-gray-200">                  <tr>
+                  <th className="px-4 py-3"></th>
+                  <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("name")}>
+                    <div className="flex items-center gap-1">Producto {getSortIcon("name")}</div>
+                  </th>
+                  <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("price")}>
+                    <div className="flex items-center gap-1">Precio {getSortIcon("price")}</div>
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-center">Oferta</th>
+                  <th className="px-4 py-3 font-semibold text-center">Descuento</th>
+                  <th className="px-4 py-3 font-semibold cursor-pointer hover:text-[#D3423E]" onClick={() => handleSort("category")}>
+                    <div className="flex items-center gap-1">Categoría {getSortIcon("category")}</div>
+                  </th>
+                  <th className="px-4 py-3"></th>
+                </tr>
                 </thead>
                 <tbody>
                   {filteredAndSorted.map((item) => (

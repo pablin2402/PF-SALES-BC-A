@@ -189,11 +189,11 @@ export default function ShowRouteComponent() {
     }
   };
 
-  const handleSelectRoute = (route) => {
+const handleSelectRoute = (route) => {
     setSelectedMarkers([route]);
     if (route.route && route.route.length > 0 && mapRef.current && window.google) {
       const bounds = new window.google.maps.LatLngBounds();
-      bounds.extend(DEFAULT_ZOOM);
+      bounds.extend(DEFAULT_CENTER);
       route.route.forEach((c) => {
         if (c.client_location?.latitud && c.client_location?.longitud) {
           bounds.extend({
@@ -322,7 +322,7 @@ export default function ShowRouteComponent() {
   const fitToRoute = () => {
     if (!mapRef.current || !window.google || !activeRoute) return;
     const bounds = new window.google.maps.LatLngBounds();
-    bounds.extend(DEFAULT_ZOOM);
+    bounds.extend(DEFAULT_CENTER);
     activeRoute.route?.forEach((c) => {
       if (c.client_location?.latitud && c.client_location?.longitud) {
         bounds.extend({
@@ -1025,7 +1025,7 @@ export default function ShowRouteComponent() {
                   )}
                   <button
                     onClick={() => {
-                      mapRef.current?.panTo(DEFAULT_ZOOM);
+                      mapRef.current?.panTo(DEFAULT_CENTER);
                       mapRef.current?.setZoom(15);
                       setShowViewOptions(false);
                     }}
@@ -1077,116 +1077,7 @@ export default function ShowRouteComponent() {
             </motion.div>
           )}
         </div>
-
-        <AnimatePresence>
-          {activeRoute && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="absolute top-4 left-20 z-10 bg-white rounded-2xl shadow-xl p-4 border border-gray-200 max-w-xs"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-black text-gray-700 uppercase tracking-wide">
-                  Ruta activa
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedMarkers([]);
-                    setDirectionsResponse(null);
-                    setRoutePath([]);
-                  }}
-                  className="w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"
-                >
-                  <FaTimes size={10} />
-                </button>
-              </div>
-              <p className="font-bold text-gray-900 truncate text-sm">{activeRoute.details}</p>
-              <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
-                <FaUser size={9} /> {activeRoute.salesMan?.fullName}
-              </p>
-
-              <div className="mb-3">
-                <div className="flex justify-between text-[10px] mb-1">
-                  <span className="text-gray-500 font-black uppercase tracking-wide">
-                    Cumplimiento
-                  </span>
-                  <span className="font-bold text-gray-900">{completionPercent}%</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${completionPercent}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="h-2 rounded-full"
-                    style={{ backgroundColor: VISITED_COLOR }}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg p-2 text-center" style={{ backgroundColor: "#ECFDF5" }}>
-                  <p className="font-black text-lg" style={{ color: "#065F46" }}>{visitedCount}</p>
-                  <p className="text-[10px] font-bold" style={{ color: "#047857" }}>Visitados</p>
-                </div>
-                <div className="rounded-lg p-2 text-center" style={{ backgroundColor: "#FFFBEB" }}>
-                  <p className="font-black text-lg" style={{ color: "#92400E" }}>
-                    {totalStops - visitedCount}
-                  </p>
-                  <p className="text-[10px] font-bold" style={{ color: "#B45309" }}>Pendientes</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {directionsResponse && routeStats.distance > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10 bg-white rounded-2xl shadow-xl border border-gray-200 px-5 py-3 flex items-center gap-4"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center">
-                  <FaRoute style={{ color: ROUTE_COLOR }} size={13} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wide">
-                    Distancia
-                  </p>
-                  <p className="text-sm font-bold text-gray-900">{routeStats.distance} km</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-gray-200" />
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center">
-                  <FaClock className="text-amber-600" size={13} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wide">
-                    Tiempo
-                  </p>
-                  <p className="text-sm font-bold text-gray-900">~{routeStats.duration} min</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-gray-200" />
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center">
-                  <FaMapMarkerAlt className="text-emerald-600" size={13} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wide">
-                    Paradas
-                  </p>
-                  <p className="text-sm font-bold text-gray-900">{totalStops}</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      
 
         {activeRoute && activeRoute.route && activeRoute.route.length > 0 && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-10">
@@ -1194,9 +1085,6 @@ export default function ShowRouteComponent() {
               <div className="flex items-center justify-between mb-2 px-1">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-wide">
                   Recorrido de la ruta
-                </p>
-                <p className="text-[10px] text-gray-400">
-                  Click para centrar →
                 </p>
               </div>
               <div className="flex overflow-x-auto space-x-2 pb-1">

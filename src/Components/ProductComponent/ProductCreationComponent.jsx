@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FaTimesCircle,
   FaBoxOpen,
-  FaChevronLeft,
   FaImage,
 } from "react-icons/fa";
 
@@ -179,23 +178,8 @@ const SalesView = () => {
   const precioFinal = (formDataPrice.price - formDataPrice.disscount).toFixed(2);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto px-6 py-8">
-
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          <button
-            onClick={() => navigate("/product")}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition mb-4"
-          >
-            <FaChevronLeft size={11} />
-            Volver
-          </button>
-        </motion.div>
-
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}

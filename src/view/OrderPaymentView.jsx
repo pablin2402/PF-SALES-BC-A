@@ -15,7 +15,6 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import OrderCalendarView from "./OrderCalendarView";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
-import DateInput from "../Components/LittleComponents/DateInput";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 
 const POLYGON_RPC_URLS = [
@@ -587,41 +586,78 @@ const OrderPaymentView = () => {
 
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                       <div className="p-6 border-b border-gray-200">
-                        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-                          <div className="relative flex-1 max-w-md">
-                            <TextInputFilter
-                              value={searchTerm}
-                              onChange={setSearchTerm}
-                              onEnter={() => fetchProducts(1)}
-                              placeholder="Buscar por cliente..."
-                            />
-                          </div>
+                       <div className="flex flex-col lg:flex-row lg:items-end gap-4">
 
-                          <select
-                            value={selectedFilter}
-                            onChange={(e) => handleFilterChange(e.target.value)}
-                            className="app-select"
-                          >
-                            <option value="none">Filtros</option>
-                            <option value="all">Mostrar todos</option>
-                            <option value="date">Por fecha</option>
-                          </select>
+  <div className="flex-1 max-w-md">
+    <TextInputFilter
+      value={searchTerm}
+      onChange={setSearchTerm}
+      onEnter={() => fetchProducts(1)}
+      placeholder="Buscar por cliente..."
+    />
+  </div>
 
-                          {selectedFilter === "date" && (
-                            <div className="flex gap-2 flex-wrap">
-                              <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                              <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
-                              <PrincipalBUtton onClick={() => setApplyFilter(true)} icon={HiFilter}>
-                                Aplicar
-                              </PrincipalBUtton>
-                            </div>
-                          )}
+  <select
+    value={selectedFilter}
+    onChange={(e) => handleFilterChange(e.target.value)}
+    className="app-select h-[44px]"
+  >
+    <option value="none">Filtros</option>
+    <option value="all">Mostrar todos</option>
+    <option value="date">Por fecha</option>
+  </select>
 
-                          <div className="ml-auto text-right">
-                            <p className="text-xs text-gray-500 uppercase font-semibold">Monto total</p>
-                            <p className="text-lg font-bold text-gray-900">Bs. {totalAmount.toFixed(2)}</p>
-                          </div>
-                        </div>
+  {selectedFilter === "date" && (
+    <div className="flex flex-wrap items-end gap-3">
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+          Desde
+        </label>
+
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="h-[44px] px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+          Hasta
+        </label>
+
+        <input
+          type="date"
+          value={endDate}
+          min={startDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="h-[44px] px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+        />
+      </div>
+
+      <PrincipalBUtton
+        onClick={() => setApplyFilter(true)}
+        icon={HiFilter}
+      >
+        Aplicar
+      </PrincipalBUtton>
+
+    </div>
+  )}
+
+  <div className="lg:ml-auto text-right">
+    <p className="text-xs text-gray-500 uppercase font-semibold">
+      Monto total
+    </p>
+
+    <p className="text-lg font-bold text-gray-900">
+      Bs. {totalAmount.toFixed(2)}
+    </p>
+  </div>
+
+</div>
 
                         {dateFilterActive && (
                           <div className="mt-3 flex flex-wrap items-center gap-2">

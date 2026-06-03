@@ -13,7 +13,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import TextInputFilter from "../Components/LittleComponents/TextInputFilter";
 import AlertModal from "../Components/modal/AlertModal";
-import DateInput from "../Components/LittleComponents/DateInput";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   optimizeRoutes,
@@ -21,6 +20,7 @@ import {
   calculateOrderPacking,
   getTripColor,
   formatDuration,
+  generateStackingPlan,
   MIN_ORDERS_TO_OPTIMIZE,
 } from "../utils/RouteOptimizer";
 import StackingPlanCard from "../utils/StackingPlanCard";
@@ -132,7 +132,7 @@ export default function DeliveryRouteView() {
     return selectedMarkers.reduce((sum, m) => sum + calculateOrderBoxes(m), 0);
   }, [selectedMarkers]);
 
-  const utilizationPct = Math.min(100, (currentLoad / truckCapacity) * 100);
+  const utilizationPct = truckCapacity > 0 ? Math.min(100, (currentLoad / truckCapacity) * 100) : 0;
   const isOverCapacity = currentLoad > truckCapacity;
   const canOptimize = markers.length >= MIN_ORDERS_TO_OPTIMIZE && selectedSaler;
 
@@ -207,11 +207,12 @@ export default function DeliveryRouteView() {
     navigate(`/client/${client._id}`, { state: { client } });
   };
 
-  const cleanData = () => {
+ const cleanData = () => {
     setRouteName(""); setSelectedSaler(""); setSelectedMarkers([]);
     setStartDate(""); setEndDate(""); setOptimizationResult(null);
     setSelectedTripView(null); setCustomCapacity(null);
     setActiveTab(TABS.PEDIDOS);
+    setDirectionsResponse(null);
   };
 
   const handleZoomIn = () => {
@@ -438,9 +439,15 @@ export default function DeliveryRouteView() {
         loadMarkersFromAPI();
         setIsOpen(false);
         cleanData();
+      } else {
+        setAlertMessage(`Se crearon ${successCount} de ${optimizationResult.trips.length} viajes. Revisá las rutas creadas.`);
+        setAlertModal(true);
+        loadMarkersFromAPI();
       }
     } catch (error) {
       console.error("Error al crear rutas:", error);
+      setAlertMessage("Ocurrió un error al crear las rutas. Intentá de nuevo.");
+      setAlertModal(true);
     } finally {
       setCreating(false);
     }
@@ -451,7 +458,9 @@ export default function DeliveryRouteView() {
     setCreating(true);
     const groupId = generateGroupId();
     const createdAt = new Date().toISOString();
+
     const clientsZones = buildClientsZonesBreakdown(selectedMarkers);
+    const stackingPlan = generateStackingPlan(selectedMarkers);
 
     const routeData = {
       details: routeName,
@@ -463,14 +472,19 @@ export default function DeliveryRouteView() {
       endDate,
       progress: 0,
       capacity: truckCapacity,
-      totalBoxes: currentLoad,
-      utilization: Math.round((currentLoad / truckCapacity) * 100),
+      totalBoxes: stackingPlan.totalPhysicalBoxes,
+      fullBoxes: stackingPlan.bottom.count,
+      halfBoxes: stackingPlan.middle.count,
+      looseBottles: stackingPlan.top.looseBottles,
+      totalBottles: stackingPlan.totalBottles,
+      utilization: Math.round((stackingPlan.totalPhysicalBoxes / truckCapacity) * 100),
       optimizationMethod: "Manual",
       groupId,
       createdAt,
       depotCoords: DEPOT,
       truckCapacityUsed: truckCapacity,
       totalAmount: selectedMarkers.reduce((s, m) => s + (Number(m.totalAmount) || 0), 0),
+      stackingPlan,
       clientsZones,
       operationalNotes: ["Ruta creada manualmente por el administrador sin aplicar optimización automática"],
     };
@@ -506,7 +520,7 @@ export default function DeliveryRouteView() {
     }
   };
 
-  const handleCreateRoute = optimizationResult && optimizationResult.trips.length > 1
+  const handleCreateRoute = optimizationResult && optimizationResult.trips.length >= 1
     ? handleCreateAllRoutes
     : handleCreateSingleRoute;
 
@@ -692,8 +706,9 @@ export default function DeliveryRouteView() {
                     setSelectedMunicipio(e.target.value);
                     if (e.target.value) fitMunicipio(e.target.value);
                   }}
-                  className="app-select"
+                  className="app-select cursor-pointer"
                 >
+
                   <option value="">Todas las zonas</option>
                   {Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
                     <option key={m.id} value={m.id}>
@@ -1451,8 +1466,8 @@ const PedidosListPanel = ({
               <div className="relative flex-shrink-0">
                 <img
                   className="w-14 h-14 object-cover rounded-xl bg-gray-100"
-                  src={client.id_client.identificationImage || FALLBACK_IMAGE}
-                  alt={client.id_client.name}
+                  src={client.id_client?.identificationImage || FALLBACK_IMAGE}
+                  alt={client.id_client?.name || "Cliente"}
                   onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
                 />
                 <div
@@ -1468,7 +1483,7 @@ const PedidosListPanel = ({
                     onClick={(e) => { e.stopPropagation(); goToClientDetails(client); }}
                     className="font-bold text-gray-900 text-sm truncate hover:text-[#D3423E]"
                   >
-                    {client.id_client.name} {client.id_client.lastName}
+                    {client.id_client?.name} {client.id_client?.lastName}
                   </h3>
                   {isSelected && (
                     <span className="flex-shrink-0 w-5 h-5 bg-[#D3423E] text-white rounded-full flex items-center justify-center">
@@ -1533,8 +1548,7 @@ const PedidosListPanel = ({
               <div className="flex items-start gap-1.5 text-xs text-gray-600">
                 <FaMapMarkerAlt className="text-[#D3423E] flex-shrink-0 mt-0.5" size={10} />
                 <span className="break-words text-[11px]">
-                  {client.id_client.client_location?.direction || "Sin dirección"}
-                </span>
+                  {client.id_client?.client_location?.direction || "Sin dirección"}                </span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -1763,18 +1777,25 @@ const CreateRouteModal = ({
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-wide block mb-1.5">
-                  Desde <span className="text-[#D3423E]">*</span>
-                </label>
-                <DateInput value={startDate} onChange={setStartDate} label="Inicio" />
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Desde</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                />
               </div>
-              <div>
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-wide block mb-1.5">
-                  Hasta <span className="text-[#D3423E]">*</span>
-                </label>
-                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Fin" />
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hasta</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                />
               </div>
             </div>
 

@@ -155,7 +155,6 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
       `}</style>
 
       <div className="max-w-[1400px] mx-auto space-y-6">
-
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Detalle por producto</h1>
@@ -179,7 +178,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
+                className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -189,7 +188,7 @@ const ObjectiveSalesDetailComponent = ({ region, lyne, date1, date2 }) => {
                 value={endDate}
                 min={startDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
+                className="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all"
               />
             </div>
             <div className="flex flex-col gap-1">

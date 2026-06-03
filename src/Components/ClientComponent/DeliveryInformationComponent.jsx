@@ -6,7 +6,6 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { FaFileExport, FaFilePdf, FaFileExcel } from "react-icons/fa6";
 import { jsPDF } from "jspdf";
-import DateInput from "../LittleComponents/DateInput";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaCalendarAlt, FaCheckCircle, FaExclamationCircle, FaClock, FaShoppingCart, FaDollarSign, FaTimes, FaCity, FaFilter, FaTruck, FaBoxOpen, FaUser } from "react-icons/fa";
 import { HiFilter } from "react-icons/hi";
 import { motion } from "framer-motion";
@@ -444,8 +443,27 @@ export default function DeliveryInformationComponent() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+                <div className="flex flex-wrap gap-3 items-end">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Desde</label>
+                          <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hasta</label>
+                          <input
+                            type="date"
+                            value={endDate}
+                            min={startDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                          />
+                        </div>
+                      </div> 
 
                 <div className="relative">
                   <FaFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none z-10" />

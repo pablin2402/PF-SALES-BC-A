@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
-import { GoogleMap, Marker, InfoWindow, DirectionsRenderer, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow, Polyline, useJsApiLoader } from "@react-google-maps/api";
 import { API_URL, GOOGLE_API_KEY } from "../../config";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTrash, FaChevronLeft, FaChevronRight, FaCheckCircle, FaPlayCircle, FaRegClock, FaEye, FaChevronDown, FaFilter, FaClock, FaTruck, FaRoad } from "react-icons/fa";
 import { HiFilter } from "react-icons/hi";
-import DateInput from "../LittleComponents/DateInput";
 import PrincipalBUtton from "../LittleComponents/PrincipalButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { MAP_STYLE_MODERN, CONTAINER_STYLE, DEFAULT_CENTER, DEFAULT_ZOOM, FALLBACK_IMAGE } from "../../utils/MapDetails";
-
+import depotLogo from "../../icons/bar.png";
 
 const STATUS_CONFIG = {
   "Por iniciar": {
@@ -39,6 +38,7 @@ const STATUS_CONFIG = {
     progressColor: "bg-green-500"
   }
 };
+const DEPOT = { lat: -17.389974, lng: -66.163210 };
 
 const VISIT_STATUS_CONFIG = {
   "LLego al destino": { color: "bg-green-500", text: "Llegó al destino" },
@@ -230,6 +230,9 @@ export default function DeliveryRouteComponent() {
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
 
+  const mapRef = React.useRef(null);
+  const buildDepotIcon = () => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><defs><filter id="depot-shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="28" cy="28" r="24" fill="#111827" stroke="white" stroke-width="3" filter="url(#depot-shadow)"/><g transform="translate(15 14)" fill="white"><path d="M13 0 L0 10 L0 22 L26 22 L26 10 Z M11 22 L11 14 L15 14 L15 22" stroke="white" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></g></svg>`)}`;
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY,
     id: "google-map-script",
@@ -340,53 +343,35 @@ export default function DeliveryRouteComponent() {
       console.error("Error al eliminar la ruta:", error);
     }
   };
-
   useEffect(() => {
-    if (!isLoaded) return;
+    const active = selectedMarkers[0];
+    if (!active || !active.route || active.route.length === 0) return;
+    if (!mapRef.current || !isLoaded || !window.google) return;
 
-    if (selectedMarkers.length > 0 && selectedMarkers[0].route && selectedMarkers[0].route.length > 1) {
-      const routePoints = selectedMarkers[0].route.filter(c => c.client_location);
-      if (routePoints.length < 2) {
-        setDirectionsResponse(null);
-        return;
-      }
+    const isVisited = (c) =>
+      c.visitStatus === true ||
+      c.visitStatus1 === "Pedido entregado" ||
+      c.visitStatus1 === "LLego al destino";
 
-      const origin = {
-        lat: Number(routePoints[0].client_location.latitud),
-        lng: Number(routePoints[0].client_location.longitud),
-      };
-      const destination = {
-        lat: Number(routePoints[routePoints.length - 1].client_location.latitud),
-        lng: Number(routePoints[routePoints.length - 1].client_location.longitud),
-      };
-      const waypoints = routePoints.slice(1, -1).map((c) => ({
-        location: {
-          lat: Number(c.client_location.latitud),
-          lng: Number(c.client_location.longitud),
-        },
-        stopover: true,
-      }));
+    const stops = active.route
+      .filter((c) => c.client_location && isVisited(c))
+      .map((c) => ({
+        lat: Number(c.client_location.latitud),
+        lng: Number(c.client_location.longitud),
+      }))
+      .filter((s) => !isNaN(s.lat) && !isNaN(s.lng));
 
-      setDirectionsResponse(null);
-
-      const directionsService = new window.google.maps.DirectionsService();
-      directionsService.route(
-        {
-          origin,
-          destination,
-          waypoints,
-          travelMode: window.google.maps.TravelMode.DRIVING,
-          optimizeWaypoints: true,
-        },
-        (result, status) => {
-          if (status === "OK") setDirectionsResponse(result);
-        }
-      );
-    } else {
-      setDirectionsResponse(null);
+    if (stops.length < 1) {
+      mapRef.current.panTo(DEPOT);
+      mapRef.current.setZoom(14);
+      return;
     }
-  }, [selectedMarkers, isLoaded]);
 
+    const bounds = new window.google.maps.LatLngBounds();
+    bounds.extend(DEPOT);
+    stops.forEach((s) => bounds.extend(s));
+    mapRef.current.fitBounds(bounds, { top: 80, right: 80, bottom: 220, left: 80 });
+  }, [selectedMarkers, isLoaded]);
   const activeRoute = selectedMarkers[0];
   const visitedCount = activeRoute?.route?.filter(r => r.visitStatus || r.visitStatus1 === "Pedido entregado" || r.visitStatus1 === "LLego al destino").length || 0;
   const totalStops = activeRoute?.route?.length || 0;
@@ -397,8 +382,8 @@ export default function DeliveryRouteComponent() {
   }, {});
 
   return (
-        <div className="h-screen w-full flex overflow-hidden bg-gray-50">
-            <style>{`
+    <div className="h-screen w-full flex overflow-hidden bg-gray-50">
+      <style>{`
                 @keyframes shimmer {
                     0%   { background-position:  200% 0; }
                     100% { background-position: -200% 0; }
@@ -453,7 +438,7 @@ export default function DeliveryRouteComponent() {
                     <select
                       value={selectedSaler2}
                       onChange={(e) => { setSelectedSaler2(e.target.value); setPage(1); }}
-  className="app-select"
+                      className="app-select"
 
                     >
                       <option value="">Todos</option>
@@ -484,14 +469,25 @@ export default function DeliveryRouteComponent() {
 
               <div>
                 <label className="text-xs font-semibold text-gray-600 uppercase block mb-1.5">Rango de fechas</label>
-                <div className="flex gap-2">
-                  <DateInput value={startDate} onChange={setStartDate} label="Desde" />
-                  <DateInput value={endDate} onChange={setEndDate} min={startDate} label="Hasta" />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                  />
+                  <span className="text-gray-400 text-sm font-semibold">→</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={startDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="px-3 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl bg-white focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100 transition-all cursor-pointer"
+                  />
                   <PrincipalBUtton
                     onClick={() => { setPage(1); loadRoute(startDate, endDate); }}
                     icon={HiFilter}
                   >
-                    Filtrar
                   </PrincipalBUtton>
                 </div>
               </div>
@@ -725,12 +721,34 @@ export default function DeliveryRouteComponent() {
       </div>
 
       <div className="flex-1 h-full relative bg-gray-200">
+        {isLoaded && (
+          <div className="absolute bottom-32 right-4 z-10 flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => mapRef.current?.setZoom((mapRef.current?.getZoom() || 13) + 1)}
+              className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors border-b border-gray-200 text-xl font-bold"
+              title="Acercar"
+            >
+              +
+            </button>
+            <button
+              onClick={() => mapRef.current?.setZoom((mapRef.current?.getZoom() || 13) - 1)}
+              className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors text-xl font-bold"
+              title="Alejar"
+            >
+              −
+            </button>
+          </div>
+        )}
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={CONTAINER_STYLE}
             center={center}
             zoom={mapZoom}
-            options={{
+onLoad={(map) => {
+              mapRef.current = map;
+              map.panTo(DEPOT);
+              map.setZoom(14);
+            }}            options={{
               disableDefaultUI: false,
               zoomControl: true,
               streetViewControl: false,
@@ -740,27 +758,47 @@ export default function DeliveryRouteComponent() {
 
             }}
           >
+         <Marker
+              position={DEPOT}
+              icon={window.google ? {
+                url: depotLogo,
+                scaledSize: new window.google.maps.Size(50, 50),
+                anchor: new window.google.maps.Point(25, 25),
+              } : null}
+              title="Depósito"
+              zIndex={2000}
+            />
+
             {activeRoute && activeRoute.route && activeRoute.route
-              .filter(c => c.client_location)
+              .filter(c => {
+                const isVisited = c.visitStatus === true || c.visitStatus1 === "Pedido entregado" || c.visitStatus1 === "LLego al destino";
+                return c.client_location && isVisited;
+              })
               .map((client, index) => {
                 const isDelivered = client.visitStatus1 === "Pedido entregado" || client.visitStatus1 === "LLego al destino";
-                const isInTransit = client.visitStatus1 === "En camino";
-                const color = isDelivered ? '#10b981' : isInTransit ? '#eab308' : '#9ca3af';
+                const color = isDelivered ? "#10b981" : "#eab308";
                 return (
                   <Marker
                     key={client._id || index}
                     position={{
-                      lat: client.client_location.latitud,
-                      lng: client.client_location.longitud,
+                      lat: Number(client.client_location.latitud),
+                      lng: Number(client.client_location.longitud),
                     }}
                     icon={{
                       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg width="50" height="50" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="25" cy="25" r="22" fill="${color}" stroke="white" strokeWidth="3"/>
-                          <text x="25" y="31" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="Arial">${index + 1}</text>
+                        <svg width="56" height="68" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 68">
+                          <defs>
+                            <filter id="sh${index}" x="-50%" y="-50%" width="200%" height="200%">
+                              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+                            </filter>
+                          </defs>
+                          <path d="M28 66 C28 66 6 40 6 24 A22 22 0 1 1 50 24 C50 40 28 66 28 66 Z" fill="${color}" stroke="white" stroke-width="3" filter="url(#sh${index})"/>
+                          <circle cx="28" cy="24" r="13" fill="white"/>
+                          <text x="28" y="29" text-anchor="middle" fill="${color}" font-size="15" font-weight="bold" font-family="Arial">${index + 1}</text>
                         </svg>
                       `)}`,
-                      scaledSize: iconSize40 ? new window.google.maps.Size(50, 50) : undefined,
+                      scaledSize: window.google ? new window.google.maps.Size(48, 58) : undefined,
+                      anchor: window.google ? new window.google.maps.Point(24, 58) : undefined,
                     }}
                     onClick={() => setSelectedClient(client)}
                   />
@@ -806,67 +844,77 @@ export default function DeliveryRouteComponent() {
                 </div>
               </InfoWindow>
             )}
-
-            {directionsResponse && (
-              <DirectionsRenderer
-                directions={directionsResponse}
-                options={{
-                  polylineOptions: {
-                    strokeColor: "#D3423E",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 5,
-                  },
-                  suppressMarkers: true,
-                }}
-              />
-            )}
           </GoogleMap>
-      ) : (
+        ) : (
           <DeliveryRouteMapSkeleton />
         )}
 
         {activeRoute && (
-          <div className="absolute top-4 left-4 z-10 bg-white rounded-2xl shadow-lg p-4 border border-gray-200 max-w-xs">
-            <p className="text-xs font-bold text-gray-700 uppercase mb-2">Ruta activa</p>
-            <p className="font-bold text-gray-900 truncate">{activeRoute.details}</p>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="absolute top-4 left-4 z-10 bg-white rounded-2xl shadow-xl p-4 border border-gray-200 max-w-[260px]"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-wide">Ruta activa</p>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_CONFIG[activeRoute.status]?.bgColor} ${STATUS_CONFIG[activeRoute.status]?.textColor}`}>
+                {activeRoute.status}
+              </span>
+            </div>
+            <p className="font-bold text-gray-900 truncate text-sm mb-0.5">{activeRoute.details}</p>
             <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
-              <FaTruck size={10} />
-              {activeRoute.delivery?.fullName}
+              <FaTruck size={9} className="text-gray-400" />
+              {activeRoute.delivery?.fullName} {activeRoute.delivery?.lastName}
             </p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-green-50 rounded-lg p-2 text-center">
-                <p className="text-green-700 font-bold text-lg">{visitedCount}</p>
-                <p className="text-green-600 text-[10px]">Entregados</p>
+
+            <div className="mb-3">
+              <div className="flex justify-between text-[10px] mb-1">
+                <span className="text-gray-500 font-bold uppercase tracking-wide">Progreso</span>
+                <span className="font-bold text-gray-900">{activeRoute.progress || 0}%</span>
               </div>
-              <div className="bg-gray-50 rounded-lg p-2 text-center">
-                <p className="text-gray-700 font-bold text-lg">{totalStops}</p>
-                <p className="text-gray-600 text-[10px]">Total</p>
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${activeRoute.progress || 0}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="h-2 rounded-full bg-[#D3423E]"
+                />
               </div>
             </div>
-          </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-green-50 rounded-xl p-2 text-center border border-green-100">
+                <p className="text-green-700 font-black text-base leading-tight">{visitedCount}</p>
+                <p className="text-green-600 text-[9px] font-bold uppercase">Entregados</p>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-2 text-center border border-amber-100">
+                <p className="text-amber-700 font-black text-base leading-tight">{totalStops - visitedCount}</p>
+                <p className="text-amber-600 text-[9px] font-bold uppercase">Pendientes</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-2 text-center border border-gray-100">
+                <p className="text-gray-700 font-black text-base leading-tight">{totalStops}</p>
+                <p className="text-gray-500 text-[9px] font-bold uppercase">Total</p>
+              </div>
+            </div>
+          </motion.div>
         )}
 
-        <div className="absolute top-4 right-4 z-10 bg-white rounded-2xl shadow-lg p-3 border border-gray-200">
-          <p className="text-xs font-bold text-gray-700 mb-2 uppercase">Leyenda</p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-5 h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">1</div>
-              <span className="text-gray-700">Entregado</span>
+        <div className="absolute top-4 right-4 z-10 bg-white rounded-2xl shadow-lg p-3.5 border border-gray-200">
+          <p className="text-[10px] font-black text-gray-500 mb-2.5 uppercase tracking-wide">Leyenda</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5 text-xs">
+              <div className="w-6 h-6 rounded-full bg-emerald-500 border-2 border-white shadow-sm flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">✓</div>
+              <span className="text-gray-700 font-medium">Entregado</span>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-5 h-5 rounded-full bg-yellow-500 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">2</div>
-              <span className="text-gray-700">En camino</span>
+            <div className="flex items-center gap-2.5 text-xs">
+              <div className="w-6 h-6 rounded-full bg-amber-500 border-2 border-white shadow-sm flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">!</div>
+              <span className="text-gray-700 font-medium">Llegó al destino</span>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-5 h-5 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">3</div>
-              <span className="text-gray-700">Pendiente</span>
+            <div className="flex items-center gap-2.5 text-xs pt-1 mt-1 border-t border-gray-100">
+              <img src={depotLogo} alt="depósito" className="w-6 h-6 object-contain flex-shrink-0" />
+              <span className="text-gray-700 font-medium">Depósito</span>
             </div>
-            {directionsResponse && (
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-4 h-1 bg-[#D3423E]" />
-                <span className="text-gray-700">Ruta</span>
-              </div>
-            )}
           </div>
         </div>
 
