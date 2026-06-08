@@ -124,3 +124,57 @@ export const MapSkeleton = () => (
     </div>
   </div>
 );
+export const ProductTableSkeleton = () => (
+  <div className="overflow-x-auto">
+    <table className="w-full text-sm">
+      <thead className="bg-gray-200 border-b border-gray-200">
+        <tr>
+          {[...Array(7)].map((_, i) => (
+            <th key={i} className="px-4 py-3">
+              <SBox className="h-3 w-16" style={{ background: "#d1d5db" }} />
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {[...Array(8)].map((_, i) => (
+          <tr key={i} className="border-b border-gray-100" style={{ opacity: 1 - i * 0.1 }}>
+            <td className="px-4 py-3">
+              <SBox className="w-12 h-12 rounded-lg" />
+            </td>
+            <td className="px-4 py-3"><SBox className="h-4 w-40" /></td>
+            <td className="px-4 py-3"><SBox className="h-4 w-20" /></td>
+            <td className="px-4 py-3 text-center"><SBox className="h-6 w-20 rounded-full mx-auto" /></td>
+            <td className="px-4 py-3 text-center"><SBox className="h-6 w-16 rounded-full mx-auto" /></td>
+            <td className="px-4 py-3"><SBox className="h-6 w-24 rounded-full" /></td>
+            <td className="px-4 py-3"><SBox className="w-8 h-8 rounded-lg" /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+export const ProductCardsSkeleton = () => (
+  <div className="p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+    {[...Array(10)].map((_, i) => (
+      <div
+        key={i}
+        className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
+        style={{ opacity: 1 - i * 0.07 }}
+      >
+        <div className="bg-gray-50 p-3">
+          <SBox className="w-full h-32" />
+        </div>
+        <div className="p-3 space-y-2">
+          <SBox className="h-4 w-full" />
+          <SBox className="h-3 w-24" />
+          <div className="flex items-end justify-between mt-3">
+            <SBox className="h-6 w-16" />
+            <SBox className="w-9 h-9 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);

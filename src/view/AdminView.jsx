@@ -102,8 +102,7 @@ const AdminView = () => {
     const matchesSearch = !searchTerm || fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
     const matchesRegion = regionFilter === "all" || item.salesId?.region === regionFilter;
     return matchesSearch && matchesRegion;
-  })
-    .sort((a, b) => {
+  }).sort((a, b) => {
       let valA, valB;
       switch (sortBy) {
         case "name":
