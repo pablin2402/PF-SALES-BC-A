@@ -18,13 +18,11 @@ export const RouteControls = ({
 
   return (
     <>
-      {/* Zoom */}
       <div className="absolute top-4 left-4 z-10 flex flex-col bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
         <button onClick={handleZoomIn} className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 border-b border-gray-200"><FaPlus size={13} /></button>
         <button onClick={handleZoomOut} className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100"><FaMinus size={13} /></button>
       </div>
 
-      {/* Vista options */}
       <div className="absolute top-4 right-4 z-20 relative">
         <button onClick={() => setShowViewOptions(!showViewOptions)}
           className="bg-white rounded-xl shadow-xl p-3 border border-gray-200 flex items-center gap-2 hover:shadow-2xl transition-all">
@@ -57,7 +55,6 @@ export const RouteControls = ({
         )}
       </div>
 
-      {/* Legend */}
       {showLegend && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
           className={`absolute right-4 z-10 bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[210px] max-h-[55vh] overflow-y-auto ${selectedMarkers.length > 0 ? "bottom-[150px]" : "bottom-4"}`}>

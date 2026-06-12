@@ -58,7 +58,7 @@ const OrderView = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-white min-h-screen p-4 sm:p-6">
+    <div className="bg-white to-white min-h-screen p-4 sm:p-6">
       <div className="max-w-[1600px] mx-auto">
         <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">

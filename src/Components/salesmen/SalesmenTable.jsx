@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaPhone, FaMapMarkerAlt, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import { FaPhone, FaMapMarkerAlt, FaSort, FaSortUp, FaSortDown, FaChartLine } from "react-icons/fa";
 import { getInitials, getColor, REGION_LABELS } from "../../constants/salesmenConfigs";
 import { ActionsMenu } from "../../utils/Modal";
 
@@ -13,6 +13,7 @@ export const SalesmenTable = ({
   filteredAndSorted, sortBy, sortOrder, onSort,
   togglingId, requestToggle, openPasswordModal,
   onRowClick,
+  onOpenProfile,   
 }) => (
   <div className="hidden lg:block overflow-x-auto">
     <table className="w-full text-sm text-left">
@@ -85,12 +86,19 @@ export const SalesmenTable = ({
                 </label>
               </td>
               <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
-                <ActionsMenu
-                  onPassword={() => openPasswordModal(item)}
-                  onView={() => onRowClick(item)}
-                  onToggle={() => requestToggle(item)}
-                  isActive={item.active}
-                />
+                <div className="flex items-center gap-1">
+                  <button onClick={() => onOpenProfile(item)}
+                    className="p-2 text-gray-400 hover:text-[#D3423E] hover:bg-red-50 rounded-lg transition-colors"
+                    title="Ver análisis">
+                    <FaChartLine size={14} />
+                  </button>
+                  <ActionsMenu
+                    onPassword={() => openPasswordModal(item)}
+                    onView={() => onRowClick(item)}
+                    onToggle={() => requestToggle(item)}
+                    isActive={item.active}
+                  />
+                </div>
               </td>
             </motion.tr>
           ))}

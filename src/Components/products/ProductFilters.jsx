@@ -1,7 +1,7 @@
 import React from "react";
 import { FaTags, FaTimes } from "react-icons/fa";
 import { FiList, FiGrid } from "react-icons/fi";
-import TextInputFilter from "../../Components/LittleComponents/TextInputFilter";
+import TextInputFilter from "../LittleComponents/TextInputFilter";
 
 export const ProductFilters = ({
   searchTerm, setSearchTerm, selectedCategory, setSelectedCategory,

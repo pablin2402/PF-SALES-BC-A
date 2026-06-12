@@ -1,8 +1,8 @@
 import React from "react";
 import {
   FaUsers,
-  FaUser,
-  FaUserTie,
+  FaToggleOn,
+  FaToggleOff,
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -11,67 +11,88 @@ import { SkeletonStats } from "../../utils/SkeletonLoading";
 const CARDS = [
   {
     key: "total",
-    label: "Total Clientes",
+    label: "Total Vendedores",
     icon: FaUsers,
     color: "bg-slate-500",
+    filter: "all",
   },
   {
-    key: "page",
-    label: "En esta Página",
-    icon: FaUser,
-    color: "bg-blue-500",
+    key: "active",
+    label: "Activos",
+    icon: FaToggleOn,
+    color: "bg-green-500",
+    filter: "active",
   },
   {
-    key: "unassigned",
-    label: "Sin Vendedor",
-    icon: FaUserTie,
-    color: "bg-amber-500",
+    key: "inactive",
+    label: "Inactivos",
+    icon: FaToggleOff,
+    color: "bg-red-500",
+    filter: "inactive",
   },
   {
     key: "regions",
     label: "Ciudades",
     icon: FaMapMarkerAlt,
-    color: "bg-purple-500",
+    color: "bg-blue-500",
+    filter: null,
   },
 ];
 
-export const ClientsStats = ({
+export const SalesmenStats = ({
   stats,
-  salesData,
   loading,
+  salesData,
+  statusFilter,
+  setStatusFilter,
 }) => {
   if (loading && !salesData?.length) {
     return <SkeletonStats />;
   }
-
-  const values = {
-    total: stats?.total || 0,
-    page: salesData?.length || 0,
-    unassigned: stats?.unassigned || 0,
-    regions: stats?.regions || 0,
-  };
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
       {CARDS.map((card) => {
         const Icon = card.icon;
 
+        const isActive =
+          card.filter &&
+          (card.filter === "all"
+            ? statusFilter === "all"
+            : statusFilter === card.filter);
+
         return (
           <motion.div
             key={card.key}
             whileHover={{ y: -4 }}
             transition={{ duration: 0.2 }}
-            className="
+            onClick={() =>
+              card.filter &&
+              setStatusFilter(
+                isActive ? "all" : card.filter
+              )
+            }
+            className={`
               relative
               overflow-hidden
-              bg-white
               rounded-2xl
+              bg-white
               border
-              border-gray-200
+              p-5
               shadow-sm
               hover:shadow-xl
-              p-5
-            "
+              transition-all
+              ${
+                card.filter
+                  ? "cursor-pointer"
+                  : "cursor-default"
+              }
+              ${
+                isActive
+                  ? "border-[#D3423E] ring-2 ring-[#D3423E]/20"
+                  : "border-gray-200"
+              }
+            `}
           >
             <div
               className={`absolute top-0 left-0 w-full h-1 ${card.color}`}
@@ -84,8 +105,14 @@ export const ClientsStats = ({
                 </p>
 
                 <h3 className="text-3xl font-bold text-gray-900">
-                  {values[card.key]}
+                  {stats?.[card.key] || 0}
                 </h3>
+
+                {isActive && (
+                  <span className="inline-flex mt-2 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-50 text-[#D3423E] border border-red-200">
+                    Filtro activo
+                  </span>
+                )}
               </div>
 
               <div

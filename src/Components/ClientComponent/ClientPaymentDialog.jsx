@@ -3,73 +3,51 @@ import axios from 'axios';
 import { API_URL, CONTRACT_ABI, CONTRACT_ADDRESS } from '../../config';
 import { ethers } from 'ethers';
 import { QRCodeCanvas } from "qrcode.react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaTimes, FaWallet, FaMoneyBillWave, FaCopy, FaCheckCircle, FaExclamationTriangle, FaSync, FaEdit, FaExternalLinkAlt, FaCamera, FaTrash } from "react-icons/fa";
 
 const NETWORKS = {
-  polygon: {
-    name: 'Polygon',
-    symbol: 'POL',
-    color: '#8247E5',
-    estimatedFee: '~$0.01 USD',
-    description: 'Recomendado: Comisiones bajas y rápido',
-    explorerUrl: 'https://polygonscan.com/tx/',
-    chainId: 137,
-    chainIdHex: '0x89',
-  },
-  ethereum: {
-    name: 'Ethereum',
-    symbol: 'ETH',
-    color: '#627EEA',
-    estimatedFee: '~$5 - $30 USD',
-    description: 'Red principal, comisiones más altas',
-    explorerUrl: 'https://etherscan.io/tx/',
-    chainId: 1,
-    chainIdHex: '0x1',
-  },
-  bsc: {
-    name: 'BNB Chain',
-    symbol: 'BNB',
-    color: '#F0B90B',
-    estimatedFee: '~$0.30 USD',
-    description: 'Comisiones bajas, alta liquidez',
-    explorerUrl: 'https://bscscan.com/tx/',
-    chainId: 56,
-    chainIdHex: '0x38',
-  }
+  polygon: { name: 'Polygon', symbol: 'POL', color: '#8247E5', estimatedFee: '~$0.01', description: 'Recomendado', explorerUrl: 'https://polygonscan.com/tx/', chainId: 137, chainIdHex: '0x89' },
+  ethereum: { name: 'Ethereum', symbol: 'ETH', color: '#627EEA', estimatedFee: '~$5-30', description: 'Red principal', explorerUrl: 'https://etherscan.io/tx/', chainId: 1, chainIdHex: '0x1' },
+  bsc: { name: 'BNB Chain', symbol: 'BNB', color: '#F0B90B', estimatedFee: '~$0.30', description: 'Alta liquidez', explorerUrl: 'https://bscscan.com/tx/', chainId: 56, chainIdHex: '0x38' },
 };
 
-const PAYMENT_METHODS = {
-  cash: { name: 'Efectivo', icon: '💵', description: 'Pago en efectivo' },
-  transfer: { name: 'Transferencia', icon: '🏦', description: 'Transferencia bancaria' },
-  qr: { name: 'QR', icon: '📱', description: 'Pago con código QR' },
-  deposit: { name: 'Depósito', icon: '🏧', description: 'Depósito bancario' }
-};
+const PAY_TYPES = [
+  { key: 'cash', label: 'Efectivo', icon: '💵' },
+  { key: 'transfer', label: 'Transferencia', icon: '🏦' },
+  { key: 'qr', label: 'QR', icon: '📱' },
+  { key: 'deposit', label: 'Depósito', icon: '🏧' },
+];
 
-const MIN_USDT_AMOUNT = 10;
-const USD_TO_BS_OFFICIAL = 6.96;
+const MIN_USDT = 10;
+const USD_TO_BS = 6.96;
 const POLYGON_CHAIN_ID = 137;
+
+const RPC = { polygon: 'https://polygon-bor-rpc.publicnode.com', ethereum: 'https://ethereum-rpc.publicnode.com', bsc: 'https://bsc-rpc.publicnode.com' };
+const USDT_ADDR = { polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7', bsc: '0x55d398326f99059fF775485246999027B3197955' };
+const USDT_DEC = { polygon: 6, ethereum: 6, bsc: 18 };
+const ERC20_ABI = ["event Transfer(address indexed from, address indexed to, uint256 value)", "function balanceOf(address account) view returns (uint256)"];
 
 const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, salesID, totalGeneral }) => {
   const [paymentData, setPaymentData] = useState({ amount: '', payer: '' });
-  const id_user = localStorage.getItem("id_user");
   const [amountError, setAmountError] = useState('');
   const total = totalGeneral - totalPaid;
   const user = localStorage.getItem("id_owner");
   const token = localStorage.getItem("token");
+  const id_user = localStorage.getItem("id_user");
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [savingText, setSavingText] = useState("Guardando");
   const [blockchainSuccess, setBlockchainSuccess] = useState(false);
   const [isBlockchainProcessing, setIsBlockchainProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("normal");
+  const [normalPaymentType, setNormalPaymentType] = useState('cash');
   const [order, setOrder] = useState(null);
   const [, setPaid] = useState(false);
   const [, setPayment] = useState(null);
-
-  const [normalPaymentType, setNormalPaymentType] = useState('cash');
 
   const [selectedNetwork, setSelectedNetwork] = useState('polygon');
   const [exchangeRate, setExchangeRate] = useState(null);
@@ -77,932 +55,538 @@ const ClientPaymentDialog = ({ onClose, onSave, orderId, totalPaid, idClient, sa
   const [rateUpdatedAt, setRateUpdatedAt] = useState(null);
   const [manualRateMode, setManualRateMode] = useState(false);
   const [manualRate, setManualRate] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const [txStatus, setTxStatus] = useState('waiting');
   const [txHash, setTxHash] = useState(null);
   const [txConfirmations, setTxConfirmations] = useState(0);
   const [txStartTime, setTxStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const pollingIntervalRef = useRef(null);
-  const elapsedIntervalRef = useRef(null);
-
   const [initialBalance, setInitialBalance] = useState(null);
+  const pollingRef = useRef(null);
+  const elapsedRef = useRef(null);
+
+  const [rateData, setRateData] = useState(null);
 
   const fetchExchangeRate = async () => {
     setLoadingRate(true);
     try {
-      const buyResponse = await axios.post(
-        'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
-        { fiat: 'BOB', page: 1, rows: 10, tradeType: 'BUY', asset: 'USDT', countries: [], payTypes: [] }
-      );
-      const sellResponse = await axios.post(
-        'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',
-        { fiat: 'BOB', page: 1, rows: 10, tradeType: 'SELL', asset: 'USDT', countries: [], payTypes: [] }
-      );
-
-      const buyPrices = buyResponse.data?.data?.map(item => parseFloat(item.adv.price)) || [];
-      const sellPrices = sellResponse.data?.data?.map(item => parseFloat(item.adv.price)) || [];
-      const allPrices = [...buyPrices, ...sellPrices].sort((a, b) => a - b);
-
-      if (allPrices.length === 0) throw new Error('No hay precios disponibles');
-
-      const trimCount = Math.floor(allPrices.length * 0.2);
-      const trimmedPrices = allPrices.slice(trimCount, allPrices.length - trimCount);
-      const avgPrice = trimmedPrices.reduce((a, b) => a + b, 0) / trimmedPrices.length;
-
-      setExchangeRate(avgPrice);
-      setRateUpdatedAt(new Date());
-    } catch (error) {
-      console.error('Error al obtener tipo de cambio:', error);
-      setExchangeRate(9.5);
-    } finally {
-      setLoadingRate(false);
-    }
-  };
-
-  useEffect(() => {
-    if (paymentMethod === 'crypto' && !exchangeRate) {
-      fetchExchangeRate();
-    }
-  }, [paymentMethod, exchangeRate]);
-
-  const formatElapsedTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const applyManualRate = () => {
-    const rate = parseFloat(manualRate);
-    if (rate > 0) {
-      setExchangeRate(rate);
-      setRateUpdatedAt(new Date());
-      setManualRateMode(false);
-      setManualRate('');
-    }
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
-    }
-  };
-
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-  };
-
-  const uploadImage = async () => {
-    const formData = new FormData();
-    formData.append("image", imageFile);
-    const res = await axios.post(API_URL + "/whatsapp/upload/image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res.data.imageUrl;
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "amount") {
-      const numericValue = parseFloat(value);
-      if (numericValue > total) {
-        setAmountError(`El monto no puede ser mayor a Bs. ${total.toFixed(2)}`);
-      } else {
-        setAmountError('');
-      }
-    }
-    setPaymentData({ ...paymentData, [name]: value });
-  };
-
-  const toCents = (value) => {
-    const n = Number(value);
-    if (Number.isNaN(n)) return 0;
-    return Math.round(n * 100);
-  };
-
-  const amountInUSDTNumber = paymentData.amount && exchangeRate
-    ? parseFloat(paymentData.amount) / exchangeRate
-    : 0;
-  const amountInUSDT = amountInUSDTNumber.toFixed(2);
-  const totalInUSDT = exchangeRate ? (total / exchangeRate).toFixed(2) : '0.00';
-  const totalInUSDOfficial = (total / USD_TO_BS_OFFICIAL).toFixed(2);
-  const remainingAfterPayment = paymentData.amount
-    ? (total - parseFloat(paymentData.amount)).toFixed(2)
-    : total.toFixed(2);
-
-  const isAmountTooLow = paymentMethod === 'crypto' &&
-    paymentData.amount &&
-    amountInUSDTNumber < MIN_USDT_AMOUNT;
-  const minimumBsRequired = exchangeRate
-    ? (MIN_USDT_AMOUNT * exchangeRate).toFixed(2)
-    : null;
-
-  useEffect(() => {
-    if (!order || txStatus === 'confirmed' || txStatus === 'failed') return;
-
-    if (!txStartTime) setTxStartTime(Date.now());
-
-    elapsedIntervalRef.current = setInterval(() => {
-      setElapsedTime(prev => prev + 1);
-    }, 1000);
-
-    const RPC_URLS = {
-      polygon: 'https://polygon-bor-rpc.publicnode.com',
-      ethereum: 'https://ethereum-rpc.publicnode.com',
-      bsc: 'https://bsc-rpc.publicnode.com'
-    };
-    const USDT_ADDRESSES = {
-      polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-      ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-      bsc: '0x55d398326f99059fF775485246999027B3197955'
-    };
-    const USDT_DECIMALS = { polygon: 6, ethereum: 6, bsc: 18 };
-
-    const checkPayment = async () => {
-      try {
-        if (initialBalance === null) return;
-
-        const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
-        const usdtAddress = USDT_ADDRESSES[selectedNetwork];
-        const decimals = USDT_DECIMALS[selectedNetwork];
-        const targetAddress = order.address;
-
-        const ERC20_ABI = [
-          "event Transfer(address indexed from, address indexed to, uint256 value)",
-          "function balanceOf(address account) view returns (uint256)"
-        ];
-
-        const usdtContract = new ethers.Contract(usdtAddress, ERC20_ABI, provider);
-
-        const usdtBalance = await usdtContract.balanceOf(targetAddress);
-        const currentBalance = Number(usdtBalance) / Math.pow(10, decimals);
-        const expectedAmount = parseFloat(amountInUSDT);
-        const tolerance = expectedAmount * 0.05;
-
-        const amountReceived = currentBalance - initialBalance;
-        const isPaymentReceived = amountReceived >= (expectedAmount - tolerance);
-
-        if (isPaymentReceived) {
-          const currentBlock = await provider.getBlockNumber();
-          const fromBlock = currentBlock - 5000;
-
-          const filter = usdtContract.filters.Transfer(null, targetAddress);
-          const events = await usdtContract.queryFilter(filter, fromBlock, currentBlock);
-
-          if (events.length > 0) {
-            const latestEvent = events[events.length - 1];
-            const confirmations = currentBlock - latestEvent.blockNumber;
-
-            setTxHash(latestEvent.transactionHash);
-
-            if (confirmations >= 12) {
-              setTxStatus('confirmed');
-              setTxConfirmations(confirmations);
-              setPaid(true);
-              if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-              if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
-            } else if (confirmations >= 1) {
-              setTxStatus('confirming');
-              setTxConfirmations(confirmations);
-            } else {
-              setTxStatus('detected');
-            }
-          } else {
-            setTxStatus('confirmed');
-            setPaid(true);
-            if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-            if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
-          }
-        } else if (amountReceived > 0 && amountReceived < (expectedAmount - tolerance)) {
-          setTxStatus('waiting');
-        }
-      } catch (error) {
-        console.error('Error verificando pago:', error);
-      }
-    };
-
-    checkPayment();
-    pollingIntervalRef.current = setInterval(checkPayment, 8000);
-
-    return () => {
-      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-      if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order, txStatus, selectedNetwork, initialBalance, amountInUSDT]);
-
-  const ensurePolygonNetwork = async () => {
-    if (!window.ethereum) throw new Error("MetaMask no está instalado");
-
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const network = await provider.getNetwork();
-
-    if (Number(network.chainId) !== POLYGON_CHAIN_ID) {
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x89" }],
-        });
-      } catch (switchError) {
-        if (switchError.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: "0x89",
-              chainName: "Polygon Mainnet",
-              nativeCurrency: { name: "POL", symbol: "POL", decimals: 18 },
-              rpcUrls: ["https://polygon-rpc.com"],
-              blockExplorerUrls: ["https://polygonscan.com"],
-            }],
-          });
-        } else {
-          throw new Error("Cambia a Polygon Mainnet para continuar");
-        }
-      }
-    }
-
-    const updatedProvider = new ethers.BrowserProvider(window.ethereum);
-    return await updatedProvider.getSigner();
-  };
-
-  const sendPaymentToBlockchain = async (registryOrderId, amount, payer) => {
-    const signer = await ensurePolygonNetwork();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-    setIsBlockchainProcessing(true);
-    setStatus("Registrando pago en Polygon...");
-    const amountCents = toCents(amount);
-
-    const tx = await contract.registerPayment(registryOrderId, amountCents, payer);
-    setStatus("Esperando confirmación on-chain...");
-    const receipt = await tx.wait();
-
-    setStatus("Registro guardado en blockchain");
-    setBlockchainSuccess(true);
-
-    return {
-      transactionHash: receipt.hash,
-      blockNumber: receipt.blockNumber,
-    };
-  };
-
-  const handleSavePayment = async () => {
-    let dotInterval;
-    try {
-      setIsSaving(true);
-      setSaveSuccess(false);
-      setSavingText("Guardando");
-
-      let dots = 0;
-      dotInterval = setInterval(() => {
-        dots = (dots + 1) % 4;
-        setSavingText("Guardando" + ".".repeat(dots));
-      }, 500);
-
-      let imageUrl = "";
-      if (imageFile) {
-        imageUrl = await uploadImage();
-        if (!imageUrl || typeof imageUrl !== "string" || imageUrl === "null") {
-          console.error("No se pudo obtener la URL de la imagen");
-          clearInterval(dotInterval);
-          setIsSaving(false);
-          return;
-        }
-      }
-
-      let blockchainTxHash = null;
-      let blockchainBlock = null;
-
-      try {
-        const result = await sendPaymentToBlockchain(
-          String(orderId),
-          paymentData.amount,
-          paymentData.payer
-        );
-        blockchainTxHash = result.transactionHash;
-        blockchainBlock = result.blockNumber;
-      } catch (err) {
-        console.error("Error en blockchain:", err);
-        setStatus("Error blockchain: " + err.message);
-        clearInterval(dotInterval);
-        setIsSaving(false);
-        setIsBlockchainProcessing(false);
-        return;
-      }
-
-      const jsonData = {
-        saleImage: imageUrl,
-        total: paymentData.amount,
-        note: paymentData.payer,
-        orderId: orderId,
-        numberOrden: "",
-        paymentStatus: "paid",
-        id_client: idClient,
-        sales_id: salesID,
-        delivery_id: null,
-        id_owner: user,
-        paymentType: paymentMethod === 'normal' ? normalPaymentType : 'crypto',
-        network: paymentMethod === 'crypto' ? selectedNetwork : 'polygon',
-        txHash: blockchainTxHash,
-        blockNumber: blockchainBlock,
-        contractAddress: CONTRACT_ADDRESS,
-      };
-
-      const orderResponse = await Promise.race([
-        axios.post(API_URL + "/whatsapp/order/pay", jsonData, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 30000))
-      ]);
-
-      if (orderResponse.status === 200) {
-        onSave();
-        setPaymentData({ amount: '', payer: '' });
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(async (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            try {
-              await axios.post(API_URL + "/whatsapp/order/track", {
-                orderId,
-                eventType: "Pago Ingresado",
-                triggeredBySalesman: id_user,
-                triggeredByDelivery: "",
-                triggeredByUser: "",
-                location: { lat, lng }
-              }, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-            } catch (error) {
-              console.error("Error al enviar evento de orden:", error);
-            }
-          }, (error) => {
-            console.error("No se pudo obtener la ubicación:", error);
-          });
-        }
-
-        clearInterval(dotInterval);
-        setSaveSuccess(true);
-        setSavingText("Guardado");
-
-        setTimeout(() => {
-          setIsSaving(false);
-          setSaveSuccess(false);
-          setIsBlockchainProcessing(false);
-          setBlockchainSuccess(false);
-          setStatus("");
-          setSavingText("Guardando");
-          onClose();
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Error al registrar el pago", error);
-      clearInterval(dotInterval);
-      setIsSaving(false);
-      setIsBlockchainProcessing(false);
-      setSavingText("Guardando");
-    }
-  };
-
-  const createPayment = async () => {
-    try {
-      const payload = { amount: amountInUSDT, network: selectedNetwork };
-      const response = await axios.post(API_URL + "/whatsapp/create", payload, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await axios.post(API_URL + "/whatsapp/exchange-rate", {}, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      const newOrder = response.data || {};
-
-      const RPC_URLS = {
-        polygon: 'https://polygon-bor-rpc.publicnode.com',
-        ethereum: 'https://ethereum-rpc.publicnode.com',
-        bsc: 'https://bsc-rpc.publicnode.com'
-      };
-      const USDT_ADDRESSES = {
-        polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-        ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-        bsc: '0x55d398326f99059fF775485246999027B3197955'
-      };
-      const USDT_DECIMALS = { polygon: 6, ethereum: 6, bsc: 18 };
-
-      if (newOrder.address) {
-        const provider = new ethers.JsonRpcProvider(RPC_URLS[selectedNetwork]);
-        const usdtContract = new ethers.Contract(
-          USDT_ADDRESSES[selectedNetwork],
-          ["function balanceOf(address account) view returns (uint256)"],
-          provider
-        );
-        const balance = await usdtContract.balanceOf(newOrder.address);
-        const balanceFormatted = Number(balance) / Math.pow(10, USDT_DECIMALS[selectedNetwork]);
-
-        setInitialBalance(balanceFormatted);
-      }
-
-      setOrder(newOrder);
-      setPayment(response.data);
-      setTxStatus('waiting');
-      setElapsedTime(0);
-      setTxHash(null);
-      setTxStartTime(Date.now());
-    } catch (error) {
-      console.error("Error al crear pago:", error);
-    }
+      const data = res.data;
+      setRateData(data);
+      const rate = data?.recommended;
+      if (rate && rate > 5) { setExchangeRate(rate); setRateUpdatedAt(new Date()); }
+      else throw new Error();
+    } catch (e) {
+      setExchangeRate(9.50);
+      setManualRateMode(true);
+      setManualRate("9.50");
+      setRateUpdatedAt(new Date());
+    } finally { setLoadingRate(false); }
   };
 
-  const qrValue = order?.address ? String(order.address) : "";
+  const ExchangeRateWidget = () => {
+    if (loadingRate) return (
+      <div className="mt-3 pt-3 border-t border-gray-200 space-y-2 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="h-3 w-32 bg-gray-200 rounded" />
+          <div className="h-3 w-20 bg-gray-200 rounded" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[0, 1].map(i => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-2.5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-4 rounded-full bg-gray-200" />
+                <div className="h-3 w-16 bg-gray-200 rounded" />
+              </div>
+              <div className="flex justify-between">
+                <div className="space-y-1"><div className="h-2 w-12 bg-gray-200 rounded" /><div className="h-4 w-14 bg-gray-200 rounded" /></div>
+                <div className="space-y-1 flex flex-col items-end"><div className="h-2 w-14 bg-gray-200 rounded" /><div className="h-5 w-16 bg-green-100 rounded" /></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="h-8 bg-green-50 rounded-lg border border-green-100" />
+        <p className="text-[10px] text-gray-400 text-center font-medium">Consultando Bybit y Binance...</p>
+      </div>
+    );
 
-  const TransactionStatus = () => {
-    const statusConfig = {
-      waiting: { icon: '⏳', title: 'Esperando pago', description: 'Envía el monto exacto a la dirección mostrada', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', textColor: 'text-yellow-800' },
-      detected: { icon: '🔍', title: 'Pago detectado', description: 'Tu transacción está en la red, esperando confirmaciones', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-800' },
-      confirming: { icon: '⚙️', title: 'Confirmando', description: `${txConfirmations} confirmaciones recibidas`, bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-800' },
-      confirmed: { icon: '✅', title: 'Pago confirmado', description: 'La transacción se completó exitosamente', bgColor: 'bg-green-50', borderColor: 'border-green-300', textColor: 'text-green-800' },
-      failed: { icon: '❌', title: 'Transacción fallida', description: 'Hubo un problema con la transacción', bgColor: 'bg-red-50', borderColor: 'border-red-300', textColor: 'text-red-800' }
-    };
-
-    const config = statusConfig[txStatus];
-    const isAnimated = txStatus === 'waiting' || txStatus === 'detected' || txStatus === 'confirming';
-
+    if (!rateData && !exchangeRate) return null;
+    const bybit = rateData?.bybit;
+    const binance = rateData?.binance;
     return (
-      <div className={`${config.bgColor} ${config.borderColor} border-2 rounded-xl p-4 mb-4`}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span className={`text-2xl ${isAnimated ? 'animate-pulse' : ''}`}>{config.icon}</span>
-            <div>
-              <p className={`font-bold ${config.textColor}`}>{config.title}</p>
-              <p className={`text-xs ${config.textColor} opacity-80`}>{config.description}</p>
-            </div>
+      <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Tipo de cambio P2P</p>
+          <div className="flex items-center gap-2">
+            {!manualRateMode ? (
+              <>
+                <button onClick={fetchExchangeRate} disabled={loadingRate} className="text-[10px] text-blue-600 hover:text-blue-800 flex items-center gap-1 font-bold">
+                  <FaSync size={8} className={loadingRate ? "animate-spin" : ""} /> {loadingRate ? "..." : "Actualizar"}
+                </button>
+                <button onClick={() => { setManualRateMode(true); setManualRate(exchangeRate?.toFixed(2) || "9.50"); }} className="text-[10px] text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                  <FaEdit size={8} /> Editar
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-gray-500">1 USDT =</span>
+                <input type="number" value={manualRate} onChange={e => setManualRate(e.target.value)} step="0.01"
+                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded-lg text-gray-900 focus:border-[#D3423E] focus:outline-none" />
+                <button onClick={() => { const r = parseFloat(manualRate); if (r > 0) { setExchangeRate(r); setRateUpdatedAt(new Date()); setManualRateMode(false); } }}
+                  className="text-[10px] bg-green-600 text-white px-2 py-1 rounded-lg font-bold">OK</button>
+                <button onClick={() => setManualRateMode(false)} className="text-[10px] text-gray-500">✕</button>
+              </div>
+            )}
           </div>
-          {isAnimated && (
-            <div className="text-right">
-              <p className={`text-xs ${config.textColor} opacity-70`}>Tiempo</p>
-              <p className={`font-mono font-bold ${config.textColor}`}>{formatElapsedTime(elapsedTime)}</p>
-            </div>
-          )}
         </div>
 
-        <div className="flex items-center gap-1 mb-3">
-          {['waiting', 'detected', 'confirming', 'confirmed'].map((step, idx) => {
-            const stepIndex = ['waiting', 'detected', 'confirming', 'confirmed'].indexOf(txStatus);
-            const isActive = idx <= stepIndex;
-            return (
-              <div
-                key={step}
-                className="flex-1 h-1.5 rounded-full"
-                style={{ backgroundColor: isActive ? (txStatus === 'confirmed' ? '#10b981' : '#3b82f6') : '#d1d5db' }}
-              />
-            );
-          })}
-        </div>
-
-        {txHash && (
-          <div className="bg-white rounded-lg p-2 mt-2">
-            <p className={`text-xs ${config.textColor} font-bold mb-1`}>Hash de transacción:</p>
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-xs text-gray-700 font-mono truncate flex-1">{txHash}</p>
-              <a
-                href={NETWORKS[selectedNetwork].explorerUrl + txHash}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline whitespace-nowrap font-bold"
-              >
-                Ver en explorador →
-              </a>
-            </div>
+        {!manualRateMode && (bybit || binance) && (
+          <div className="grid grid-cols-2 gap-2">
+            {bybit && (bybit.buy || bybit.sell) && (
+              <div className="bg-white rounded-xl border border-gray-200 p-2.5">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="w-4 h-4 rounded-full bg-[#F7A600] flex items-center justify-center">
+                    <span className="text-[7px] font-black text-white">B</span>
+                  </div>
+                  <span className="text-[10px] font-black text-gray-700">Bybit P2P</span>
+                </div>
+                <div className="flex justify-between">
+                  {bybit.buy && (
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-bold">COMPRA</p>
+                      <p className="text-xs font-black text-gray-600">Bs. {bybit.buy}</p>
+                    </div>
+                  )}
+                  {bybit.sell && (
+                    <div className="text-right">
+                      <p className="text-[9px] text-green-600 font-bold">VENTA ★</p>
+                      <p className="text-sm font-black text-green-700">Bs. {bybit.sell}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {binance && (binance.buy || binance.sell) && (
+              <div className="bg-white rounded-xl border border-gray-200 p-2.5">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="w-4 h-4 rounded-full bg-[#F0B90B] flex items-center justify-center">
+                    <span className="text-[7px] font-black text-black">₿</span>
+                  </div>
+                  <span className="text-[10px] font-black text-gray-700">Binance P2P</span>
+                </div>
+                <div className="flex justify-between">
+                  {binance.buy && (
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-bold">COMPRA</p>
+                      <p className="text-xs font-black text-gray-600">Bs. {binance.buy}</p>
+                    </div>
+                  )}
+                  {binance.sell && (
+                    <div className="text-right">
+                      <p className="text-[9px] text-green-600 font-bold">VENTA ★</p>
+                      <p className="text-sm font-black text-green-700">Bs. {binance.sell}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {isAnimated && (
-          <div className="flex justify-center mt-3">
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
+        {!manualRateMode && (
+          <div className="bg-green-50 rounded-lg px-3 py-2 border border-green-200 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <FaCheckCircle className="text-green-600" size={10} />
+              <span className="text-[10px] font-bold text-green-800">TC aplicado (venta)</span>
             </div>
+            <span className="text-sm font-black text-green-700">1 USDT = Bs. {exchangeRate?.toFixed(2)}</span>
           </div>
+        )}
+
+        {rateUpdatedAt && !manualRateMode && (
+          <p className="text-[9px] text-gray-400 text-right">Actualizado: {rateUpdatedAt.toLocaleTimeString()}</p>
         )}
       </div>
     );
   };
 
-  return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 px-4 sm:px-6">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[95vh] overflow-y-auto">
-        <h3 className="text-2xl text-left text-gray-900 font-bold mb-4">Registrar Pago</h3>
+  useEffect(() => { if (paymentMethod === 'crypto' && !exchangeRate) fetchExchangeRate(); }, [paymentMethod, exchangeRate]);
 
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 mb-4 border border-gray-200">
-          <div className="flex justify-between items-start">
+  const amountUSDT = paymentData.amount && exchangeRate ? parseFloat(paymentData.amount) / exchangeRate : 0;
+  const amountUSDTStr = amountUSDT.toFixed(2);
+  const totalUSDT = exchangeRate ? (total / exchangeRate).toFixed(2) : '0.00';
+  const remaining = paymentData.amount ? (total - parseFloat(paymentData.amount)).toFixed(2) : total.toFixed(2);
+  const isTooLow = paymentMethod === 'crypto' && paymentData.amount && amountUSDT < MIN_USDT;
+  const minBs = exchangeRate ? (MIN_USDT * exchangeRate).toFixed(2) : null;
+
+  const handleInput = (e) => {
+    const { name, value } = e.target;
+    if (name === "amount" && parseFloat(value) > total) setAmountError(`Máximo Bs. ${total.toFixed(2)}`);
+    else setAmountError('');
+    setPaymentData(p => ({ ...p, [name]: value }));
+  };
+
+  const handleFile = (e) => {
+    const f = e.target.files[0]; setImageFile(f);
+    if (f) { const r = new FileReader(); r.onloadend = () => setImagePreview(r.result); r.readAsDataURL(f); }
+    else setImagePreview(null);
+  };
+
+  const copyAddr = () => { navigator.clipboard.writeText(order?.address || ""); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+
+  const toCents = (v) => { const n = Number(v); return Number.isNaN(n) ? 0 : Math.round(n * 100); };
+
+  const ensurePolygon = async () => {
+    if (!window.ethereum) throw new Error("MetaMask no está instalado");
+    const p = new ethers.BrowserProvider(window.ethereum);
+    const net = await p.getNetwork();
+    if (Number(net.chainId) !== POLYGON_CHAIN_ID) {
+      try { await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x89" }] }); }
+      catch (e) {
+        if (e.code === 4902) await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x89", chainName: "Polygon Mainnet", nativeCurrency: { name: "POL", symbol: "POL", decimals: 18 }, rpcUrls: ["https://polygon-rpc.com"], blockExplorerUrls: ["https://polygonscan.com"] }] });
+        else throw new Error("Cambia a Polygon");
+      }
+    }
+    return await (new ethers.BrowserProvider(window.ethereum)).getSigner();
+  };
+
+  const sendToBlockchain = async (regId, amount, payer) => {
+    const signer = await ensurePolygon();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+    setIsBlockchainProcessing(true); setStatus("Registrando en Polygon...");
+    const tx = await contract.registerPayment(regId, toCents(amount), payer);
+    setStatus("Esperando confirmación...");
+    const receipt = await tx.wait();
+    setStatus("Guardado en blockchain"); setBlockchainSuccess(true);
+    return { transactionHash: receipt.hash, blockNumber: receipt.blockNumber };
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true); setSaveSuccess(false);
+      let imageUrl = "";
+      if (imageFile) {
+        const fd = new FormData(); fd.append("image", imageFile);
+        const r = await axios.post(API_URL + "/whatsapp/upload/image", fd, { headers: { "Content-Type": "multipart/form-data" } });
+        imageUrl = r.data.imageUrl;
+      }
+      let bcHash = null, bcBlock = null;
+      try {
+        const r = await sendToBlockchain(String(orderId), paymentData.amount, paymentData.payer);
+        bcHash = r.transactionHash; bcBlock = r.blockNumber;
+      } catch (err) { setStatus("Error: " + err.message); setIsSaving(false); setIsBlockchainProcessing(false); return; }
+
+      const res = await axios.post(API_URL + "/whatsapp/order/pay", {
+        saleImage: imageUrl, total: paymentData.amount, note: paymentData.payer,
+        orderId, numberOrden: "", paymentStatus: "paid", id_client: idClient,
+        sales_id: salesID, delivery_id: null, id_owner: user,
+        paymentType: paymentMethod === 'normal' ? normalPaymentType : 'crypto',
+        network: paymentMethod === 'crypto' ? selectedNetwork : 'polygon',
+        txHash: bcHash, blockNumber: bcBlock, contractAddress: CONTRACT_ADDRESS,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      if (res.status === 200) {
+        onSave(); setPaymentData({ amount: '', payer: '' });
+        if (navigator.geolocation) navigator.geolocation.getCurrentPosition(async (pos) => {
+          await axios.post(API_URL + "/whatsapp/order/track", {
+            orderId, eventType: "Pago Ingresado", triggeredBySalesman: id_user,
+            triggeredByDelivery: "", triggeredByUser: "", location: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+          }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+        });
+        setSaveSuccess(true);
+        setTimeout(() => { setIsSaving(false); setSaveSuccess(false); setIsBlockchainProcessing(false); setBlockchainSuccess(false); setStatus(""); onClose(); }, 2000);
+      }
+    } catch (e) { setIsSaving(false); setIsBlockchainProcessing(false); }
+  };
+
+  const createPayment = async () => {
+    try {
+      const res = await axios.post(API_URL + "/whatsapp/create", { amount: amountUSDTStr, network: selectedNetwork }, { headers: { Authorization: `Bearer ${token}` } });
+      const newOrder = res.data || {};
+      if (newOrder.address) {
+        const prov = new ethers.JsonRpcProvider(RPC[selectedNetwork]);
+        const c = new ethers.Contract(USDT_ADDR[selectedNetwork], ERC20_ABI, prov);
+        const bal = await c.balanceOf(newOrder.address);
+        setInitialBalance(Number(bal) / Math.pow(10, USDT_DEC[selectedNetwork]));
+      }
+      setOrder(newOrder); setPayment(res.data); setTxStatus('waiting'); setElapsedTime(0); setTxHash(null); setTxStartTime(Date.now());
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => {
+    if (!order || txStatus === 'confirmed' || txStatus === 'failed') return;
+    if (!txStartTime) setTxStartTime(Date.now());
+    elapsedRef.current = setInterval(() => setElapsedTime(p => p + 1), 1000);
+    const check = async () => {
+      try {
+        if (initialBalance === null) return;
+        const prov = new ethers.JsonRpcProvider(RPC[selectedNetwork]);
+        const c = new ethers.Contract(USDT_ADDR[selectedNetwork], ERC20_ABI, prov);
+        const bal = await c.balanceOf(order.address);
+        const cur = Number(bal) / Math.pow(10, USDT_DEC[selectedNetwork]);
+        const expected = parseFloat(amountUSDTStr);
+        const received = cur - initialBalance;
+        if (received >= expected * 0.95) {
+          const block = await prov.getBlockNumber();
+          const events = await c.queryFilter(c.filters.Transfer(null, order.address), block - 5000, block);
+          if (events.length > 0) {
+            const last = events[events.length - 1];
+            const conf = block - last.blockNumber;
+            setTxHash(last.transactionHash);
+            if (conf >= 12) { setTxStatus('confirmed'); setTxConfirmations(conf); setPaid(true); clearInterval(pollingRef.current); clearInterval(elapsedRef.current); }
+            else if (conf >= 1) { setTxStatus('confirming'); setTxConfirmations(conf); }
+            else setTxStatus('detected');
+          } else { setTxStatus('confirmed'); setPaid(true); clearInterval(pollingRef.current); clearInterval(elapsedRef.current); }
+        }
+      } catch (e) {}
+    };
+    check(); pollingRef.current = setInterval(check, 8000);
+    return () => { clearInterval(pollingRef.current); clearInterval(elapsedRef.current); };
+  }, [order, txStatus, selectedNetwork, initialBalance, amountUSDTStr]);
+
+  const canSaveNormal = paymentData.amount && paymentData.payer && !amountError && !isSaving;
+  const canSaveCrypto = canSaveNormal && !isTooLow && order && txStatus === 'confirmed';
+  const canSave = paymentMethod === 'normal' ? canSaveNormal : canSaveCrypto;
+
+  const fmtTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+
+          <div className="p-5 bg-gradient-to-r from-[#D3423E] to-red-600 text-white flex items-center justify-between flex-shrink-0">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Saldo por pagar</p>
-              <p className="text-2xl font-bold text-gray-900">Bs. {total.toFixed(2)}</p>
-              {paymentMethod === 'normal' && (
-                <p className="text-xs text-gray-600 mt-1">
-                  ≈ ${totalInUSDOfficial} USD <span className="text-gray-400">(oficial)</span>
-                </p>
-              )}
+              <h3 className="text-lg font-black flex items-center gap-2">
+                {paymentMethod === 'crypto' ? <><FaWallet /> Pago Blockchain</> : <><FaMoneyBillWave /> Registrar Pago</>}
+              </h3>
+              <p className="text-xs text-red-100 font-medium mt-0.5">Pedido #{orderId?.slice(-6)}</p>
             </div>
-            {paymentData.amount && !amountError && (
-              <div className="text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Quedará</p>
-                <p className={`text-xl font-bold ${parseFloat(remainingAfterPayment) === 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                  Bs. {remainingAfterPayment}
-                </p>
-              </div>
-            )}
+            <button onClick={onClose} className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center"><FaTimes /></button>
           </div>
 
-          {paymentMethod === 'crypto' && (
-            <div className="mt-3 pt-3 border-t border-gray-300">
-              {loadingRate ? (
-                <p className="text-sm text-gray-500">Obteniendo tipo de cambio...</p>
-              ) : exchangeRate && (
-                <>
-                  <p className="text-sm text-gray-700">
-                    Equivalente: <span className="font-bold text-green-700">≈ {totalInUSDT} USDT</span>
-                  </p>
-
-                  {!manualRateMode ? (
-                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <p className="text-xs text-gray-500">1 USDT = Bs. {exchangeRate.toFixed(2)}</p>
-                      <button onClick={fetchExchangeRate} className="text-xs text-blue-600 hover:underline">Actualizar</button>
-                      <span className="text-xs text-gray-400">|</span>
-                      <button
-                        onClick={() => { setManualRateMode(true); setManualRate(exchangeRate.toFixed(2)); }}
-                        className="text-xs text-blue-600 hover:underline"
-                      >Editar manualmente</button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="text-xs text-gray-700">1 USDT = Bs.</span>
-                      <input
-                        type="number"
-                        value={manualRate}
-                        onChange={(e) => setManualRate(e.target.value)}
-                        step="0.01"
-                        className="w-24 px-2 py-1 text-sm border border-gray-300 rounded text-gray-900"
-                        placeholder="9.50"
-                      />
-                      <button onClick={applyManualRate} className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Aplicar</button>
-                      <button onClick={() => { setManualRateMode(false); setManualRate(''); }} className="text-xs text-gray-600 hover:underline">Cancelar</button>
-                    </div>
-                  )}
-
-                  {rateUpdatedAt && !manualRateMode && (
-                    <p className="text-xs text-gray-400 mt-1">Actualizado: {rateUpdatedAt.toLocaleTimeString()}</p>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-x-2 mb-4">
-          <button
-            className={`flex-1 px-4 py-3 rounded-xl font-bold text-center transition-all ${paymentMethod === 'normal' ? 'bg-[#D3423E] text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            onClick={() => setPaymentMethod('normal')}
-          >
-            Pago Normal
-          </button>
-          <button
-            className={`flex-1 px-4 py-3 rounded-xl font-bold text-center transition-all ${paymentMethod === 'crypto' ? 'bg-[#D3423E] text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            onClick={() => setPaymentMethod('crypto')}
-          >
-            Pagar con Cripto
-          </button>
-        </div>
-
-        {paymentMethod === 'normal' && (
-          <>
-            <div className="mb-4">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">1. Tipo de pago</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {Object.entries(PAYMENT_METHODS).map(([key, method]) => (
-                  <button
-                    key={key}
-                    onClick={() => setNormalPaymentType(key)}
-                    className={`p-3 rounded-xl border-2 text-center transition-all ${normalPaymentType === key ? 'border-[#D3423E] bg-red-50' : 'border-gray-200 hover:border-gray-400'}`}
-                  >
-                    <p className="text-xs font-bold text-gray-800">{method.name}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">2. Datos del pago</label>
-              <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-                <div className="flex-1">
-                  <label htmlFor="amount" className="text-sm text-left block text-gray-600">Importe (Bs.)</label>
-                  <input
-                    type="number"
-                    id="amount"
-                    name="amount"
-                    value={paymentData.amount}
-                    onChange={handleInputChange}
-                    max={total}
-                    className={`mt-1 text-gray-900 border ${amountError ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-[#D3423E] focus:border-transparent w-full px-4 py-2 rounded-xl`}
-                    placeholder="Ingrese el importe"
-                  />
-                  {amountError && <p className="text-sm text-red-600 mt-1">{amountError}</p>}
-                  {paymentData.amount && !amountError && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      ≈ ${(parseFloat(paymentData.amount) / USD_TO_BS_OFFICIAL).toFixed(2)} USD
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex-1">
-                  <label htmlFor="payer" className="text-sm block text-left text-gray-600">Quién paga</label>
-                  <input
-                    type="text"
-                    id="payer"
-                    name="payer"
-                    value={paymentData.payer}
-                    onChange={handleInputChange}
-                    className="mt-1 text-gray-900 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D3423E] focus:border-transparent w-full px-4 py-2 border rounded-xl"
-                    placeholder="Nombre del pagador"
-                  />
-                </div>
-              </div>
-
-              {!paymentData.amount && (
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => setPaymentData({ ...paymentData, amount: total.toFixed(2) })}
-                    className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700"
-                  >
-                    Pago completo (Bs. {total.toFixed(2)})
-                  </button>
-                  <button
-                    onClick={() => setPaymentData({ ...paymentData, amount: (total / 2).toFixed(2) })}
-                    className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700"
-                  >
-                    50%
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="mb-6">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">
-                3. Comprobante de pago {normalPaymentType === 'cash' ? '(opcional)' : '(recomendado)'}
-              </label>
-              {!imagePreview ? (
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200">
+              <div className="flex justify-between items-start">
                 <div>
-                  <input
-                    className="block w-full text-gray-900 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-[#D3423E] focus:outline-none"
-                    id="user_avatar"
-                    type="file"
-                    accept=".svg,.png,.jpg,.jpeg"
-                    onChange={handleFileChange}
-                  />
-                  <p className="mt-2 text-sm text-gray-500">
-                    <span className="font-semibold">Haz clic para subir</span> SVG, PNG o JPG
-                  </p>
-                </div>
-              ) : (
-                <div className="relative bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <img src={imagePreview} alt="Comprobante" className="max-h-48 mx-auto rounded" />
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-xs text-gray-600 truncate">{imageFile?.name}</p>
-                    <button onClick={removeImage} className="text-xs text-red-600 hover:underline font-bold">
-                      Quitar imagen
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col w-full space-y-4">
-              {!isBlockchainProcessing && !blockchainSuccess && (
-                <div className="flex flex-col sm:flex-row w-full sm:space-x-4 sm:space-y-0 space-y-4">
-                  <button
-                    onClick={onClose}
-                    className="w-full sm:w-1/2 px-4 py-2 text-lg border-2 border-[#D3423E] text-[#D3423E] uppercase font-bold rounded-2xl hover:bg-red-50"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleSavePayment}
-                    disabled={!paymentData.amount || !paymentData.payer || amountError || isSaving}
-                    className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isSaving ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-[#D3423E] text-white hover:bg-red-600'}`}
-                  >
-                    {isSaving ? savingText : saveSuccess ? "Guardado" : "Guardar"}
-                  </button>
-                </div>
-              )}
-
-              {status && (
-                <div className="mt-4 flex justify-center items-center space-x-2 text-lg font-medium">
-                  {(status.includes("Registrando") || status.includes("Esperando")) && (
-                    <>
-                      <span className="text-gray-600">{status}</span>
-                      <span className="flex space-x-1">
-                        <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                        <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></span>
-                      </span>
-                    </>
-                  )}
-                  {status.includes("guardado") && (
-                    <span className="text-green-600 flex items-center space-x-2">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Registro guardado en Polygon</span>
-                    </span>
-                  )}
-                  {(status.includes("Error") || status.includes("MetaMask")) && (
-                    <span className="text-red-600 flex items-center space-x-2">
-                      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      <span>{status}</span>
-                    </span>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Saldo por pagar</p>
+                  <p className="text-3xl font-black text-gray-900 mt-1">Bs. {total.toFixed(2)}</p>
+                  {paymentMethod === 'crypto' && exchangeRate && (
+                    <p className="text-sm text-green-700 font-bold mt-1">≈ {totalUSDT} USDT</p>
                   )}
                 </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {paymentMethod === 'crypto' && (
-          <>
-            <div className="mb-4">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">1. Selecciona la red de pago</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {Object.entries(NETWORKS).map(([key, network]) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedNetwork(key)}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${selectedNetwork === key ? 'border-[#D3423E] bg-red-50' : 'border-gray-200 hover:border-gray-400'}`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-sm" style={{ color: network.color }}>{network.name}</span>
-                      {selectedNetwork === key && <span className="text-[#D3423E] text-xs">✓</span>}
-                    </div>
-                    <p className="text-xs text-gray-600">Comisión: {network.estimatedFee}</p>
-                    <p className="text-xs text-gray-500 mt-1">{network.description}</p>
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                ⓘ Las comisiones son aproximadas y pueden variar según la congestión de la red.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:space-x-4 mb-4 space-y-4 sm:space-y-0">
-              <div className="flex-1">
-                <label htmlFor="amount" className="text-m font-bold text-left block text-gray-700">2. Importe a pagar (Bs.)</label>
-                <input
-                  type="number"
-                  id="amount"
-                  name="amount"
-                  value={paymentData.amount}
-                  onChange={handleInputChange}
-                  max={total}
-                  className={`mt-2 text-gray-900 border ${amountError || isAmountTooLow ? 'border-red-500' : 'border-gray-900'} focus:outline-none focus:ring-0 w-full px-4 py-2 rounded-2xl`}
-                  placeholder={minimumBsRequired ? `Mínimo Bs. ${minimumBsRequired}` : 'Ingrese el importe'}
-                />
-                {amountError && <p className="text-sm text-red-600 mt-2">{amountError}</p>}
-                {paymentData.amount && exchangeRate && (
-                  <p className={`text-sm mt-2 font-medium ${isAmountTooLow ? 'text-red-600' : 'text-green-700'}`}>
-                    Equivale a: {amountInUSDT} USDT
-                  </p>
-                )}
-                {isAmountTooLow && (
-                  <div className="mt-2 bg-red-50 border border-red-200 rounded-lg p-2">
-                    <p className="text-xs text-red-700">
-                      ⚠️ El monto mínimo para pagos en cripto es <span className="font-bold">{MIN_USDT_AMOUNT} USDT</span> (≈ Bs. {minimumBsRequired}).
-                    </p>
-                    <p className="text-xs text-red-600 mt-1">Esto es debido a las comisiones mínimas de la red.</p>
+                {paymentData.amount && !amountError && (
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Quedará</p>
+                    <p className={`text-2xl font-black mt-1 ${parseFloat(remaining) === 0 ? 'text-green-600' : 'text-amber-600'}`}>Bs. {remaining}</p>
                   </div>
                 )}
               </div>
-
-              <div className="flex-1">
-                <label htmlFor="payer" className="text-m block font-bold text-left text-gray-700">Quién paga</label>
-                <input
-                  type="text"
-                  id="payer"
-                  name="payer"
-                  value={paymentData.payer}
-                  onChange={handleInputChange}
-                  className="mt-2 hover:border-[#D3423E] text-gray-900 border-gray-900 focus:outline-none focus:ring-0 w-full px-4 py-2 border rounded-2xl"
-                  placeholder="Ingrese el nombre del pagador"
-                />
-              </div>
+              {paymentMethod === 'crypto' && <ExchangeRateWidget />}
             </div>
 
-            {!order && paymentData.amount && paymentData.payer && !amountError && !isAmountTooLow && (
-              <button
-                onClick={createPayment}
-                className="w-full mb-4 px-4 py-3 bg-[#D3423E] text-white font-bold rounded-2xl hover:bg-red-600"
-              >
-                3. Generar dirección de pago
+            <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+              <button onClick={() => setPaymentMethod('normal')}
+                className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${paymentMethod === 'normal' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+                <FaMoneyBillWave size={14} /> Pago Normal
               </button>
+              <button onClick={() => setPaymentMethod('crypto')}
+                className={`flex-1 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${paymentMethod === 'crypto' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+                <FaWallet size={14} /> Cripto
+              </button>
+            </div>
+
+            {paymentMethod === 'normal' && (
+              <>
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">Tipo de pago</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {PAY_TYPES.map(t => (
+                      <button key={t.key} onClick={() => setNormalPaymentType(t.key)}
+                        className={`p-2.5 rounded-xl border-2 text-center transition-all ${normalPaymentType === t.key ? 'border-[#D3423E] bg-red-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <span className="text-lg">{t.icon}</span>
+                        <p className="text-[10px] font-bold text-gray-700 mt-1">{t.label}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">Importe (Bs.)</label>
+                    <input type="number" name="amount" value={paymentData.amount} onChange={handleInput} max={total}
+                      className={`w-full px-3 py-3 border-2 ${amountError ? 'border-red-400' : 'border-gray-200'} rounded-xl text-gray-900 font-bold focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100`}
+                      placeholder="0.00" />
+                    {amountError && <p className="text-xs text-red-600 mt-1 font-medium">{amountError}</p>}
+                    {!paymentData.amount && (
+                      <div className="flex gap-1.5 mt-2">
+                        <button onClick={() => setPaymentData(p => ({ ...p, amount: total.toFixed(2) }))} className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full text-gray-700 font-bold">Total</button>
+                        <button onClick={() => setPaymentData(p => ({ ...p, amount: (total / 2).toFixed(2) }))} className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full text-gray-700 font-bold">50%</button>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">Quién paga</label>
+                    <input type="text" name="payer" value={paymentData.payer} onChange={handleInput}
+                      className="w-full px-3 py-3 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-[#D3423E] focus:ring-2 focus:ring-red-100"
+                      placeholder="Nombre" />
+                  </div>
+                </div>
+              </>
             )}
 
-            {order && (
+            {paymentMethod === 'crypto' && (
               <>
-                <TransactionStatus />
-
-                {txStatus !== 'confirmed' && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
-                    <h2 className="text-gray-900 font-bold mb-2">Envía {amountInUSDT} USDT a esta dirección</h2>
-                    <p className="text-sm text-gray-700 mb-3">
-                      Red: <span className="font-bold" style={{ color: NETWORKS[selectedNetwork].color }}>
-                        {NETWORKS[selectedNetwork].name}
-                      </span>
-                    </p>
-
-                    {qrValue ? (
-                      <div className="bg-white p-3 rounded-xl inline-block shadow-sm mb-3">
-                        <QRCodeCanvas value={qrValue} size={220} />
-                      </div>
-                    ) : (
-                      <p className="text-gray-600">Generando QR…</p>
-                    )}
-
-                    <div className="bg-white rounded-lg p-3 mb-3">
-                      <p className="text-xs text-gray-500 mb-1">Dirección de la wallet:</p>
-                      <p className="text-sm text-gray-900 break-all font-mono">{order.address}</p>
-                      <button
-                        onClick={() => navigator.clipboard.writeText(order.address)}
-                        className="mt-2 text-xs text-blue-600 hover:underline"
-                      >
-                        📋 Copiar dirección
-                      </button>
-                    </div>
-
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-left">
-                      <p className="text-xs text-yellow-800 font-bold mb-1">⚠️ Importante:</p>
-                      <ul className="text-xs text-yellow-700 space-y-1 list-disc list-inside">
-                        <li>Envía solo USDT por la red {NETWORKS[selectedNetwork].name}</li>
-                        <li>Otros tokens o redes pueden resultar en pérdida de fondos</li>
-                        <li>El pago se confirmará automáticamente al recibirlo</li>
-                      </ul>
-                    </div>
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">Red de pago</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {Object.entries(NETWORKS).map(([k, n]) => {
+                      const fee = rateData?.fees?.[k];
+                      return (
+                        <button key={k} onClick={() => setSelectedNetwork(k)}
+                          className={`p-3 rounded-xl border-2 transition-all text-left ${selectedNetwork === k ? 'border-[#D3423E] bg-red-50/50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+                          <p className="font-black text-sm" style={{ color: n.color }}>{n.name}</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">
+                            {fee !== null && fee !== undefined ? `$${fee < 0.01 ? '<0.01' : fee.toFixed(4)} USD` : n.estimatedFee}
+                          </p>
+                          {fee !== null && fee !== undefined && fee < 0.05 && <span className="text-[9px] text-green-600 font-bold">✓ Muy bajo</span>}
+                          {fee !== null && fee !== undefined && fee >= 5 && <span className="text-[9px] text-amber-600 font-bold">⚠ Alto</span>}
+                          {selectedNetwork === k && <p className="text-[10px] text-[#D3423E] font-bold mt-1">✓ Seleccionada</p>}
+                        </button>
+                      );
+                    })}
                   </div>
+                  {rateData?.fees && (
+                    <p className="text-[9px] text-gray-400 mt-1.5 flex items-center gap-1">
+                      <FaCheckCircle size={8} className="text-green-500" />
+                      Comisiones reales de la red en tiempo real
+                    </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">Importe (Bs.)</label>
+                    <input type="number" name="amount" value={paymentData.amount} onChange={handleInput} max={total}
+                      className={`w-full px-3 py-3 border-2 ${amountError || isTooLow ? 'border-red-400' : 'border-gray-200'} rounded-xl text-gray-900 font-bold focus:outline-none focus:border-[#D3423E]`}
+                      placeholder={minBs ? `Mín Bs. ${minBs}` : '0.00'} />
+                    {paymentData.amount && exchangeRate && <p className={`text-xs font-bold mt-1 ${isTooLow ? 'text-red-600' : 'text-green-700'}`}>≈ {amountUSDTStr} USDT</p>}
+                    {isTooLow && <p className="text-[10px] text-red-600 mt-1">Mínimo {MIN_USDT} USDT (≈ Bs. {minBs})</p>}
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">Quién paga</label>
+                    <input type="text" name="payer" value={paymentData.payer} onChange={handleInput}
+                      className="w-full px-3 py-3 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-[#D3423E]"
+                      placeholder="Nombre" />
+                  </div>
+                </div>
+
+                {!order && paymentData.amount && paymentData.payer && !amountError && !isTooLow && (
+                  <button onClick={createPayment} className="w-full py-3 bg-gradient-to-r from-[#8247E5] to-purple-600 text-white font-black rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    <FaWallet size={14} /> Generar dirección de pago
+                  </button>
+                )}
+
+                {order && (
+                  <>
+                    <div className={`rounded-xl border-2 p-4 ${txStatus === 'confirmed' ? 'bg-green-50 border-green-300' : txStatus === 'failed' ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-300'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xl ${txStatus !== 'confirmed' && txStatus !== 'failed' ? 'animate-pulse' : ''}`}>
+                            {txStatus === 'confirmed' ? '✅' : txStatus === 'failed' ? '❌' : txStatus === 'detected' ? '🔍' : txStatus === 'confirming' ? '⚙️' : '⏳'}
+                          </span>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">
+                              {txStatus === 'confirmed' ? 'Confirmado' : txStatus === 'detected' ? 'Detectado' : txStatus === 'confirming' ? `${txConfirmations} confirmaciones` : 'Esperando pago'}
+                            </p>
+                          </div>
+                        </div>
+                        {txStatus !== 'confirmed' && <p className="font-mono font-bold text-gray-700">{fmtTime(elapsedTime)}</p>}
+                      </div>
+                      <div className="flex gap-1">{['waiting', 'detected', 'confirming', 'confirmed'].map((s, i) => (
+                        <div key={s} className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: i <= ['waiting', 'detected', 'confirming', 'confirmed'].indexOf(txStatus) ? (txStatus === 'confirmed' ? '#22c55e' : '#3b82f6') : '#d1d5db' }} />
+                      ))}</div>
+                      {txHash && (
+                        <a href={NETWORKS[selectedNetwork].explorerUrl + txHash} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline mt-2 flex items-center gap-1 font-bold">
+                          <FaExternalLinkAlt size={9} /> Ver en explorador
+                        </a>
+                      )}
+                    </div>
+
+                    {txStatus !== 'confirmed' && (
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 text-center">
+                        <p className="text-sm font-bold text-gray-900 mb-3">Envía <span className="text-green-700">{amountUSDTStr} USDT</span> a:</p>
+                        {order.address && (
+                          <div className="bg-white p-3 rounded-xl inline-block shadow-sm mb-3 border border-gray-100">
+                            <QRCodeCanvas value={String(order.address)} size={180} />
+                          </div>
+                        )}
+                        <div className="bg-white rounded-xl p-3 border border-gray-200">
+                          <p className="text-xs text-gray-500 mb-1">Dirección:</p>
+                          <p className="text-xs text-gray-900 font-mono break-all">{order.address}</p>
+                          <button onClick={copyAddr} className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 mx-auto">
+                            {copied ? <><FaCheckCircle size={10} /> Copiado</> : <><FaCopy size={10} /> Copiar</>}
+                          </button>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 text-left">
+                          <p className="text-[10px] text-amber-800 font-black flex items-center gap-1"><FaExclamationTriangle size={10} /> Solo USDT en {NETWORKS[selectedNetwork].name}</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
 
-            <div className="mb-6">
-              <label className="text-m font-bold block text-left text-gray-700 mb-2">4. Comprobante de la transacción (opcional)</label>
+            <div>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">
+                Comprobante {normalPaymentType === 'cash' && paymentMethod === 'normal' ? '(opcional)' : ''}
+              </p>
               {!imagePreview ? (
-                <div>
-                  <input
-                    className="block w-full text-gray-900 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-[#D3423E] focus:outline-none"
-                    id="crypto_avatar"
-                    type="file"
-                    accept=".svg,.png,.jpg,.jpeg"
-                    onChange={handleFileChange}
-                  />
-                  <p className="mt-2 text-sm text-gray-500">
-                    <span className="font-semibold">Haz clic para subir</span> screenshot de la transacción
-                  </p>
-                </div>
+                <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:border-[#D3423E] hover:bg-red-50/30 transition-all">
+                  <FaCamera className="text-gray-400 mb-1" size={18} />
+                  <span className="text-xs text-gray-500 font-bold">Subir imagen</span>
+                  <input type="file" accept=".png,.jpg,.jpeg" onChange={handleFile} className="hidden" />
+                </label>
               ) : (
-                <div className="relative bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <img src={imagePreview} alt="Comprobante" className="max-h-48 mx-auto rounded" />
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-xs text-gray-600 truncate">{imageFile?.name}</p>
-                    <button onClick={removeImage} className="text-xs text-red-600 hover:underline font-bold">
-                      Quitar imagen
-                    </button>
-                  </div>
+                <div className="relative bg-gray-50 rounded-xl p-3 border border-gray-200">
+                  <img src={imagePreview} alt="" className="max-h-32 mx-auto rounded-lg" />
+                  <button onClick={() => { setImageFile(null); setImagePreview(null); }}
+                    className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-sm">
+                    <FaTrash size={10} />
+                  </button>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row w-full sm:space-x-4 sm:space-y-0 space-y-4">
-              <button
-                onClick={onClose}
-                className="w-full sm:w-1/2 px-4 py-2 text-lg border-2 border-[#D3423E] text-[#D3423E] uppercase font-bold rounded-2xl hover:bg-red-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSavePayment}
-                disabled={!paymentData.amount || !paymentData.payer || amountError || isAmountTooLow || isSaving || !order || txStatus !== 'confirmed'}
-                className={`w-full sm:w-1/2 px-4 py-2 text-lg font-bold uppercase rounded-2xl ${!paymentData.amount || !paymentData.payer || amountError || isAmountTooLow || isSaving || !order || txStatus !== 'confirmed' ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-[#D3423E] text-white hover:bg-red-600'}`}
-              >
-                {isSaving ? savingText : saveSuccess ? "Guardado" : txStatus !== 'confirmed' ? "Esperando confirmación..." : "Confirmar Pago"}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+            {status && (
+              <div className={`rounded-xl p-3 text-center text-sm font-bold ${status.includes("Error") ? 'bg-red-50 text-red-700' : status.includes("Guardado") || status.includes("guardado") ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-700'}`}>
+                {status}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t border-gray-200 flex gap-3 flex-shrink-0 bg-white">
+            {!isBlockchainProcessing && !blockchainSuccess && (
+              <>
+                <button onClick={onClose} className="flex-1 py-3 border-2 border-gray-200 text-gray-700 font-bold text-sm rounded-xl hover:bg-gray-50">Cancelar</button>
+                <button onClick={handleSave} disabled={!canSave}
+                  className={`flex-1 py-3 rounded-xl font-black text-sm text-white flex items-center justify-center gap-2 transition-all ${canSave ? 'bg-gradient-to-r from-[#D3423E] to-red-600 hover:shadow-lg' : 'bg-gray-300 cursor-not-allowed'}`}>
+                  {isSaving ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Guardando...</>
+                    : saveSuccess ? <><FaCheckCircle /> Guardado</>
+                    : paymentMethod === 'crypto' && txStatus !== 'confirmed' ? 'Esperando confirmación...'
+                    : 'Confirmar Pago'}
+                </button>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

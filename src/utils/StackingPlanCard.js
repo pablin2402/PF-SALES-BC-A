@@ -57,7 +57,7 @@ export default function StackingPlanCard({ stackingPlan, tripColor = "#D3423E" }
       >
         <div className="flex items-center justify-between mb-2.5">
           <p className="text-[11px] font-black text-gray-700 uppercase tracking-wide">
-            🚚 Apilado en camión
+            Apilado en camión
           </p>
           <span
             className="text-[11px] font-black px-2.5 py-1 rounded-full text-white"

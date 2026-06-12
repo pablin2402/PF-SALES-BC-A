@@ -35,7 +35,6 @@ export const MapGoogleMap = ({
         styles: MAP_STYLE_MODERN,
       }}
     >
-      {/* Municipio polygons */}
       {showMunicipios && Object.values(MUNICIPIOS_COCHABAMBA).map(m => (
         <React.Fragment key={m.id}>
           <Polygon
@@ -67,7 +66,6 @@ export const MapGoogleMap = ({
         </React.Fragment>
       ))}
 
-      {/* Client markers */}
       {filteredMarkers.map((location, index) => {
         if (!location.client_location?.latitud || !location.client_location?.longitud) return null;
         return (
@@ -81,7 +79,6 @@ export const MapGoogleMap = ({
         );
       })}
 
-      {/* Selected client popup */}
       {selectedClient?.client_location && (
         <OverlayView
           position={{ lat: Number(selectedClient.client_location.latitud), lng: Number(selectedClient.client_location.longitud) }}
@@ -133,7 +130,6 @@ export const MapGoogleMap = ({
         </OverlayView>
       )}
 
-      {/* Active people (salesmen + delivery) */}
       {showActivePeople && locations.map(loc => {
         const hasDelivery = loc.delivery && typeof loc.delivery === "object";
         const hasSalesman = loc.salesManId && typeof loc.salesManId === "object";

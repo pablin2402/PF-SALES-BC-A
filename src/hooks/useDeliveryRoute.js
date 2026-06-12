@@ -9,6 +9,7 @@ import {
   generateStackingPlan, MIN_ORDERS_TO_OPTIMIZE,
 } from "../utils/RouteOptimizer";
 import { TABS, OPTIMIZATION_METHOD, buildMarkerFromOrder, generateGroupId } from "../constants/routeConfigs";
+import { aggregateTripPacking } from "../hooks/PackingLogic";
 
 export const useDeliveryRoute = () => {
   const mapRef = useRef(null);
@@ -53,7 +54,7 @@ export const useDeliveryRoute = () => {
     return Number(selectedVendor?.truckCapacity) || DEFAULT_TRUCK_CAPACITY;
   }, [selectedVendor, customCapacity]);
 
-  const currentLoad = useMemo(() => selectedMarkers.reduce((s, m) => s + calculateOrderBoxes(m), 0), [selectedMarkers]);
+const currentLoad = useMemo(() => aggregateTripPacking(selectedMarkers).physicalBoxes, [selectedMarkers]);
   const utilizationPct = truckCapacity > 0 ? Math.min(100, (currentLoad / truckCapacity) * 100) : 0;
   const isOverCapacity = currentLoad > truckCapacity;
   const canOptimize = markers.length >= MIN_ORDERS_TO_OPTIMIZE && !!selectedSaler;
@@ -169,9 +170,9 @@ export const useDeliveryRoute = () => {
 
   const handleMarkerClick = (location) => {
     if (!selectedSaler) { showAlert("Seleccione un repartidor antes."); return; }
-    const boxes = calculateOrderBoxes(location);
-    if (currentLoad + boxes > truckCapacity && !selectedMarkers.find(m => m._id === location._id)) {
-      showAlert(`Excede capacidad.\nActual: ${currentLoad} · Pedido: ${boxes} · Máx: ${truckCapacity}\n\nUsa "Optimizar" para dividir.`);
+    const next = aggregateTripPacking([...selectedMarkers, location]).physicalBoxes;
+if (next > truckCapacity && !selectedMarkers.find(m => m._id === location._id)) {
+      showAlert(`Excede capacidad.\nActual: ${currentLoad} · Pedido: ${next - currentLoad} · Máx: ${truckCapacity}\n\nUsa "Optimizar" para dividir.`);
       return;
     }
     setSelectedMarkers(prev => prev.find(i => i._id === location._id) ? prev : [...prev, buildMarkerFromOrder(location)]);

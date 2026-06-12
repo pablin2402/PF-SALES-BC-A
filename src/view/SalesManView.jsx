@@ -14,6 +14,8 @@ import { ConfirmModal, ResultModal } from "../utils/Modal";
 import { SkeletonTable, SkeletonCards } from "../utils/SkeletonLoading";
 import { ModernPagination } from "../utils/ModernPagination";
 import PrincipalBUtton from "../Components/LittleComponents/PrincipalButton";
+import { SalesmanDrawer } from "../Components/salesmen/SalesManDrawer";
+import { getColor } from "../constants/salesmenConfigs";
 
 const EmptyState = ({ hasFilters, onClear, onCreate }) => (
   <div className="flex flex-col items-center justify-center py-20 text-center px-4">
@@ -49,9 +51,13 @@ const SalesManView = () => {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [drawerSalesman, setDrawerSalesman] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const openPasswordModal = (salesman) => { setSelectedSalesman(salesman); setShowPasswordModal(true); };
   const handleRowClick = (s) => navigate(`/sales/${s._id}`, { state: { client: s } });
-
+  const openDrawer = (s) => { setDrawerSalesman(s); setDrawerOpen(true); };
+  const closeDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerSalesman(null), 300); };
   const handleError = (msg) => { setErrorMessage(msg); setShowError(true); };
 
   return (
@@ -111,13 +117,14 @@ const SalesManView = () => {
                   sortBy={sm.sortBy} sortOrder={sm.sortOrder} onSort={sm.handleSort}
                   togglingId={sm.togglingId} requestToggle={sm.requestToggle}
                   openPasswordModal={openPasswordModal} onRowClick={handleRowClick}
+                  onOpenProfile={openDrawer}
                 />
               )}
               {(viewMode === "cards" || viewMode === "table") && (
                 <SalesmenCards
                   filteredAndSorted={sm.filteredAndSorted} viewMode={viewMode}
                   onRowClick={handleRowClick} openPasswordModal={openPasswordModal}
-                  requestToggle={sm.requestToggle}
+                  requestToggle={sm.requestToggle} onOpenProfile={openDrawer}
                 />
               )}
             </>
@@ -141,7 +148,15 @@ const SalesManView = () => {
           )}
         </div>
       </div>
-
+<SalesmanDrawer
+  isOpen={drawerOpen}
+  onClose={closeDrawer}
+  salesman={drawerSalesman}
+  avatarColor={getColor(
+    drawerSalesman?.salesId?.fullName,
+    drawerSalesman?.salesId?.lastName
+  )}
+/>
       <AnimatePresence>
         {sm.confirmToggle && (
           <ConfirmModal

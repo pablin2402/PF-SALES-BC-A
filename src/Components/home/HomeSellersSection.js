@@ -72,7 +72,6 @@ export const HomeSellersSection = ({
       )}
     </div>
 
-    {/* Table desktop */}
     <div className="hidden md:block overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead className="text-[11px] text-gray-600 uppercase bg-gray-50 border-b border-gray-200">
@@ -120,7 +119,6 @@ export const HomeSellersSection = ({
       </table>
     </div>
 
-    {/* Cards mobile */}
     <div className="md:hidden p-4 space-y-3">
       {salesBySeller.length > 0 ? salesBySeller.map((seller, idx) => {
         const pct = totalAmountSum > 0 ? (seller.totalAmount / totalAmountSum) * 100 : 0;

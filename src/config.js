@@ -1,4 +1,4 @@
-export const API_URL = "http://localhost:3056"; 
+export const API_URL = "http://localhost:3057"; 
 export const GOOGLE_API_KEY ="AIzaSyBn4M7fGwSm8N7Ndje6_gU0AOjXKIsTyzs";
 export const UPLOAD_TIME=50000;
 //export const API_URL = "http://56.125.214.181:3041"; 

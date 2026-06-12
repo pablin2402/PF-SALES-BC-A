@@ -43,7 +43,6 @@ export const MapSidebar = ({
     <div className={`${collapsed ? "w-0 lg:w-16" : "w-full lg:w-[440px]"} h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
       {!collapsed && (
         <>
-          {/* Header */}
           <div className="p-5 border-b border-gray-200 bg-gradient-to-br from-[#D3423E] to-red-700 rounded-br-3xl text-white flex-shrink-0">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -74,9 +73,7 @@ export const MapSidebar = ({
             </div>
           </div>
 
-          {/* Filters */}
           <div className="p-4 border-b border-gray-200 space-y-3 flex-shrink-0">
-            {/* Search */}
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />
               <input
@@ -97,7 +94,6 @@ export const MapSidebar = ({
               )}
             </div>
 
-            {/* Vendedor + Canal */}
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5">Vendedor</label>
@@ -123,7 +119,6 @@ export const MapSidebar = ({
               </div>
             </div>
 
-            {/* Municipios */}
             <div>
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
                 <FaCity size={9} /> Municipio
@@ -150,7 +145,6 @@ export const MapSidebar = ({
               </div>
             </div>
 
-            {/* Sort + More */}
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <button onClick={() => setShowSortMenu(!showSortMenu)}
@@ -197,7 +191,6 @@ export const MapSidebar = ({
             )}
           </div>
 
-          {/* Client list */}
           <div className="flex-1 overflow-y-auto p-4">
             {loading ? <SidebarSkeleton /> : sidebarClients.length > 0 ? (
               <div className="space-y-3">

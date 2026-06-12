@@ -1,49 +1,128 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { FaReceipt, FaCheckCircle, FaTimesCircle, FaLink } from "react-icons/fa";
+import {
+  FaReceipt,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaLink,
+} from "react-icons/fa";
 
 const CARDS = [
-  { key: "total", label: "Total", icon: FaReceipt, soft: "bg-gray-100", text: "text-gray-700" },
-  { key: "ingresados", label: "Ingresados", icon: FaReceipt, soft: "bg-blue-100", text: "text-blue-700" },
-  { key: "confirmados", label: "Confirmados", icon: FaCheckCircle, soft: "bg-green-100", text: "text-green-700" },
-  { key: "rechazados", label: "Rechazados", icon: FaTimesCircle, soft: "bg-red-100", text: "text-red-700" },
+  {
+    key: "total",
+    label: "Total",
+    icon: FaReceipt,
+    color: "bg-slate-500",
+  },
+  {
+    key: "ingresados",
+    label: "Ingresados",
+    icon: FaReceipt,
+    color: "bg-blue-500",
+  },
+  {
+    key: "confirmados",
+    label: "Confirmados",
+    icon: FaCheckCircle,
+    color: "bg-green-500",
+  },
+  {
+    key: "rechazados",
+    label: "Rechazados",
+    icon: FaTimesCircle,
+    color: "bg-red-500",
+  },
 ];
 
-export const PaymentsStats = ({ stats }) => (
-  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-    {CARDS.map((c) => {
-      const Icon = c.icon;
-      return (
-        <div key={c.key} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex items-center gap-3 hover:shadow-md transition-all">
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${c.soft}`}>
-            <Icon className={c.text} size={18} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-wider truncate">{c.label}</p>
-            <p className="text-2xl font-black text-gray-900">{stats[c.key]}</p>
-          </div>
-        </div>
-      );
-    })}
+export const PaymentsStats = ({ stats }) => {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+      {CARDS.map((card) => {
+        const Icon = card.icon;
 
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 p-4 rounded-2xl shadow-xl text-white"
-    >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
-            <FaLink size={16} />
+        return (
+          <motion.div
+            key={card.key}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl p-5"
+          >
+            <div className={`absolute top-0 left-0 w-full h-1 ${card.color}`} />
+
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-2">
+                  {card.label}
+                </p>
+
+                <h3 className="text-3xl font-bold text-gray-900">
+                  {stats?.[card.key] || 0}
+                </h3>
+              </div>
+
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white ${card.color}`}
+              >
+                <Icon size={22} />
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+
+      <motion.div
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="relative overflow-hidden rounded-2xl p-5 shadow-xl bg-gradient-to-br from-[#6D28D9] via-[#7C3AED] to-[#4F46E5] text-white"
+      >
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
+
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+              <FaLink size={22} />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs font-semibold text-purple-100">
+                Activo
+              </span>
+            </div>
           </div>
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+
+          <p className="text-sm text-purple-100 font-medium">
+            Verificados Blockchain
+          </p>
+
+          <h3 className="text-4xl font-extrabold mt-1">
+            {stats?.enBlockchain || 0}
+          </h3>
+
+          <div className="mt-3">
+            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-400 rounded-full"
+                style={{
+                  width: `${
+                    stats?.total > 0
+                      ? (stats.enBlockchain / stats.total) * 100
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+
+            <p className="text-xs text-purple-100 mt-2">
+              {stats?.total > 0
+                ? `${Math.round(
+                    (stats.enBlockchain / stats.total) * 100
+                  )}% de pagos registrados`
+                : "Sin registros"}
+            </p>
+          </div>
         </div>
-        <p className="text-[10px] uppercase text-purple-100 font-black tracking-wider">On-chain</p>
-        <h3 className="text-3xl font-black mt-1">{stats.enBlockchain}</h3>
-        <p className="text-xs text-purple-100 mt-1">
-          {stats.total > 0 ? `${Math.round((stats.enBlockchain / stats.total) * 100)}% verificados` : "0%"}
-        </p>
-      </div>
-    </motion.div>
-  </div>
-);
+      </motion.div>
+    </div>
+  );
+};

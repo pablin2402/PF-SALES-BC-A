@@ -17,7 +17,6 @@ export const MapControls = ({
 
   return (
     <>
-      {/* Left floating buttons */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         {!viewAllMode ? (
           <button onClick={loadAllClients} disabled={loadingAll}
@@ -48,9 +47,7 @@ export const MapControls = ({
         </button>
       </div>
 
-      {/* Right floating panel */}
       <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
-        {/* Vista toggle */}
         <div className="relative z-50">
           <button onClick={() => setShowViewOptions(!showViewOptions)}
             className="bg-white rounded-xl shadow-lg p-3 border border-gray-200 flex items-center gap-2 transition-all hover:shadow-xl">
@@ -83,7 +80,6 @@ export const MapControls = ({
           )}
         </div>
 
-        {/* Legend panel */}
         <div className="bg-white rounded-2xl shadow-lg p-3 border border-gray-200 max-w-[220px] relative z-10">
           <p className="text-[10px] font-black text-gray-700 mb-2 uppercase flex items-center gap-1 tracking-wider">
             <FaLayerGroup size={10} /> Canales
