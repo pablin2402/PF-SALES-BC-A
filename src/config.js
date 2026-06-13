@@ -1,15 +1,11 @@
-export const API_URL = "http://localhost:3057"; 
-export const GOOGLE_API_KEY ="AIzaSyBn4M7fGwSm8N7Ndje6_gU0AOjXKIsTyzs";
+export const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3056";
+export const GOOGLE_API_KEY =process.env.REACT_APP_GOOGLE_API_KEY;
 export const UPLOAD_TIME=50000;
-//export const API_URL = "http://56.125.214.181:3041"; 
-//export const CONTRACT_ADDRESS = "0xFdf3b2B8f41f703Ec10Aa8FBB49eA8A02642d900";
-export const CONTRACT_ADDRESS = "0x756c98370C53e317E158e7C24f4189B425074Ca4";// contrato en polygon 18/5/26
-
-export const DESTINATION_WALLET_ADDRESS = "0x49A623323b37B62b7952142eA07B3c0B23f83650";
-//export const USDT_CONTRACT_ADDRESS="0x3813e82e6f7098b9583FC0F33a962D02018B6803";
-export const USDT_CONTRACT_ADDRESS="0x756c98370C53e317E158e7C24f4189B425074Ca4";
-export const CONTRACT_CHAIN_ID = 137;
-export const GOOGLE_MAPS_ID = "google-map-script";
+export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS; //18/15/26
+export const DESTINATION_WALLET_ADDRESS = process.env.REACT_APP_DESTINATION_WALLET_ADDRESS;
+export const USDT_CONTRACT_ADDRESS=process.env.REACT_APP_USDT_CONTRACT_ADDRESS;
+export const CONTRACT_CHAIN_ID = process.env.REACT_APP_CONTRACT_CHAIN_ID;
+export const GOOGLE_MAPS_ID = process.env.REACT_APP_GOOGLE_MAPS_ID;
 
 export const CONTRACT_ABI = [
   {
